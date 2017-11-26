@@ -45,11 +45,14 @@ class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLa
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let minWidthPerItemAndSpace: CGFloat = 130
-        let itemsPerRow: CGFloat = CGFloat(Int(view.frame.width / minWidthPerItemAndSpace))
-        let spaceBetweenItems: CGFloat = 10
-        let spacesWidth: CGFloat = spaceBetweenItems * (1.0 * itemsPerRow - 1)
-        let widthPerItem = (view.frame.width - spacesWidth) / itemsPerRow
+        let spaceBetweenItems = 10.0
+        let minWidthPerItem = 130.0
+        let totalWidth = Double(view.frame.width)
+        // nx + (n-1)s = w
+        // where n = items per row, x = width per item, s = space between items, w = width of frame
+        // solves for n with a given minimum x, then solves for x given n
+        let itemsPerRow = floor((totalWidth + spaceBetweenItems) / (minWidthPerItem + spaceBetweenItems))
+        let widthPerItem = (totalWidth - (itemsPerRow - 1.0) * spaceBetweenItems) / itemsPerRow
         // print("Using \(itemsPerRow) items per row with min \(minWidthPerItemAndSpace) and frame \(view.frame.width)")
         return CGSize(width: widthPerItem, height: widthPerItem)
     }
