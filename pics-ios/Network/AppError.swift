@@ -38,8 +38,8 @@ class AppErrorUtil {
         case .responseFailure(let details):
             let code = details.code
             switch code {
-            case 400: // Bad Request
-                return "A network request was rejected."
+            case 400:
+                return "Bad request: \(details.resource)."
             case 401:
                 return "Check your username/password."
             case 404:

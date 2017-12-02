@@ -20,7 +20,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let flow = UICollectionViewFlowLayout()
         flow.itemSize = CGSize(width: 140, height: 140)
         
-        window?.rootViewController = UINavigationController(rootViewController: ViewController(collectionViewLayout: flow))
+//        window?.rootViewController = UINavigationController(rootViewController: ViewController(collectionViewLayout: flow))
+        window?.rootViewController = AuthVC()
         return true
     }
 

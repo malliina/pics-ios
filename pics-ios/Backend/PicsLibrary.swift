@@ -9,11 +9,32 @@
 import Foundation
 
 class PicsLibrary {
-    func load(from: Int, limit: Int, onResult: ([String]) -> Void) {
-        let rows: [Int] = Array(1..<limit+1)
+    let log = LoggerFactory.shared.network("PicsLibrary")
+    let http: PicsHttpClient
+    
+    init(http: PicsHttpClient) {
+        self.http = http
+    }
+    
+    func load(from: Int, limit: Int, onResult: @escaping ([PicMeta]) -> Void) {
+        return http.picsGetParsed("/pics?offset=\(from)&limit=\(limit)", parse: parsePics, f: onResult, onError: onError)
+    }
+    
+    func parsePics(obj: AnyObject) throws -> [PicMeta] {
+        let dict = try readObject(obj)
+        let pics: [NSDictionary] = try Json.readOrFail(dict, PicMeta.Pics)
+        return try pics.map(PicMeta.parse)
+    }
+    
+    func onError(_ error: AppError) {
+        log.error(AppError.stringify(error))
+    }
+    
+    func readObject(_ obj: AnyObject) throws -> NSDictionary {
+        if let obj = obj as? NSDictionary {
+            return obj
+        }
+        throw JsonError.invalid("object", obj)
         
-        onResult(rows.map({ (i) -> String in
-            "\(i)"
-        }))
     }
 }

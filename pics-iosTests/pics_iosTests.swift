@@ -22,6 +22,13 @@ class pics_iosTests: XCTestCase {
     }
     
     func testExample() {
+        let raw = "http://10.0.0.1:9000/pics"
+        let url = try! FullUrl.parse(input: raw)
+        print("parsed proto \(url.proto)")
+        XCTAssert(url.proto == "http", "proto matches")
+        XCTAssert(url.host == "10.0.0.1:9000", "host matches")
+        XCTAssert(url.uri == "/pics", "pics matches")
+        XCTAssert(url.url == raw, "url matches")
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
