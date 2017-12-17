@@ -10,41 +10,55 @@ import Foundation
 
 class Downloader {
     static let shared = Downloader()
-    private let log = LoggerFactory.shared.network("Downloader")
+    private let log = LoggerFactory.shared.network(Downloader.self)
     fileprivate var tasks = [URLSessionTask]()
+    private let queue = DispatchQueue(label: "DownloaderTaskQueue")
     
     // https://andreygordeev.com/2017/02/20/uitableview-prefetching/
     func download(url: URL, onData: @escaping (Data) -> Void) {
-        guard tasks.index(where: { $0.originalRequest?.url == url }) == nil else {
-            // We're already downloading the image.
-            return
+//        log.info("Submitting download of \(url)")
+        self.queue.sync {
+            guard tasks.index(where: { $0.originalRequest?.url == url }) == nil else {
+                // We're already downloading the URL
+//                log.warn("Already downloading \(url.absoluteString), aborting")
+                return
+            }
         }
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
-            // Perform UI changes only on main thread.
-            DispatchQueue.main.async {
+            self.queue.sync {
+                if let idx = self.tasks.index(where: { $0.originalRequest?.url == url }) {
+                    self.tasks.remove(at: idx)
+                }
+            }
+            let log = self.log
+            if let error = error {
+                if error.localizedDescription == "cancelled" {
+                    log.info("Cancelled \(url)")
+                } else {
+                    log.error("Download failed with error \(error)")
+                }
+            } else {
                 if let data = data {
                     onData(data)
-//                    self.items[index].image = image
-//                    // Reload cell with fade animation.
-//                    let indexPath = IndexPath(row: index, section: 0)
-//                    if self.tableView.indexPathsForVisibleRows?.contains(indexPath) ?? false {
-//                        self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .fade)
-//                    }
                 } else {
-                    self.log.warn("No data returned in download of \(url.absoluteString)")
+                    log.warn("No data returned in download of \(url.absoluteString), but also no error reported")
                 }
             }
         }
         task.resume()
-        tasks.append(task)
+        self.queue.sync {
+            tasks.append(task)
+        }
     }
     
     func cancelDownload(forUrl url: URL) {
-        guard let taskIndex = tasks.index(where: { $0.originalRequest?.url == url }) else {
-            return
+        queue.sync {
+            guard let taskIndex = tasks.index(where: { $0.originalRequest?.url == url }) else {
+                return
+            }
+            let task = tasks[taskIndex]
+            task.cancel()
+            tasks.remove(at: taskIndex)
         }
-        let task = tasks[taskIndex]
-        task.cancel()
-        tasks.remove(at: taskIndex)
     }
 }

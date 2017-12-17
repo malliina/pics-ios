@@ -1,0 +1,42 @@
+//
+//  CognitoConf.swift
+//  pics-ios
+//
+//  Created by Michael Skogberg on 05/12/2017.
+//  Copyright © 2017 Michael Skogberg. All rights reserved.
+//
+
+import Foundation
+
+class CognitoConf {
+    let clientId: String
+    let clientSecret: String
+    let userPoolId: String
+    
+    init(clientId: String, clientSecret: String, userPoolId: String) {
+        self.clientId = clientId
+        self.clientSecret = clientSecret
+        self.userPoolId = userPoolId
+    }
+    
+    static func readOrThrow(key: String, dict: [String: AnyObject]) throws -> String {
+        guard let value = dict[key] as? String else { throw CognitoError.invalidConf(message: "Missing or invalid \(key)") }
+        return value
+    }
+    
+    static func read() throws -> CognitoConf {
+        if let path = Bundle.main.path(forResource: "Credentials", ofType: "plist"),
+            let dict = NSDictionary(contentsOfFile: path) as? [String: AnyObject] {
+            let clientId = try CognitoConf.readOrThrow(key: "CognitoClientId", dict: dict)
+            let clientSecret = try CognitoConf.readOrThrow(key: "CognitoClientSecret", dict: dict)
+            let userPoolId = try CognitoConf.readOrThrow(key: "CognitoUserPoolId", dict: dict)
+            return CognitoConf(clientId: clientId, clientSecret: clientSecret, userPoolId: userPoolId)
+        } else {
+            throw CognitoError.invalidConf(message: "Missing or invalid Credentials.plist")
+        }
+    }
+}
+
+enum CognitoError: Error {
+    case invalidConf(message: String)
+}

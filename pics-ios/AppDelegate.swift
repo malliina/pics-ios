@@ -7,21 +7,26 @@
 //
 
 import UIKit
+import AWSCognito
+import AWSCognitoIdentityProvider
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    var auths: AuthHandler?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        window = UIWindow(frame: UIScreen.main.bounds)
-        window?.makeKeyAndVisible()
-        let flow = UICollectionViewFlowLayout()
-        flow.itemSize = CGSize(width: 140, height: 140)
-        
-//        window?.rootViewController = UINavigationController(rootViewController: ViewController(collectionViewLayout: flow))
-        window?.rootViewController = AuthVC()
+        let w = UIWindow(frame: UIScreen.main.bounds)
+        window = w
+        w.makeKeyAndVisible()
+        do {
+            auths = try AuthHandler.configure(window: w)
+//            let root = UINavigationController(rootViewController: ConfirmVC(user: "test"))
+            w.rootViewController = auths?.active
+        } catch {
+            w.rootViewController = OneLinerVC(text: "Unable to initialize app.")
+        }
         return true
     }
 
@@ -49,4 +54,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 }
-

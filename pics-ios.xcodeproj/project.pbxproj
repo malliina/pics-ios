@@ -11,11 +11,13 @@
 		59321CF726C1B6176F3B5E2C /* Pods_pics_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FF88EA2B44CF858EFE37A7B /* Pods_pics_ios.framework */; };
 		6115D5241FCB2F0A003445F7 /* Downloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6115D5231FCB2F0A003445F7 /* Downloader.swift */; };
 		614230451FC1891E00CD4173 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614230441FC1891E00CD4173 /* AppDelegate.swift */; };
-		614230471FC1891E00CD4173 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614230461FC1891E00CD4173 /* ViewController.swift */; };
+		614230471FC1891E00CD4173 /* PicsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614230461FC1891E00CD4173 /* PicsVC.swift */; };
 		6142304C1FC1891E00CD4173 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6142304B1FC1891E00CD4173 /* Assets.xcassets */; };
 		6142304F1FC1891E00CD4173 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6142304D1FC1891E00CD4173 /* LaunchScreen.storyboard */; };
 		6142305A1FC1891E00CD4173 /* pics_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614230591FC1891E00CD4173 /* pics_iosTests.swift */; };
 		614230651FC1891E00CD4173 /* pics_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614230641FC1891E00CD4173 /* pics_iosUITests.swift */; };
+		618623CE1FD71DB60009345E /* Credentials.plist in Resources */ = {isa = PBXBuildFile; fileRef = 618623CD1FD71DB60009345E /* Credentials.plist */; };
+		618623D11FD71DFC0009345E /* CognitoConf.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618623D01FD71DFC0009345E /* CognitoConf.swift */; };
 		61A702CE1FC5E54300814051 /* PicsLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702CD1FC5E54300814051 /* PicsLibrary.swift */; };
 		61A702D21FCAC6C200814051 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702D11FCAC6C200814051 /* Log.swift */; };
 		61A702D41FCAC7F900814051 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702D31FCAC7F900814051 /* AppError.swift */; };
@@ -24,8 +26,21 @@
 		61A702DA1FCAD86300814051 /* PicsHttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702D91FCAD86300814051 /* PicsHttpClient.swift */; };
 		61A702DD1FCAD8D000814051 /* models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702DC1FCAD8D000814051 /* models.swift */; };
 		61A702DF1FCADA0200814051 /* Json.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702DE1FCADA0200814051 /* Json.swift */; };
-		61A702E21FCB21A600814051 /* PicCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702E11FCB21A600814051 /* PicCell.swift */; };
+		61A702E21FCB21A600814051 /* PicsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702E11FCB21A600814051 /* PicsCell.swift */; };
 		61D214B61FD2ABB300781DC7 /* AuthVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B51FD2ABB300781DC7 /* AuthVC.swift */; };
+		61D214B81FD2DF1400781DC7 /* NewPassVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B71FD2DF1400781DC7 /* NewPassVC.swift */; };
+		61D214BA1FD339A100781DC7 /* SignupVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B91FD339A100781DC7 /* SignupVC.swift */; };
+		61D214BC1FD34C9C00781DC7 /* PicsTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214BB1FD34C9C00781DC7 /* PicsTextField.swift */; };
+		61D214BE1FD34D8900781DC7 /* PicsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214BD1FD34D8900781DC7 /* PicsButton.swift */; };
+		61D214C01FD34E6D00781DC7 /* PicsColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214BF1FD34E6D00781DC7 /* PicsColors.swift */; };
+		61D214C21FD4570500781DC7 /* OneLinerVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C11FD4570500781DC7 /* OneLinerVC.swift */; };
+		61D214C41FD4571B00781DC7 /* BaseVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C31FD4571B00781DC7 /* BaseVC.swift */; };
+		61D214C61FD464B800781DC7 /* AuthHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C51FD464B800781DC7 /* AuthHandler.swift */; };
+		61D214C81FD488DD00781DC7 /* ConfirmVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C71FD488DD00781DC7 /* ConfirmVC.swift */; };
+		61D214CA1FD499C200781DC7 /* PicsLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C91FD499C200781DC7 /* PicsLabel.swift */; };
+		61EB2D841FDD45BB00A27F1A /* PicVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D831FDD45BB00A27F1A /* PicVC.swift */; };
+		61EB2D861FDD517500A27F1A /* Devices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D851FDD517500A27F1A /* Devices.swift */; };
+		61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,7 +66,7 @@
 		6115D5231FCB2F0A003445F7 /* Downloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Downloader.swift; sourceTree = "<group>"; };
 		614230411FC1891E00CD4173 /* pics-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "pics-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		614230441FC1891E00CD4173 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		614230461FC1891E00CD4173 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		614230461FC1891E00CD4173 /* PicsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsVC.swift; sourceTree = "<group>"; };
 		6142304B1FC1891E00CD4173 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6142304E1FC1891E00CD4173 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		614230501FC1891E00CD4173 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -61,6 +76,8 @@
 		614230601FC1891E00CD4173 /* pics-iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "pics-iosUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		614230641FC1891E00CD4173 /* pics_iosUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pics_iosUITests.swift; sourceTree = "<group>"; };
 		614230661FC1891F00CD4173 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		618623CD1FD71DB60009345E /* Credentials.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Credentials.plist; sourceTree = "<group>"; };
+		618623D01FD71DFC0009345E /* CognitoConf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CognitoConf.swift; sourceTree = "<group>"; };
 		61A702CD1FC5E54300814051 /* PicsLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsLibrary.swift; sourceTree = "<group>"; };
 		61A702D11FCAC6C200814051 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		61A702D31FCAC7F900814051 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -69,8 +86,21 @@
 		61A702D91FCAD86300814051 /* PicsHttpClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsHttpClient.swift; sourceTree = "<group>"; };
 		61A702DC1FCAD8D000814051 /* models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = models.swift; sourceTree = "<group>"; };
 		61A702DE1FCADA0200814051 /* Json.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Json.swift; sourceTree = "<group>"; };
-		61A702E11FCB21A600814051 /* PicCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicCell.swift; sourceTree = "<group>"; };
+		61A702E11FCB21A600814051 /* PicsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsCell.swift; sourceTree = "<group>"; };
 		61D214B51FD2ABB300781DC7 /* AuthVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthVC.swift; sourceTree = "<group>"; };
+		61D214B71FD2DF1400781DC7 /* NewPassVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPassVC.swift; sourceTree = "<group>"; };
+		61D214B91FD339A100781DC7 /* SignupVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupVC.swift; sourceTree = "<group>"; };
+		61D214BB1FD34C9C00781DC7 /* PicsTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsTextField.swift; sourceTree = "<group>"; };
+		61D214BD1FD34D8900781DC7 /* PicsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsButton.swift; sourceTree = "<group>"; };
+		61D214BF1FD34E6D00781DC7 /* PicsColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsColors.swift; sourceTree = "<group>"; };
+		61D214C11FD4570500781DC7 /* OneLinerVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneLinerVC.swift; sourceTree = "<group>"; };
+		61D214C31FD4571B00781DC7 /* BaseVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseVC.swift; sourceTree = "<group>"; };
+		61D214C51FD464B800781DC7 /* AuthHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthHandler.swift; sourceTree = "<group>"; };
+		61D214C71FD488DD00781DC7 /* ConfirmVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmVC.swift; sourceTree = "<group>"; };
+		61D214C91FD499C200781DC7 /* PicsLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsLabel.swift; sourceTree = "<group>"; };
+		61EB2D831FDD45BB00A27F1A /* PicVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicVC.swift; sourceTree = "<group>"; };
+		61EB2D851FDD517500A27F1A /* Devices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Devices.swift; sourceTree = "<group>"; };
+		61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPics.swift; sourceTree = "<group>"; };
 		74DAFE60A1153E29379F07CA /* Pods_pics_iosTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pics_iosTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FF88EA2B44CF858EFE37A7B /* Pods_pics_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pics_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4BCCFA0628F078A9969EC4C /* Pods-pics-ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pics-ios.release.xcconfig"; path = "Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios.release.xcconfig"; sourceTree = "<group>"; };
@@ -140,6 +170,9 @@
 		614230431FC1891E00CD4173 /* pics-ios */ = {
 			isa = PBXGroup;
 			children = (
+				61EB2D871FE5AE6E00A27F1A /* Pics */,
+				618623CF1FD71DF00009345E /* Auth */,
+				618623CD1FD71DB60009345E /* Credentials.plist */,
 				614230441FC1891E00CD4173 /* AppDelegate.swift */,
 				6142304B1FC1891E00CD4173 /* Assets.xcassets */,
 				61A702CC1FC5E52800814051 /* Backend */,
@@ -150,6 +183,7 @@
 				61A702D01FCAC6B500814051 /* Util */,
 				61D214B41FD2AB9900781DC7 /* ViewControllers */,
 				61A702E01FCB219800814051 /* Views */,
+				61D214BF1FD34E6D00781DC7 /* PicsColors.swift */,
 			);
 			path = "pics-ios";
 			sourceTree = "<group>";
@@ -170,6 +204,14 @@
 				614230661FC1891F00CD4173 /* Info.plist */,
 			);
 			path = "pics-iosUITests";
+			sourceTree = "<group>";
+		};
+		618623CF1FD71DF00009345E /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				618623D01FD71DFC0009345E /* CognitoConf.swift */,
+			);
+			path = Auth;
 			sourceTree = "<group>";
 		};
 		61A702CC1FC5E52800814051 /* Backend */ = {
@@ -197,6 +239,7 @@
 			isa = PBXGroup;
 			children = (
 				61A702D11FCAC6C200814051 /* Log.swift */,
+				61EB2D851FDD517500A27F1A /* Devices.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -212,7 +255,10 @@
 		61A702E01FCB219800814051 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				61A702E11FCB21A600814051 /* PicCell.swift */,
+				61D214BD1FD34D8900781DC7 /* PicsButton.swift */,
+				61A702E11FCB21A600814051 /* PicsCell.swift */,
+				61D214C91FD499C200781DC7 /* PicsLabel.swift */,
+				61D214BB1FD34C9C00781DC7 /* PicsTextField.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -220,10 +266,25 @@
 		61D214B41FD2AB9900781DC7 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				61D214C51FD464B800781DC7 /* AuthHandler.swift */,
 				61D214B51FD2ABB300781DC7 /* AuthVC.swift */,
-				614230461FC1891E00CD4173 /* ViewController.swift */,
+				61D214C31FD4571B00781DC7 /* BaseVC.swift */,
+				61D214C71FD488DD00781DC7 /* ConfirmVC.swift */,
+				61D214B71FD2DF1400781DC7 /* NewPassVC.swift */,
+				61D214C11FD4570500781DC7 /* OneLinerVC.swift */,
+				614230461FC1891E00CD4173 /* PicsVC.swift */,
+				61EB2D831FDD45BB00A27F1A /* PicVC.swift */,
+				61D214B91FD339A100781DC7 /* SignupVC.swift */,
 			);
 			path = ViewControllers;
+			sourceTree = "<group>";
+		};
+		61EB2D871FE5AE6E00A27F1A /* Pics */ = {
+			isa = PBXGroup;
+			children = (
+				61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */,
+			);
+			path = Pics;
 			sourceTree = "<group>";
 		};
 		C077EB4D4C9FA66D03D63B5D /* Frameworks */ = {
@@ -348,6 +409,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				618623CE1FD71DB60009345E /* Credentials.plist in Resources */,
 				6142304F1FC1891E00CD4173 /* LaunchScreen.storyboard in Resources */,
 				6142304C1FC1891E00CD4173 /* Assets.xcassets in Resources */,
 			);
@@ -484,17 +546,31 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61D214B81FD2DF1400781DC7 /* NewPassVC.swift in Sources */,
 				61A702CE1FC5E54300814051 /* PicsLibrary.swift in Sources */,
+				61D214BC1FD34C9C00781DC7 /* PicsTextField.swift in Sources */,
+				61D214C41FD4571B00781DC7 /* BaseVC.swift in Sources */,
+				61D214C21FD4570500781DC7 /* OneLinerVC.swift in Sources */,
 				61A702DF1FCADA0200814051 /* Json.swift in Sources */,
+				61D214C01FD34E6D00781DC7 /* PicsColors.swift in Sources */,
+				61EB2D861FDD517500A27F1A /* Devices.swift in Sources */,
 				6115D5241FCB2F0A003445F7 /* Downloader.swift in Sources */,
+				61D214C61FD464B800781DC7 /* AuthHandler.swift in Sources */,
 				61A702DD1FCAD8D000814051 /* models.swift in Sources */,
-				614230471FC1891E00CD4173 /* ViewController.swift in Sources */,
+				61D214CA1FD499C200781DC7 /* PicsLabel.swift in Sources */,
+				61D214BE1FD34D8900781DC7 /* PicsButton.swift in Sources */,
+				614230471FC1891E00CD4173 /* PicsVC.swift in Sources */,
+				61D214BA1FD339A100781DC7 /* SignupVC.swift in Sources */,
 				61A702D41FCAC7F900814051 /* AppError.swift in Sources */,
 				61D214B61FD2ABB300781DC7 /* AuthVC.swift in Sources */,
 				61A702D21FCAC6C200814051 /* Log.swift in Sources */,
-				61A702E21FCB21A600814051 /* PicCell.swift in Sources */,
+				61A702E21FCB21A600814051 /* PicsCell.swift in Sources */,
+				61D214C81FD488DD00781DC7 /* ConfirmVC.swift in Sources */,
 				61A702D81FCAD7DE00814051 /* HttpClient.swift in Sources */,
 				61A702DA1FCAD86300814051 /* PicsHttpClient.swift in Sources */,
+				61EB2D841FDD45BB00A27F1A /* PicVC.swift in Sources */,
+				618623D11FD71DFC0009345E /* CognitoConf.swift in Sources */,
+				61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */,
 				61A702D61FCAC86100814051 /* JsonError.swift in Sources */,
 				614230451FC1891E00CD4173 /* AppDelegate.swift in Sources */,
 			);

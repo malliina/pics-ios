@@ -18,6 +18,10 @@ class Logger {
         osLog = OSLog(subsystem: subsystem, category: category)
     }
     
+    func debug(_ message: String) {
+        write(message, .debug)
+    }
+    
     func info(_ message: String) {
         write(message, .info)
     }
@@ -44,23 +48,23 @@ class LoggerFactory {
         self.packageName = packageName
     }
     
-    func network(_ className: String) -> Logger {
-        return pimp("Network", category: className)
+    func network<Subject>(_ subject: Subject) -> Logger {
+        return pics("Network", category: subject)
     }
     
-    func system(_ className: String) -> Logger {
-        return pimp("System", category: className)
+    func system<Subject>(_ subject: Subject) -> Logger {
+        return pics("System", category: subject)
     }
     
-    func view(_ className: String) -> Logger {
-        return pimp("Views", category: className)
+    func view<Subject>(_ subject: Subject) -> Logger {
+        return pics("Views", category: subject)
     }
     
-    func vc(_ className: String) -> Logger {
-        return pimp("ViewControllers", category: className)
+    func vc<Subject>(_ subject: Subject) -> Logger {
+        return pics("ViewControllers", category: String(describing: subject))
     }
     
-    func pimp(_ suffix: String, category: String) -> Logger {
-        return Logger("\(packageName).\(suffix)", category: category)
+    func pics<Subject>(_ suffix: String, category: Subject) -> Logger {
+        return Logger("\(packageName).\(suffix)", category: String(describing: category))
     }
 }

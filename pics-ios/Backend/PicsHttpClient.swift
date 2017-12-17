@@ -7,15 +7,23 @@
 //
 
 import Foundation
+import AWSCognitoIdentityProvider
 
 class PicsHttpClient: HttpClient {
-    private let log = LoggerFactory.shared.network("PicsHttpClient")
+    private let log = LoggerFactory.shared.network(PicsHttpClient.self)
     let baseURL: URL
     let defaultHeaders: [String: String]
     let postHeaders: [String: String]
     
-//    static let PicsVersion10 = "application/vnd.pics.v10+json"
-    static let PicsVersion10 = "application/json"
+    static let PicsVersion10 = "application/vnd.pics.v10+json"
+//    static let PicsVersion10 = "application/json"
+    
+    static let DevUrl = "http://10.0.0.21:9000"
+    static let ProdUrl = "https://pics.malliina.com"
+    
+    convenience init(accessToken: AWSCognitoIdentityUserSessionToken) {
+        self.init(baseURL: URL(string: PicsHttpClient.ProdUrl)!, authValue: "Bearer \(accessToken.tokenString)")
+    }
     
     init(baseURL: URL, authValue: String) {
         self.baseURL = baseURL
@@ -53,6 +61,26 @@ class PicsHttpClient: HttpClient {
         }, onError: onError)
     }
     
+    func picsPostParsed<T>(_ resource: String, data: Data, parse: @escaping (AnyObject) throws -> T, f: @escaping (T) -> Void, onError: @escaping (AppError) -> Void) {
+        picsPost(resource, payload: data, f: {
+            (data: Data) -> Void in
+            if let obj: AnyObject = Json.asJson(data) {
+                do {
+                    let parsed = try parse(obj)
+                    f(parsed)
+                } catch let error as JsonError {
+                    self.log.error("Parse error.")
+                    onError(.parseError(error))
+                } catch _ {
+                    onError(.simple("Unknown parse error."))
+                }
+            } else {
+                self.log.error("Not JSON: \(data)")
+                onError(AppError.parseError(JsonError.notJson(data)))
+            }
+        }, onError: onError)
+    }
+    
     func picsGet(_ resource: String, f: @escaping (Data) -> Void, onError: @escaping (AppError) -> Void) {
         let url = URL(string: resource, relativeTo: baseURL)!
         self.get(
@@ -66,9 +94,9 @@ class PicsHttpClient: HttpClient {
         })
     }
     
-    func picsPost(_ resource: String, payload: [String: AnyObject], f: @escaping (Data) -> Void, onError: @escaping (AppError) -> Void) {
+    func picsPost(_ resource: String, payload: Data, f: @escaping (Data) -> Void, onError: @escaping (AppError) -> Void) {
         let url = URL(string: resource, relativeTo: baseURL)!
-        self.postJSON(
+        self.postData(
             url,
             headers: postHeaders,
             payload: payload,
@@ -84,8 +112,10 @@ class PicsHttpClient: HttpClient {
         let statusCode = response.statusCode
         let isStatusOK = (statusCode >= 200) && (statusCode < 300)
         if isStatusOK {
+//            log.info("Response to '\(resource)' received with status '\(statusCode)'.")
             f(data)
         } else {
+            log.error("Request to '\(resource)' failed with status '\(statusCode)'.")
             var errorMessage: String? = nil
             if let json = Json.asJson(data) as? NSDictionary {
                 errorMessage = json[JsonError.Key] as? String

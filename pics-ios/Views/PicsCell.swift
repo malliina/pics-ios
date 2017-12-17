@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-class PicCell: UICollectionViewCell {
+class PicsCell: UICollectionViewCell {
     let imageView: UIImageView
     
     override init(frame: CGRect) {
@@ -25,7 +25,9 @@ class PicCell: UICollectionViewCell {
     }
     
     func initView() {
+        clipsToBounds = true
         contentView.addSubview(imageView)
+        imageView.contentMode = .scaleAspectFill
         imageView.snp.makeConstraints { (make) in
             make.leading.trailing.top.bottom.equalToSuperview()
         }
