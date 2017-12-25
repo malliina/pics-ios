@@ -27,6 +27,9 @@ class PicVC: BaseVC {
     }
     
     override func initUI() {
+        navigationController?.setNavigationBarHidden(true, animated: true)
+        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PicVC.onTap(sender:)))
+        view.addGestureRecognizer(gestureRecognizer)
         view.addSubview(imageView)
         imageView.contentMode = .scaleAspectFit
         imageView.snp.makeConstraints { (make) in
@@ -41,6 +44,10 @@ class PicVC: BaseVC {
                 self.onDownloadComplete(data: data)
             }
         }
+    }
+    
+    @objc func onTap(sender: UITapGestureRecognizer) {
+        navigationController?.setNavigationBarHidden(!(navigationController?.navigationBar.isHidden ?? true), animated: true)
     }
     
     func onDownloadComplete(data: Data) {
