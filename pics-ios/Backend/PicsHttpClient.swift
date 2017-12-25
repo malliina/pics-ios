@@ -13,7 +13,9 @@ class PicsHttpClient: HttpClient {
     private let log = LoggerFactory.shared.network(PicsHttpClient.self)
     let baseURL: URL
     private var defaultHeaders: [String: String]
-    let postHeaders: [String: String]
+    private let postSpecificHeaders: [String: String]
+    
+    var postHeaders: [String: String] { return defaultHeaders.merging(postSpecificHeaders)  { (current, _) in current } }
     
     static let PicsVersion10 = "application/vnd.pics.v10+json"
 //    static let PicsVersion10 = "application/json"
@@ -27,14 +29,13 @@ class PicsHttpClient: HttpClient {
     
     init(baseURL: URL, authValue: String) {
         self.baseURL = baseURL
-        let headers = [
+        self.defaultHeaders = [
             HttpClient.AUTHORIZATION: authValue,
             HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
         ]
-        self.defaultHeaders = headers
-        var postHeaders = headers
-        postHeaders.updateValue(HttpClient.JSON, forKey: HttpClient.CONTENT_TYPE)
-        self.postHeaders = postHeaders
+        self.postSpecificHeaders = [
+            HttpClient.CONTENT_TYPE: HttpClient.JSON
+        ]
     }
     
     static func authValueFor(forToken: AWSCognitoIdentityUserSessionToken) -> String {
@@ -135,7 +136,7 @@ class PicsHttpClient: HttpClient {
                 self.log.info("Token expired, retrieving new token and retrying...")
                 Tokens.shared.retrieveToken(onToken: { (token) in
                     self.defaultHeaders.updateValue(PicsHttpClient.authValueFor(forToken: token), forKey: HttpClient.AUTHORIZATION)
-                    r.addValue(PicsHttpClient.authValueFor(forToken: token), forHTTPHeaderField: HttpClient.AUTHORIZATION)
+                    r.setValue(PicsHttpClient.authValueFor(forToken: token), forHTTPHeaderField: HttpClient.AUTHORIZATION)
                     self.executeHttp(r, onResponse: onResponse, onError: onError, retryCount: retryCount + 1)
                 })
             } else {

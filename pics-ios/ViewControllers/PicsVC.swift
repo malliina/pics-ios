@@ -295,7 +295,6 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         pic.large = originalImage
         self.pics = [pic] + self.pics
         let indexPath = IndexPath(row: 0, section: 0)
-        guard let coll = self.collectionView else { return }
         self.onUiThread {
             self.displayItems(at: [indexPath])
         }
