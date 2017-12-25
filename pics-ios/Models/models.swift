@@ -133,19 +133,26 @@ class PicMeta {
     static let Small = "small"
     static let Medium = "medium"
     static let Large = "large"
+    static let ClientKey = "clientKey"
     
     let key: String
     let url: URL
     let small: URL
     let medium: URL
     let large: URL
+    let clientKey: String?
     
-    init(key: String, url: URL, small: URL, medium: URL, large: URL) {
+    convenience init(key: String, url: URL, clientKey: String?) {
+        self.init(key: key, url: url, small: url, medium: url, large: url, clientKey: clientKey)
+    }
+    
+    init(key: String, url: URL, small: URL, medium: URL, large: URL, clientKey: String?) {
         self.key = key
         self.url = url
         self.small = small
         self.medium = medium
         self.large = large
+        self.clientKey = clientKey
     }
     
     static func readUrl(key: String, dict: NSDictionary) throws -> URL {
@@ -163,7 +170,8 @@ class PicMeta {
             let small = try readUrl(key: PicMeta.Small, dict: dict)
             let medium = try readUrl(key: PicMeta.Large, dict: dict)
             let large = try readUrl(key: PicMeta.Large, dict: dict)
-            return PicMeta(key: key, url: url, small: small, medium: medium, large: large)
+            let clientKey = try? Json.readString(dict, PicMeta.ClientKey)
+            return PicMeta(key: key, url: url, small: small, medium: medium, large: large, clientKey: clientKey)
         }
         throw JsonError.invalid("meta", obj)
     }
@@ -175,6 +183,14 @@ class Picture {
     var small: UIImage? = nil
     var medium: UIImage? = nil
     var large: UIImage? = nil
+    
+    convenience init(clientKey: String, url: URL, image: UIImage) {
+        self.init(meta: PicMeta(key: clientKey, url: url, clientKey: clientKey))
+        self.url = image
+        small = image
+        medium = image
+        large = image
+    }
     
     init(meta: PicMeta) {
         self.meta = meta

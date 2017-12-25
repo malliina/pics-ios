@@ -42,6 +42,8 @@
 		61EB2D861FDD517500A27F1A /* Devices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D851FDD517500A27F1A /* Devices.swift */; };
 		61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */; };
 		61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */; };
+		61EB2D8D1FF1849800A27F1A /* SocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8C1FF1849800A27F1A /* SocketClient.swift */; };
+		61EB2D8F1FF1855500A27F1A /* PicsSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -103,6 +105,8 @@
 		61EB2D851FDD517500A27F1A /* Devices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Devices.swift; sourceTree = "<group>"; };
 		61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPics.swift; sourceTree = "<group>"; };
 		61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
+		61EB2D8C1FF1849800A27F1A /* SocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClient.swift; sourceTree = "<group>"; };
+		61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsSocket.swift; sourceTree = "<group>"; };
 		74DAFE60A1153E29379F07CA /* Pods_pics_iosTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pics_iosTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FF88EA2B44CF858EFE37A7B /* Pods_pics_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pics_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4BCCFA0628F078A9969EC4C /* Pods-pics-ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pics-ios.release.xcconfig"; path = "Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios.release.xcconfig"; sourceTree = "<group>"; };
@@ -222,6 +226,7 @@
 				61A702CD1FC5E54300814051 /* PicsLibrary.swift */,
 				61A702D91FCAD86300814051 /* PicsHttpClient.swift */,
 				61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */,
+				61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -230,10 +235,11 @@
 			isa = PBXGroup;
 			children = (
 				61A702D31FCAC7F900814051 /* AppError.swift */,
-				61A702D71FCAD7DE00814051 /* HttpClient.swift */,
-				61A702D51FCAC86100814051 /* JsonError.swift */,
-				61A702DE1FCADA0200814051 /* Json.swift */,
 				6115D5231FCB2F0A003445F7 /* Downloader.swift */,
+				61A702D71FCAD7DE00814051 /* HttpClient.swift */,
+				61A702DE1FCADA0200814051 /* Json.swift */,
+				61A702D51FCAC86100814051 /* JsonError.swift */,
+				61EB2D8C1FF1849800A27F1A /* SocketClient.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -552,10 +558,12 @@
 				61D214B81FD2DF1400781DC7 /* NewPassVC.swift in Sources */,
 				61A702CE1FC5E54300814051 /* PicsLibrary.swift in Sources */,
 				61D214BC1FD34C9C00781DC7 /* PicsTextField.swift in Sources */,
+				61EB2D8F1FF1855500A27F1A /* PicsSocket.swift in Sources */,
 				61D214C41FD4571B00781DC7 /* BaseVC.swift in Sources */,
 				61D214C21FD4570500781DC7 /* OneLinerVC.swift in Sources */,
 				61A702DF1FCADA0200814051 /* Json.swift in Sources */,
 				61D214C01FD34E6D00781DC7 /* PicsColors.swift in Sources */,
+				61EB2D8D1FF1849800A27F1A /* SocketClient.swift in Sources */,
 				61EB2D861FDD517500A27F1A /* Devices.swift in Sources */,
 				6115D5241FCB2F0A003445F7 /* Downloader.swift in Sources */,
 				61D214C61FD464B800781DC7 /* AuthHandler.swift in Sources */,

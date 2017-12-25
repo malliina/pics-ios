@@ -22,7 +22,7 @@ extension PicsVC: UICollectionViewDataSourcePrefetching {
     }
 }
 
-class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate {
     let log = LoggerFactory.shared.vc(PicsVC.self)
     let PicCellIdentifier = "PicCell"
     let minItemsRemainingBeforeLoadMore = 20
@@ -30,6 +30,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
     private var pics: [Picture] = []
     var library: PicsLibrary? = nil
+    var socket: PicsSocket? = nil
     let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
     var authCancellation: AWSCancellationTokenSource? = nil
     static let preferredItemSize: Double = Devices.isIpad ? 200 : 130
@@ -71,21 +72,12 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
                 self.activityIndicator.startAnimating()
             }
             self.library = PicsLibrary(http: PicsHttpClient(accessToken: token))
+            self.socket = PicsSocket(authValue: PicsHttpClient.authValueFor(forToken: token))
+            self.socket?.openSilently()
+            self.socket?.delegate = self
             self.log.info("Loading pics...")
             self.loadPics(limit: PicsVC.itemsPerLoad)
         }, cancellationToken: authCancellation?.token)
-    }
-    
-    func showCamera() {
-        let control = UIImagePickerController()
-        control.sourceType = .camera
-        control.allowsEditing = false
-        control.delegate = self
-        if library != nil {
-            self.present(control, animated: true, completion: nil)
-        } else {
-            log.error("No library available, refusing to show camera")
-        }
     }
 
     func loadPics(limit: Int) {
@@ -232,9 +224,23 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         showCamera()
     }
     
+    func showCamera() {
+        let control = UIImagePickerController()
+        control.sourceType = .camera
+        control.allowsEditing = false
+        control.delegate = self
+        if library != nil {
+            self.present(control, animated: true, completion: nil)
+        } else {
+            log.error("No library available, refusing to show camera")
+        }
+    }
+    
     @objc func refreshClicked(_ sender: UIBarButtonItem) {
         let loadLimit = max(pics.count, PicsVC.itemsPerLoad)
         resetDisplay()
+        self.collectionView?.backgroundView = self.activityIndicator
+        self.activityIndicator.startAnimating()
         loadPics(limit: loadLimit)
     }
     
@@ -247,13 +253,35 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     func resetData() {
+        Tokens.shared.clearDelegates()
         library = nil
+        socket?.close()
+        socket = nil
         resetDisplay()
     }
     
     func resetDisplay() {
         pics = []
         collectionView?.reloadData()
+    }
+    
+    func onPics(pics: [PicMeta]) {
+        // By the time we get this notification, pics recently taken on this device are probably already displayed.
+        // So we filter out already added pics to avoid duplicates.
+        let newPics = pics.filter { newPic -> Bool in !self.pics.contains(where: { p -> Bool in (newPic.clientKey != nil && p.meta.clientKey == newPic.clientKey) || p.meta.key == newPic.key }) }
+        log.info("Got \(pics.count) pic(s), out of which \(newPics.count) are new.")
+        displayNewPics(pics: newPics.map { p in Picture(meta: p) })
+    }
+    
+    func displayNewPics(pics: [Picture]) {
+        self.onUiThread {
+            let ordered: [Picture] = pics.reversed()
+            self.pics = ordered + self.pics
+            let indexPaths = ordered.enumerated().map({ (offset, pic) -> IndexPath in
+                IndexPath(row: offset, section: 0)
+            })
+            self.displayItems(at: indexPaths)
+        }
     }
 }
 
@@ -289,30 +317,26 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         }
         log.info("Saving pic to file...")
         let url = try LocalPics.shared.saveAsJpg(data: data)
-        let tempKey = url.absoluteString
-        let pic = Picture(meta: PicMeta(key: tempKey, url: url, small: url, medium: url, large: url))
-        pic.url = originalImage
-        pic.small = originalImage
-        pic.medium = originalImage
-        pic.large = originalImage
-        self.pics = [pic] + self.pics
-        let indexPath = IndexPath(row: 0, section: 0)
-        self.onUiThread {
-            self.displayItems(at: [indexPath])
-        }
-        library.save(picture: data, onError: onSaveError) { pic in
+        let clientKey: String = String(UUID().uuidString.prefix(5)).lowercased()
+        let pic = Picture(clientKey: clientKey, url: url, image: originalImage)
+        displayNewPics(pics: [pic])
+        library.save(picture: data, clientKey: clientKey, onError: onSaveError) { pic in
             let idx = self.pics.index(where: { (p) -> Bool in
-                p.meta.key == url.absoluteString
+                p.meta.clientKey == clientKey
             })
-            guard let index = idx else { return }
-            let newPic = self.pics[index].withMeta(meta: pic)
-            self.pics[index] = newPic
+            if let idx = idx {
+                let newPic = self.pics[idx].withMeta(meta: pic)
+                self.pics[idx] = newPic
+                self.log.info("Saved pic '\(pic.key)'.")
+            } else {
+                self.log.warn("Saved pic '\(pic.key)', but it was not in the collection. This is most likely a bug.")
+            }
         }
-        if let metadata = info[UIImagePickerControllerMediaMetadata] as? NSDictionary {
-            metadata.forEach({ (key, value) in
-                print("\(key) = \(value)")
-            })
-        }
+//        if let metadata = info[UIImagePickerControllerMediaMetadata] as? NSDictionary {
+//            metadata.forEach({ (key, value) in
+//                print("\(key) = \(value)")
+//            })
+//        }
     }
     
     func onSaveError(error: AppError) {
