@@ -56,31 +56,23 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     private func initAndLoad() {
         log.info("Initializing picture gallery...")
         authCancellation = AWSCancellationTokenSource()
-        let user = pool.currentUser() ?? pool.getUser()
-        user.getSession().continueWith(block: { (task) -> Any? in
-            self.log.info("Got session")
-            if let error = task.error as NSError? {
-                self.log.warn("Failed to get session with \(error)")
-            } else {
-                if let accessToken = task.result?.accessToken {
-                    self.onUiThread {
-                        self.initNav(title: "Pics", large: false)
-                        self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Sign Out", style: .plain, target: self, action: #selector(PicsVC.signOutClicked(_:)))
-                        let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
-                        if isCameraAvailable {
-                            self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(PicsVC.cameraClicked(_:)))
-                        }
-                        self.collectionView?.backgroundView = self.activityIndicator
-                        self.activityIndicator.startAnimating()
-                    }
-                    self.library = PicsLibrary(http: PicsHttpClient(accessToken: accessToken))
-                    self.log.info("Loading pics...")
-                    self.loadPics()
-                } else {
-                    self.log.warn("Missing action token in session")
+        Tokens.shared.retrieve(onToken: { (token) in
+            self.onUiThread {
+                self.initNav(title: "Pics", large: false)
+                self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Sign Out", style: .plain, target: self, action: #selector(PicsVC.signOutClicked(_:)))
+                let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
+                if isCameraAvailable {
+                    self.navigationItem.rightBarButtonItems = [
+                        UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(PicsVC.cameraClicked(_:))),
+                        UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(PicsVC.refreshClicked(_:)))
+                    ]
                 }
+                self.collectionView?.backgroundView = self.activityIndicator
+                self.activityIndicator.startAnimating()
             }
-            return nil
+            self.library = PicsLibrary(http: PicsHttpClient(accessToken: token))
+            self.log.info("Loading pics...")
+            self.loadPics()
         }, cancellationToken: authCancellation?.token)
     }
     
@@ -110,11 +102,8 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
                     self.pics = self.pics + result.map { p in Picture(meta: p) }
                     let rows: [Int] = Array(beforeCount..<beforeCount+result.count)
                     let indexPaths = rows.map { row in IndexPath(item: row, section: 0) }
-                    guard let coll = self.collectionView else { return }
                     self.onUiThread {
-                        self.activityIndicator.stopAnimating()
-                        coll.backgroundView = nil
-                        coll.insertItems(at: indexPaths)
+                        self.displayItems(at: indexPaths)
                     }
                 } else {
                     if self.pics.isEmpty {
@@ -125,6 +114,14 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
                 }
             }
         }
+    }
+    
+    func displayItems(at: [IndexPath]) {
+        guard let coll = self.collectionView else { return }
+        self.activityIndicator.stopAnimating()
+        coll.backgroundView = nil
+        self.log.info("Inserting \(at.count) items.")
+        coll.insertItems(at: at)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -235,6 +232,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         showCamera()
     }
     
+    @objc func refreshClicked(_ sender: UIBarButtonItem) {
+        loadPics()
+    }
+    
     @objc func signOutClicked(_ sender: UIBarButtonItem) {
         pool.currentUser()?.signOut()
         self.collectionView?.backgroundView = nil
@@ -296,9 +297,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         let indexPath = IndexPath(row: 0, section: 0)
         guard let coll = self.collectionView else { return }
         self.onUiThread {
-            if coll.indexPathsForVisibleItems.contains(indexPath) {
-                coll.insertItems(at: [indexPath])
-            }
+            self.displayItems(at: [indexPath])
         }
         library.save(picture: data, onError: onSaveError) { pic in
             let idx = self.pics.index(where: { (p) -> Bool in

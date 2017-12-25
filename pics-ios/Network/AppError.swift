@@ -99,3 +99,45 @@ class ErrorMessage {
         self.message = message
     }
 }
+
+class SingleError {
+    let key: String
+    let message: String
+    
+    init(key: String, message: String) {
+        self.key = key
+        self.message = message
+    }
+}
+
+class HttpResponse {
+    let http: HTTPURLResponse
+    let data: Data
+    
+    var statusCode: Int { return http.statusCode }
+    var isStatusOK: Bool { return statusCode >= 200 && statusCode < 300 }
+    var json: NSDictionary? { return Json.asJson(data) as? NSDictionary }
+    var errors: [SingleError] {
+        get {
+            if let json = json, let errors = json["errors"] as? [NSDictionary] {
+                return errors.flatMap({ (dict) -> SingleError? in
+                    if let key = dict["key"] as? String, let message = dict["message"] as? String {
+                        return SingleError(key: key, message: message)
+                    } else {
+                        return nil
+                    }
+                })
+            } else {
+                return []
+            }
+        }
+    }
+    var isTokenExpired: Bool {
+        return errors.contains { $0.key == "token_expired" }
+    }
+    
+    init(http: HTTPURLResponse, data: Data) {
+        self.http = http
+        self.data = data
+    }
+}

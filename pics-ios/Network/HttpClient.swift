@@ -33,41 +33,18 @@ class HttpClient {
         self.session = URLSession.shared
     }
     
-    func get(_ url: URL, headers: [String: String] = [:], onResponse: @escaping (Data, HTTPURLResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
-        get(url, headers: headers) { (data, response, error) -> Void in
-            if let error = error {
-                onError(RequestFailure(url: url, code: error._code, data: data))
-            } else if let httpResponse = response as? HTTPURLResponse, let data = data {
-                onResponse(data, httpResponse)
-            } else {
-                self.log.error("Unable to interpret HTTP response to URL \(url.absoluteString)")
-            }
-        }
+    func get(_ url: URL, headers: [String: String] = [:], onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
+        let req = buildRequest(url: url, httpMethod: HttpClient.GET, headers: headers, body: nil)
+        executeHttp(req, onResponse: onResponse, onError: onError)
     }
     
-    func get(_ url: URL, headers: [String: String] = [:], completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
-        executeRequest(
-            buildRequest(url: url, httpMethod: HttpClient.GET, headers: headers, body: nil),
-            completionHandler: completionHandler)
-    }
-    
-    func postJSON(_ url: URL, headers: [String: String] = [:], payload: [String: AnyObject], onResponse: @escaping (Data, HTTPURLResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
+    func postJSON(_ url: URL, headers: [String: String] = [:], payload: [String: AnyObject], onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
         postData(url, headers: headers, payload: try? JSONSerialization.data(withJSONObject: payload, options: []), onResponse: onResponse, onError: onError)
     }
     
-    func postData(_ url: URL, headers: [String: String] = [:], payload: Data?, onResponse: @escaping (Data, HTTPURLResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
-        postGeneric(url, headers: headers, payload: payload) { (data, response, error) -> Void in
-            self.log.info("Request to \(url) complete.")
-            if let error = error {
-                self.log.info("Request to \(url) failed: '\(error)'.")
-                onError(RequestFailure(url: url, code: error._code, data: data))
-            } else if let httpResponse = response as? HTTPURLResponse, let data = data {
-                self.log.info("Request to \(url) succeeded with a response.")
-                onResponse(data, httpResponse)
-            } else {
-                self.log.error("Unable to interpret HTTP response to URL \(url.absoluteString)")
-            }
-        }
+    func postData(_ url: URL, headers: [String: String] = [:], payload: Data?, onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
+        let req = buildRequest(url: url, httpMethod: HttpClient.POST, headers: headers, body: payload)
+        executeHttp(req, onResponse: onResponse, onError: onError)
     }
     
     func postGeneric(_ url: URL, headers: [String: String] = [:], payload: Data?, completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
@@ -75,11 +52,19 @@ class HttpClient {
         executeRequest(req, completionHandler: completionHandler)
     }
     
-    func executeRequest(
-        _ req: URLRequest,
-        completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
-        let task = session.dataTask(with: req, completionHandler: completionHandler)
-        task.resume()
+    func executeHttp(_ req: URLRequest, onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void, retryCount: Int = 0) {
+        let url = req.url!
+        executeRequest(req) { (data, response, error) in
+            if let error = error {
+                self.log.warn("Request to \(url) failed: '\(error)'.")
+                // _code is not the http status code
+                onError(RequestFailure(url: url, code: error._code, data: data))
+            } else if let httpResponse = response as? HTTPURLResponse, let data = data {
+                onResponse(HttpResponse(http: httpResponse, data: data))
+            } else {
+                self.log.error("Unable to interpret HTTP response to URL \(url.absoluteString)")
+            }
+        }
     }
     
     func buildRequest(url: URL, httpMethod: String, headers: [String: String], body: Data?) -> URLRequest {
@@ -92,5 +77,10 @@ class HttpClient {
             req.httpBody = body
         }
         return req
+    }
+    
+    func executeRequest(_ req: URLRequest, completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
+        let task = session.dataTask(with: req, completionHandler: completionHandler)
+        task.resume()
     }
 }

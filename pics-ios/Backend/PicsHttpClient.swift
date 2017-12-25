@@ -12,7 +12,7 @@ import AWSCognitoIdentityProvider
 class PicsHttpClient: HttpClient {
     private let log = LoggerFactory.shared.network(PicsHttpClient.self)
     let baseURL: URL
-    let defaultHeaders: [String: String]
+    private var defaultHeaders: [String: String]
     let postHeaders: [String: String]
     
     static let PicsVersion10 = "application/vnd.pics.v10+json"
@@ -22,7 +22,7 @@ class PicsHttpClient: HttpClient {
     static let ProdUrl = "https://pics.malliina.com"
     
     convenience init(accessToken: AWSCognitoIdentityUserSessionToken) {
-        self.init(baseURL: URL(string: PicsHttpClient.ProdUrl)!, authValue: "Bearer \(accessToken.tokenString)")
+        self.init(baseURL: URL(string: PicsHttpClient.DevUrl)!, authValue: PicsHttpClient.authValueFor(forToken: accessToken))
     }
     
     init(baseURL: URL, authValue: String) {
@@ -35,6 +35,10 @@ class PicsHttpClient: HttpClient {
         var postHeaders = headers
         postHeaders.updateValue(HttpClient.JSON, forKey: HttpClient.CONTENT_TYPE)
         self.postHeaders = postHeaders
+    }
+    
+    static func authValueFor(forToken: AWSCognitoIdentityUserSessionToken) -> String {
+        return "Bearer \(forToken.tokenString)"
     }
     
     func pingAuth(_ onError: @escaping (AppError) -> Void, f: @escaping (Version) -> Void) {
@@ -86,8 +90,8 @@ class PicsHttpClient: HttpClient {
         self.get(
             url,
             headers: defaultHeaders,
-            onResponse: { (data, response) -> Void in
-                self.responseHandler(resource, data: data, response: response, f: f, onError: onError)
+            onResponse: { response -> Void in
+                self.responseHandler(resource, response: response, f: f, onError: onError)
         },
             onError: { (err) -> Void in
                 onError(.networkFailure(err))
@@ -100,28 +104,45 @@ class PicsHttpClient: HttpClient {
             url,
             headers: postHeaders,
             payload: payload,
-            onResponse: { (data, response) -> Void in
-                self.responseHandler(resource, data: data, response: response, f: f, onError: onError)
+            onResponse: { response -> Void in
+                self.responseHandler(resource, response: response, f: f, onError: onError)
         },
             onError: { (err) -> Void in
                 onError(.networkFailure(err))
         })
     }
     
-    func responseHandler(_ resource: String, data: Data, response: HTTPURLResponse, f: (Data) -> Void, onError: (AppError) -> Void) {
-        let statusCode = response.statusCode
-        let isStatusOK = (statusCode >= 200) && (statusCode < 300)
-        if isStatusOK {
+    func responseHandler(_ resource: String, response: HttpResponse, f: (Data) -> Void, onError: (AppError) -> Void) {
+        if response.isStatusOK {
 //            log.info("Response to '\(resource)' received with status '\(statusCode)'.")
-            f(data)
+            f(response.data)
         } else {
-            log.error("Request to '\(resource)' failed with status '\(statusCode)'.")
+            log.error("Request to '\(resource)' failed with status '\(response.statusCode)'.")
             var errorMessage: String? = nil
-            if let json = Json.asJson(data) as? NSDictionary {
+            if let json = Json.asJson(response.data) as? NSDictionary {
                 errorMessage = json[JsonError.Key] as? String
             }
-            onError(.responseFailure(ResponseDetails(resource: resource, code: statusCode, message: errorMessage)))
+            onError(.responseFailure(ResponseDetails(resource: resource, code: response.statusCode, message: errorMessage)))
         }
+    }
+    
+    override func executeHttp(_ req: URLRequest, onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void, retryCount: Int = 0) {
+        let url = req.url!
+        var r = req
+        r.addValue("\(retryCount)", forHTTPHeaderField: "X-Retry")
+        super.executeHttp(r, onResponse: { (response) in
+            if retryCount == 0 && response.statusCode == 401 && response.isTokenExpired {
+                self.log.info("Token expired, retrieving new token and retrying...")
+                Tokens.shared.retrieveToken(onToken: { (token) in
+                    self.defaultHeaders.updateValue(PicsHttpClient.authValueFor(forToken: token), forKey: HttpClient.AUTHORIZATION)
+                    r.addValue(PicsHttpClient.authValueFor(forToken: token), forHTTPHeaderField: HttpClient.AUTHORIZATION)
+                    self.executeHttp(r, onResponse: onResponse, onError: onError, retryCount: retryCount + 1)
+                })
+            } else {
+                self.log.info("Got a response for request to \(url).")
+                onResponse(response)
+            }
+        }, onError: onError, retryCount: retryCount)
     }
     
     func onRequestError(_ data: Data, error: NSError) -> Void {

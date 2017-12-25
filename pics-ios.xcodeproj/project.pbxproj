@@ -41,6 +41,7 @@
 		61EB2D841FDD45BB00A27F1A /* PicVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D831FDD45BB00A27F1A /* PicVC.swift */; };
 		61EB2D861FDD517500A27F1A /* Devices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D851FDD517500A27F1A /* Devices.swift */; };
 		61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */; };
+		61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,6 +102,7 @@
 		61EB2D831FDD45BB00A27F1A /* PicVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicVC.swift; sourceTree = "<group>"; };
 		61EB2D851FDD517500A27F1A /* Devices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Devices.swift; sourceTree = "<group>"; };
 		61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPics.swift; sourceTree = "<group>"; };
+		61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
 		74DAFE60A1153E29379F07CA /* Pods_pics_iosTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pics_iosTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FF88EA2B44CF858EFE37A7B /* Pods_pics_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pics_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4BCCFA0628F078A9969EC4C /* Pods-pics-ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pics-ios.release.xcconfig"; path = "Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios.release.xcconfig"; sourceTree = "<group>"; };
@@ -219,6 +221,7 @@
 			children = (
 				61A702CD1FC5E54300814051 /* PicsLibrary.swift */,
 				61A702D91FCAD86300814051 /* PicsHttpClient.swift */,
+				61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -573,6 +576,7 @@
 				61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */,
 				61A702D61FCAC86100814051 /* JsonError.swift in Sources */,
 				614230451FC1891E00CD4173 /* AppDelegate.swift in Sources */,
+				61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
