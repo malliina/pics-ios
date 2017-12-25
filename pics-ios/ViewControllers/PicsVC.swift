@@ -26,7 +26,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     let log = LoggerFactory.shared.vc(PicsVC.self)
     let PicCellIdentifier = "PicCell"
     let minItemsRemainingBeforeLoadMore = 20
-    let itemsPerLoad = 100
+    static let itemsPerLoad = 100
     
     private var pics: [Picture] = []
     var library: PicsLibrary? = nil
@@ -72,7 +72,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             }
             self.library = PicsLibrary(http: PicsHttpClient(accessToken: token))
             self.log.info("Loading pics...")
-            self.loadPics()
+            self.loadPics(limit: PicsVC.itemsPerLoad)
         }, cancellationToken: authCancellation?.token)
     }
     
@@ -88,14 +88,14 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         }
     }
 
-    func loadPics() {
+    func loadPics(limit: Int) {
         let beforeCount = pics.count
         guard let library = library else {
             log.info("No library initialized, aborting.")
             activityIndicator.stopAnimating()
             return
         }
-        library.load(from: pics.count, limit: itemsPerLoad, onError: onLoadError) { (result) in
+        library.load(from: pics.count, limit: limit, onError: onLoadError) { (result) in
             self.log.info("Loaded \(result.count) items, from \(beforeCount)")
             if self.pics.count == beforeCount {
                 if !result.isEmpty {
@@ -209,7 +209,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     func loadMore(_ atItemIndex: Int) {
-        loadPics()
+        loadPics(limit: PicsVC.itemsPerLoad)
     }
     
     func onLoadError(error: AppError) {
@@ -233,7 +233,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     @objc func refreshClicked(_ sender: UIBarButtonItem) {
-        loadPics()
+        let loadLimit = max(pics.count, PicsVC.itemsPerLoad)
+        resetDisplay()
+        loadPics(limit: loadLimit)
     }
     
     @objc func signOutClicked(_ sender: UIBarButtonItem) {
