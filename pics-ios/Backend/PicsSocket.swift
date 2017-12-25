@@ -23,7 +23,7 @@ class PicsSocket: SocketClient, TokenDelegate {
     static let DevUrl = URL(string: "http://10.0.0.21:9000/sockets")!
     
     convenience init(authValue: String) {
-        self.init(baseURL: PicsSocket.DevUrl, authValue: authValue)
+        self.init(baseURL: PicsSocket.ProdUrl, authValue: authValue)
     }
     
     init(baseURL: URL, authValue: String) {
