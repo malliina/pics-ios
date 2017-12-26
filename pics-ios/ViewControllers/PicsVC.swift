@@ -163,7 +163,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 //        let pic = pics[indexPath.row]
 //        self.navigationController?.pushViewController(PicVC(pic: pic), animated: true)
-        self.navigationController?.pushViewController(PagingPicVC(pics: self.pics, startIndex: indexPath.row), animated: true)
+        self.navigationController?.pushViewController(PicPagingVC(pics: self.pics, startIndex: indexPath.row), animated: true)
     }
     
     func download(_ indexPath: IndexPath) {

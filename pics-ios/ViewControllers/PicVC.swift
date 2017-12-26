@@ -16,8 +16,11 @@ class PicVC: BaseVC {
     
     let pic: Picture
     
-    init(pic: Picture) {
+    var navHiddenInitially: Bool
+    
+    init(pic: Picture, navHiddenInitially: Bool) {
         self.pic = pic
+        self.navHiddenInitially = navHiddenInitially
         super.init(nibName: nil, bundle: nil)
         imageView.image = pic.url
         self.edgesForExtendedLayout = []
@@ -28,11 +31,13 @@ class PicVC: BaseVC {
     }
     
     override func initUI() {
-        navigationController?.setNavigationBarHidden(true, animated: true)
+        navigationController?.setNavigationBarHidden(navHiddenInitially, animated: true)
         
+        // shows navbar on tap
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PicVC.onTap(_:)))
         view.addGestureRecognizer(gestureRecognizer)
         
+        // goes back on swipe up
         let swipeRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(PicVC.onSwipeUp(_:)))
         swipeRecognizer.direction = .up
         view.addGestureRecognizer(swipeRecognizer)
@@ -60,10 +65,6 @@ class PicVC: BaseVC {
     @objc func onSwipeUp(_ sender: UISwipeGestureRecognizer) {
         navigationController?.popViewController(animated: true)
         navigationController?.setNavigationBarHidden(false, animated: true)
-    }
-    
-    @objc func onSwipe(_ sender: UIGestureRecognizer) {
-        log.info("Swipe")
     }
     
     func onDownloadComplete(data: Data) {

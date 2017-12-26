@@ -9,13 +9,15 @@ import Foundation
 import UIKit
 import SnapKit
 
-class PagingPicVC: BaseVC {
-    private let log = LoggerFactory.shared.vc(PagingPicVC.self)
+/// Swipe horizontally to show the next/previous image in the gallery.
+/// Uses a UIPageViewController for the paging.
+class PicPagingVC: BaseVC {
+    private let log = LoggerFactory.shared.vc(PicPagingVC.self)
     
     let pager = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
     
     let pics: [Picture]
-    var index: Int
+    private var index: Int
     
     init(pics: [Picture], startIndex: Int) {
         self.pics = pics
@@ -30,7 +32,7 @@ class PagingPicVC: BaseVC {
     
     override func initUI() {
         navigationController?.setNavigationBarHidden(true, animated: true)
-        pager.setViewControllers([PicVC(pic: pics[index])], direction: .forward, animated: false, completion: nil)
+        pager.setViewControllers([PicVC(pic: pics[index], navHiddenInitially: true)], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
         addChildViewController(pager)
@@ -42,7 +44,7 @@ class PagingPicVC: BaseVC {
     }
 }
 
-extension PagingPicVC: UIPageViewControllerDelegate {
+extension PicPagingVC: UIPageViewControllerDelegate {
     func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
         if completed {
             guard let current = pageViewController.viewControllers?.first as? PicVC else { return }
@@ -52,7 +54,7 @@ extension PagingPicVC: UIPageViewControllerDelegate {
     }
 }
 
-extension PagingPicVC: UIPageViewControllerDataSource {
+extension PicPagingVC: UIPageViewControllerDataSource {
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         return go(to: index - 1)
     }
@@ -66,12 +68,12 @@ extension PagingPicVC: UIPageViewControllerDataSource {
     }
     
     // If uncommented, shows the paging indicator (dots highlighting the current index)
-    // This is only an annoyance in this app, IMO
+    // This is only an annoyance in this app, IMO, so it remains commented
 //    func presentationIndex(for pageViewController: UIPageViewController) -> Int {
 //        return index
 //    }
     
     func go(to newIndex: Int) -> UIViewController? {
-        if newIndex >= 0 && newIndex < pics.count { return PicVC(pic: pics[newIndex]) } else { return nil }
+        if newIndex >= 0 && newIndex < pics.count { return PicVC(pic: pics[newIndex], navHiddenInitially: navigationController?.isNavigationBarHidden ?? true) } else { return nil }
     }
 }
