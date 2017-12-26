@@ -155,6 +155,10 @@ class PicMeta {
         self.clientKey = clientKey
     }
     
+    func withUrl(url: URL) -> PicMeta {
+        return PicMeta(key: key, url: url, clientKey: clientKey)
+    }
+    
     static func readUrl(key: String, dict: NSDictionary) throws -> URL {
         let asString = try Json.readString(dict, key)
         if let url = URL(string: asString) {
@@ -178,13 +182,19 @@ class PicMeta {
 }
 
 class Picture {
+    static let TempFakeUrl = URL(string: "https://pics.malliina.com")!
     let meta: PicMeta
     var url: UIImage? = nil
     var small: UIImage? = nil
     var medium: UIImage? = nil
     var large: UIImage? = nil
     
-    convenience init(clientKey: String, url: URL, image: UIImage) {
+    convenience init(image: UIImage) {
+        self.init(url: Picture.TempFakeUrl, image: image)
+    }
+    
+    convenience init(url: URL, image: UIImage) {
+        let clientKey: String = String(UUID().uuidString.prefix(7)).lowercased()
         self.init(meta: PicMeta(key: clientKey, url: url, clientKey: clientKey))
         self.url = image
         small = image
@@ -203,5 +213,9 @@ class Picture {
         other.medium = medium
         other.large = large
         return other
+    }
+    
+    func withUrl(url: URL) -> Picture {
+        return withMeta(meta: meta.withUrl(url: url))
     }
 }

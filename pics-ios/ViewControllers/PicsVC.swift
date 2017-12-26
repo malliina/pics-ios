@@ -68,8 +68,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                         UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(PicsVC.refreshClicked(_:)))
                     ]
                 }
-                self.collectionView?.backgroundView = self.activityIndicator
-                self.activityIndicator.startAnimating()
+                self.showActivityIndicator()
             }
             self.library = PicsLibrary(http: PicsHttpClient(accessToken: token))
             self.socket = PicsSocket(authValue: PicsHttpClient.authValueFor(forToken: token))
@@ -84,7 +83,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         let beforeCount = pics.count
         guard let library = library else {
             log.info("No library initialized, aborting.")
-            activityIndicator.stopAnimating()
+            hideActivityIndicator()
             return
         }
         library.load(from: pics.count, limit: limit, onError: onLoadError) { (result) in
@@ -98,20 +97,23 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                         self.displayItems(at: indexPaths)
                     }
                 } else {
-                    if self.pics.isEmpty {
-                        self.onUiThread {
-                            self.displayText(text: "You have no pictures yet.")
-                        }
-                    }
+                    self.displayNoItemsIfEmpty()
                 }
+            }
+        }
+    }
+    
+    func displayNoItemsIfEmpty() {
+        if self.pics.isEmpty {
+            self.onUiThread {
+                self.displayText(text: "You have no pictures yet.")
             }
         }
     }
     
     func displayItems(at: [IndexPath]) {
         guard let coll = self.collectionView else { return }
-        self.activityIndicator.stopAnimating()
-        coll.backgroundView = nil
+        hideActivityIndicator()
         self.log.info("Inserting \(at.count) items.")
         coll.insertItems(at: at)
     }
@@ -240,8 +242,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     @objc func refreshClicked(_ sender: UIBarButtonItem) {
         let loadLimit = max(pics.count, PicsVC.itemsPerLoad)
         resetDisplay()
-        self.collectionView?.backgroundView = self.activityIndicator
-        self.activityIndicator.startAnimating()
+        showActivityIndicator()
         loadPics(limit: loadLimit)
     }
     
@@ -266,12 +267,35 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         collectionView?.reloadData()
     }
     
+    func hideActivityIndicator() {
+        log.info("Stopping animation...")
+        activityIndicator.stopAnimating()
+        collectionView?.backgroundView = nil
+    }
+    
+    func showActivityIndicator() {
+        log.info("Animating...")
+        self.collectionView?.backgroundView = self.activityIndicator
+        self.activityIndicator.startAnimating()
+    }
+    
     func onPics(pics: [PicMeta]) {
         // By the time we get this notification, pics recently taken on this device are probably already displayed.
         // So we filter out already added pics to avoid duplicates.
         let newPics = pics.filter { newPic -> Bool in !self.pics.contains(where: { p -> Bool in (newPic.clientKey != nil && p.meta.clientKey == newPic.clientKey) || p.meta.key == newPic.key }) }
         log.info("Got \(pics.count) pic(s), out of which \(newPics.count) are new.")
         displayNewPics(pics: newPics.map { p in Picture(meta: p) })
+    }
+    
+    func onPicsRemoved(keys: [String]) {
+        onUiThread {
+            let removables = self.pics.enumerated()
+                .filter { (offset, pic) -> Bool in keys.contains(pic.meta.key)}
+                .map { IndexPath(row: $0.offset, section: 0) }
+            self.pics = self.pics.filter { !keys.contains($0.meta.key) }
+            self.collectionView?.deleteItems(at: removables)
+            self.displayNoItemsIfEmpty()
+        }
     }
     
     func displayNewPics(pics: [Picture]) {
@@ -292,6 +316,11 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        if self.pics.isEmpty {
+            self.onUiThread {
+                self.showActivityIndicator()
+            }
+        }
         picker.dismiss(animated: true) { () in
             DispatchQueue.global(qos: .background).async {
                 do {
@@ -308,6 +337,8 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
             log.info("Original image is not an UIImage")
             return
         }
+        let pic = Picture(image: originalImage)
+        displayNewPics(pics: [pic])
         guard let data = UIImageJPEGRepresentation(originalImage, 1) else {
             log.info("Taken image is not in JPEG format")
             return
@@ -318,16 +349,13 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         }
         log.info("Saving pic to file...")
         let url = try LocalPics.shared.saveAsJpg(data: data)
-        let clientKey: String = String(UUID().uuidString.prefix(5)).lowercased()
-        let pic = Picture(clientKey: clientKey, url: url, image: originalImage)
-        displayNewPics(pics: [pic])
+        let clientKey = pic.meta.clientKey ?? ""
+        if let idx = indexFor(clientKey) {
+            self.pics[idx] = self.pics[idx].withUrl(url: url)
+        }
         library.save(picture: data, clientKey: clientKey, onError: onSaveError) { pic in
-            let idx = self.pics.index(where: { (p) -> Bool in
-                p.meta.clientKey == clientKey
-            })
-            if let idx = idx {
-                let newPic = self.pics[idx].withMeta(meta: pic)
-                self.pics[idx] = newPic
+            if let idx = self.indexFor(clientKey) {
+                self.pics[idx] = self.pics[idx].withMeta(meta: pic)
                 self.log.info("Saved pic '\(pic.key)'.")
             } else {
                 self.log.warn("Saved pic '\(pic.key)', but it was not in the collection. This is most likely a bug.")
@@ -338,6 +366,12 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
 //                print("\(key) = \(value)")
 //            })
 //        }
+    }
+    
+    func indexFor(_ clientKey: String) -> Int? {
+        return self.pics.index(where: { (p) -> Bool in
+            p.meta.clientKey == clientKey
+        })
     }
     
     func onSaveError(error: AppError) {

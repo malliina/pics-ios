@@ -25,7 +25,7 @@ class PicsHttpClient: HttpClient {
     static let ProdUrl = "https://pics.malliina.com"
     
     convenience init(accessToken: AWSCognitoIdentityUserSessionToken) {
-        self.init(baseURL: URL(string: PicsHttpClient.ProdUrl)!, authValue: PicsHttpClient.authValueFor(forToken: accessToken))
+        self.init(baseURL: EnvConf.BaseUrl, authValue: PicsHttpClient.authValueFor(forToken: accessToken))
     }
     
     init(baseURL: URL, authValue: String) {

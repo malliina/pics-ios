@@ -12,6 +12,7 @@ import AWSCognitoIdentityProvider
 
 protocol PicsDelegate {
     func onPics(pics: [PicMeta])
+    func onPicsRemoved(keys: [String])
 }
 
 class PicsSocket: SocketClient, TokenDelegate {
@@ -19,11 +20,8 @@ class PicsSocket: SocketClient, TokenDelegate {
     
     var delegate: PicsDelegate? = nil
     
-    static let ProdUrl = URL(string: "https://pics.malliina.com/sockets")!
-    static let DevUrl = URL(string: "http://10.0.0.21:9000/sockets")!
-    
     convenience init(authValue: String) {
-        self.init(baseURL: PicsSocket.ProdUrl, authValue: authValue)
+        self.init(baseURL: URL(string: "/sockets", relativeTo: EnvConf.BaseUrl)!, authValue: authValue)
     }
     
     init(baseURL: URL, authValue: String) {
@@ -63,18 +61,26 @@ class PicsSocket: SocketClient, TokenDelegate {
     override func webSocket(_ webSocket: SRWebSocket!, didReceiveMessage message: Any!) {
         if let message = message as? String {
             log.info("Got message \(message)")
-            if let dict = Json.asJson(message)  {
-                do {
-                    if try PicsLibrary.isPing(obj: dict) { return }
-                    let pics = try PicsLibrary.parsePics(obj: dict)
-                    delegate?.onPics(pics: pics)
-                } catch let error as JsonError {
-                    self.log.error("JSON parse error. \(error)")
-                } catch _ {
-                    log.error("Unknown parse error for received message.")
+            if let dict = Json.asJson(message) as? NSDictionary {
+                if let event = dict["event"] as? String, event == "ping" {
+                    return
+                } else {
+                    if let arr = dict["keys"] as? NSArray, let keys = arr as? [String] {
+                        delegate?.onPicsRemoved(keys: keys)
+                    } else {
+                        do {
+                            let pics = try PicsLibrary.parsePics(obj: dict)
+                            delegate?.onPics(pics: pics)
+                        } catch let error as JsonError {
+                            self.log.error("JSON parse error. \(error)")
+                        } catch _ {
+                            log.error("Unknown parse error for received message.")
+                        }
+                    }
                 }
+                
             } else {
-                log.error("Received a non-JSON message.")
+                log.error("Received a non-JSON object.")
             }
         } else {
             log.error("Received a non-string JSON message.")

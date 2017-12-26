@@ -81,7 +81,7 @@ class SocketClient: NSObject, SRWebSocketDelegate {
     
     func webSocket(_ webSocket: SRWebSocket!, didFailWithError error: Error!) {
         isConnected = false
-        log.info("Connection failed to \(baseURL)")
+        log.info("Connection failed to \(baseURL). \(error)")
         if let onError = onOpenErrorCallback {
             onError(error)
             onOpenCallback = nil

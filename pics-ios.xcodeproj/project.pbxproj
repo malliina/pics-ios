@@ -28,6 +28,7 @@
 		61A702DF1FCADA0200814051 /* Json.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702DE1FCADA0200814051 /* Json.swift */; };
 		61A702E21FCB21A600814051 /* PicsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702E11FCB21A600814051 /* PicsCell.swift */; };
 		61A9C4C01FF271D30085BA25 /* PicPagingVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4BF1FF271D30085BA25 /* PicPagingVC.swift */; };
+		61A9C4C21FF28E280085BA25 /* EnvConf.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4C11FF28E280085BA25 /* EnvConf.swift */; };
 		61D214B61FD2ABB300781DC7 /* AuthVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B51FD2ABB300781DC7 /* AuthVC.swift */; };
 		61D214B81FD2DF1400781DC7 /* NewPassVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B71FD2DF1400781DC7 /* NewPassVC.swift */; };
 		61D214BA1FD339A100781DC7 /* SignupVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B91FD339A100781DC7 /* SignupVC.swift */; };
@@ -92,6 +93,7 @@
 		61A702DE1FCADA0200814051 /* Json.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Json.swift; sourceTree = "<group>"; };
 		61A702E11FCB21A600814051 /* PicsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsCell.swift; sourceTree = "<group>"; };
 		61A9C4BF1FF271D30085BA25 /* PicPagingVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicPagingVC.swift; sourceTree = "<group>"; };
+		61A9C4C11FF28E280085BA25 /* EnvConf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvConf.swift; sourceTree = "<group>"; };
 		61D214B51FD2ABB300781DC7 /* AuthVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthVC.swift; sourceTree = "<group>"; };
 		61D214B71FD2DF1400781DC7 /* NewPassVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPassVC.swift; sourceTree = "<group>"; };
 		61D214B91FD339A100781DC7 /* SignupVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupVC.swift; sourceTree = "<group>"; };
@@ -225,10 +227,11 @@
 		61A702CC1FC5E52800814051 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
-				61A702CD1FC5E54300814051 /* PicsLibrary.swift */,
+				61A9C4C11FF28E280085BA25 /* EnvConf.swift */,
 				61A702D91FCAD86300814051 /* PicsHttpClient.swift */,
-				61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */,
+				61A702CD1FC5E54300814051 /* PicsLibrary.swift */,
 				61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */,
+				61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -581,6 +584,7 @@
 				61A702D21FCAC6C200814051 /* Log.swift in Sources */,
 				61A702E21FCB21A600814051 /* PicsCell.swift in Sources */,
 				61D214C81FD488DD00781DC7 /* ConfirmVC.swift in Sources */,
+				61A9C4C21FF28E280085BA25 /* EnvConf.swift in Sources */,
 				61A702D81FCAD7DE00814051 /* HttpClient.swift in Sources */,
 				61A702DA1FCAD86300814051 /* PicsHttpClient.swift in Sources */,
 				61EB2D841FDD45BB00A27F1A /* PicVC.swift in Sources */,
