@@ -11,6 +11,7 @@ import UIKit
 import SnapKit
 
 class PicVC: BaseVC {
+    private let log = LoggerFactory.shared.vc(PicVC.self)
     let imageView = UIImageView()
     
     let pic: Picture
@@ -28,8 +29,14 @@ class PicVC: BaseVC {
     
     override func initUI() {
         navigationController?.setNavigationBarHidden(true, animated: true)
-        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PicVC.onTap(sender:)))
+        
+        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PicVC.onTap(_:)))
         view.addGestureRecognizer(gestureRecognizer)
+        
+        let swipeRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(PicVC.onSwipeUp(_:)))
+        swipeRecognizer.direction = .up
+        view.addGestureRecognizer(swipeRecognizer)
+        
         view.addSubview(imageView)
         imageView.contentMode = .scaleAspectFit
         imageView.snp.makeConstraints { (make) in
@@ -46,8 +53,17 @@ class PicVC: BaseVC {
         }
     }
     
-    @objc func onTap(sender: UITapGestureRecognizer) {
+    @objc func onTap(_ sender: UITapGestureRecognizer) {
         navigationController?.setNavigationBarHidden(!(navigationController?.navigationBar.isHidden ?? true), animated: true)
+    }
+    
+    @objc func onSwipeUp(_ sender: UISwipeGestureRecognizer) {
+        navigationController?.popViewController(animated: true)
+        navigationController?.setNavigationBarHidden(false, animated: true)
+    }
+    
+    @objc func onSwipe(_ sender: UIGestureRecognizer) {
+        log.info("Swipe")
     }
     
     func onDownloadComplete(data: Data) {
