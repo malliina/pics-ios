@@ -20,7 +20,7 @@ class Downloader {
         self.queue.sync {
             guard tasks.index(where: { $0.originalRequest?.url == url }) == nil else {
                 // We're already downloading the URL
-//                log.warn("Already downloading \(url.absoluteString), aborting")
+                log.warn("Already downloading \(url.absoluteString), aborting")
                 return
             }
         }

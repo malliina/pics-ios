@@ -29,7 +29,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
         let pics = PicsVC(collectionViewLayout: flow)
         picsVc = UINavigationController(rootViewController: pics)
 //        picsVc = PicsVC.build()
-        authVc = AuthVC()
+        authVc = AuthVC(root: pics)
         newPassVc = NewPassVC(root: pics)
         rememberMe = RememberMe()
         active = picsVc

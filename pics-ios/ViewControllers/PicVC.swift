@@ -16,11 +16,13 @@ class PicVC: BaseVC {
     
     let pic: Picture
     
-    var navHiddenInitially: Bool
+    let navHiddenInitially: Bool
+    let isSignedIn: Bool
     
-    init(pic: Picture, navHiddenInitially: Bool) {
+    init(pic: Picture, navHiddenInitially: Bool, isSignedIn: Bool) {
         self.pic = pic
         self.navHiddenInitially = navHiddenInitially
+        self.isSignedIn = isSignedIn
         super.init(nibName: nil, bundle: nil)
         imageView.image = pic.url
         self.edgesForExtendedLayout = []
@@ -47,13 +49,17 @@ class PicVC: BaseVC {
         imageView.snp.makeConstraints { (make) in
             make.leading.trailing.top.bottom.equalToSuperview()
         }
+        imageView.backgroundColor = isSignedIn ? PicsColors.background : PicsColors.lightBackground
         // Uses the small image until a larger is available
+        log.info("Init PicVC for \(pic.meta.large)")
         if let image = pic.large {
             imageView.image = image
         } else {
             imageView.image = pic.small
-            Downloader.shared.download(url: pic.meta.large) { data in
-                self.onDownloadComplete(data: data)
+            downloadLarge(pic: pic) { large in
+                self.onUiThread {
+                    self.imageView.image = large
+                }
             }
         }
     }
@@ -66,12 +72,19 @@ class PicVC: BaseVC {
         navigationController?.popViewController(animated: true)
         navigationController?.setNavigationBarHidden(false, animated: true)
     }
-    
-    func onDownloadComplete(data: Data) {
-        if let image = UIImage(data: data) {
-            pic.url = image
-            onUiThread {
-                self.imageView.image = image
+}
+
+extension UIViewController {
+    func downloadLarge(pic: Picture, onImage: @escaping (UIImage) -> Void) {
+        print("download large \(pic.meta.large)")
+        if pic.large == nil {
+            Downloader.shared.download(url: pic.meta.large) { data in
+                if let image = UIImage(data: data) {
+                    self.onUiThread {
+                        pic.large = image
+                    }
+                    onImage(image)
+                }
             }
         }
     }

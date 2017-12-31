@@ -10,18 +10,6 @@ import SnapKit
 import UIKit
 import AWSCognitoIdentityProvider
 
-extension PicsVC: UICollectionViewDataSourcePrefetching {
-    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        indexPaths.forEach { (idx) in
-            download(idx)
-        }
-    }
-
-    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
-        indexPaths.forEach(cancelDownload)
-    }
-}
-
 class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate {
     let log = LoggerFactory.shared.vc(PicsVC.self)
     let PicCellIdentifier = "PicCell"
@@ -37,46 +25,82 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .white)
     
+    var isSignedIn: Bool { return Tokens.shared.pool.currentUser()?.isSignedIn ?? false }
+    var backgroundColor: UIColor { return isSignedIn ? PicsColors.background : PicsColors.lightBackground }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationController?.navigationBar.isHidden = true
-        view.backgroundColor = PicsColors.background
+        view.backgroundColor = backgroundColor
         guard let coll = collectionView else { return }
         coll.register(PicsCell.self, forCellWithReuseIdentifier: PicCellIdentifier)
         coll.delegate = self
-        coll.prefetchDataSource = self
-        initAndLoad()
+        initAndLoad(forceSignIn: false)
     }
     
     func reInit() {
         authCancellation?.cancel()
         authCancellation?.dispose()
-        initAndLoad()
+        initAndLoad(forceSignIn: false)
     }
     
-    private func initAndLoad() {
+    private func initAndLoad(forceSignIn: Bool) {
         log.info("Initializing picture gallery...")
-        authCancellation = AWSCancellationTokenSource()
-        Tokens.shared.retrieve(onToken: { (token) in
-            self.onUiThread {
-                self.initNav(title: "Pics", large: false)
-                self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Sign Out", style: .plain, target: self, action: #selector(PicsVC.signOutClicked(_:)))
-                let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
-                if isCameraAvailable {
-                    self.navigationItem.rightBarButtonItems = [
-                        UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(PicsVC.cameraClicked(_:))),
-                        UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(PicsVC.refreshClicked(_:)))
-                    ]
-                }
-                self.showActivityIndicator()
+        self.onUiThread {
+            self.initNav(title: "Pics", large: false)
+            let profileIcon = #imageLiteral(resourceName: "ProfileIcon")
+//            let profileIcon = UIImage(named: "ProfileIcon")
+            self.navigationItem.leftBarButtonItem = UIBarButtonItem(image: profileIcon, style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.changeUserClicked(_:)))
+            //                self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Sign Out", style: .plain, target: self, action: #selector(PicsVC.signOutClicked(_:)))
+            let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
+            if isCameraAvailable {
+                self.navigationItem.rightBarButtonItems = [
+                    UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(PicsVC.cameraClicked(_:))),
+                    UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(PicsVC.refreshClicked(_:)))
+                ]
             }
-            self.library = PicsLibrary(http: PicsHttpClient(accessToken: token))
-            self.socket = PicsSocket(authValue: PicsHttpClient.authValueFor(forToken: token))
-            self.socket?.openSilently()
-            self.socket?.delegate = self
-            self.log.info("Loading pics...")
-            self.loadPics(limit: PicsVC.itemsPerLoad)
-        }, cancellationToken: authCancellation?.token)
+            self.showActivityIndicator()
+        }
+        
+        if isSignedIn || forceSignIn {
+            authCancellation = AWSCancellationTokenSource()
+            Tokens.shared.retrieve(onToken: { (token) in
+                self.load(with: token)
+            }, cancellationToken: authCancellation?.token)
+        } else {
+            // anonymous
+            load(with: nil)
+        }
+    }
+    
+    func updateStyle() {
+        changeStyle(dark: isSignedIn)
+    }
+    
+    func changeStyle(dark: Bool) {
+        UIView.animate(withDuration: 0.5) { () -> Void in
+            self.view.backgroundColor = self.backgroundColor
+            self.collectionView?.backgroundColor = self.backgroundColor
+            self.navigationController?.navigationBar.barStyle = self.isSignedIn ? .black : .default
+        }
+    }
+    
+    private func load(with token: AWSCognitoIdentityUserSessionToken?) {
+        self.library = PicsLibrary(http: PicsHttpClient(accessToken: token))
+        self.socket?.close()
+        self.socket = PicsSocket(authValue: authValue(token: token))
+        self.socket?.openSilently()
+        self.socket?.delegate = self
+        self.log.info("Loading pics...")
+        self.loadPics(limit: PicsVC.itemsPerLoad)
+        onUiThread {
+            self.updateStyle()
+        }
+    }
+    
+    private func authValue(token: AWSCognitoIdentityUserSessionToken?) -> String? {
+        guard let token = token else { return nil }
+        return PicsHttpClient.authValueFor(forToken: token)
     }
 
     func loadPics(limit: Int) {
@@ -163,9 +187,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        let pic = pics[indexPath.row]
-//        self.navigationController?.pushViewController(PicVC(pic: pic), animated: true)
-        self.navigationController?.pushViewController(PicPagingVC(pics: self.pics, startIndex: indexPath.row), animated: true)
+        self.navigationController?.pushViewController(PicPagingVC(pics: self.pics, startIndex: indexPath.row, isSignedIn: isSignedIn), animated: true)
     }
     
     func download(_ indexPath: IndexPath) {
@@ -177,21 +199,11 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         }
     }
     
-    func cancelDownload(_ indexPath: IndexPath) {
-        // We never cancel thumbnail downloads, because a prefetch download might have suppressed a non-prefetch download for which canceling is not an option
-        // Meaning, if we cancel, we might end up with zero pics
-//        Downloader.shared.cancelDownload(forUrl: pics[indexPath.row].meta.thumb)
-    }
-    
     func onDownloaded(data: Data, indexPath: IndexPath) {
         onUiThread {
             if let image = UIImage(data: data), let coll = self.collectionView {
                 self.pics[indexPath.row].small = image
-                if coll.indexPathsForVisibleItems.contains(indexPath) {
-                    coll.reloadItems(at: [indexPath])
-                } else {
-                    self.log.debug("Nothing visible to update for item \(indexPath.row)")
-                }
+                coll.reloadItems(at: [indexPath])
             }
         }
     }
@@ -217,7 +229,8 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         onUiThread {
             self.activityIndicator.stopAnimating()
             let feedbackLabel = PicsLabel.build(text: text, alignment: .center, numberOfLines: 0)
-            feedbackLabel.textColor = .lightText
+            feedbackLabel.textColor = self.isSignedIn ? .lightText : .darkText
+            feedbackLabel.backgroundColor = self.backgroundColor
             self.collectionView?.backgroundView = feedbackLabel
             self.resetDisplay()
         }
@@ -246,12 +259,14 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         loadPics(limit: loadLimit)
     }
     
-    @objc func signOutClicked(_ sender: UIBarButtonItem) {
+    @objc func changeUserClicked(_ sender: UIBarButtonItem) {
+        let wasSignedIn = pool.currentUser()?.isSignedIn ?? false
         pool.currentUser()?.signOut()
+        pool.clearLastKnownUser()
         self.collectionView?.backgroundView = nil
         self.navigationController?.navigationBar.isHidden = true
         resetData()
-        initAndLoad()
+        initAndLoad(forceSignIn: !wasSignedIn)
     }
     
     func resetData() {
@@ -267,16 +282,18 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         collectionView?.reloadData()
     }
     
+    func showActivityIndicator() {
+        log.info("Animating...")
+        activityIndicator.activityIndicatorViewStyle = isSignedIn ? .white : .gray
+        activityIndicator.backgroundColor = backgroundColor
+        collectionView?.backgroundView = activityIndicator
+        activityIndicator.startAnimating()
+    }
+    
     func hideActivityIndicator() {
         log.info("Stopping animation...")
         activityIndicator.stopAnimating()
         collectionView?.backgroundView = nil
-    }
-    
-    func showActivityIndicator() {
-        log.info("Animating...")
-        self.collectionView?.backgroundView = self.activityIndicator
-        self.activityIndicator.startAnimating()
     }
     
     func onPics(pics: [PicMeta]) {

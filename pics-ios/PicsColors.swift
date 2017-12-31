@@ -17,7 +17,7 @@ class PicsColors {
     static let light = PicsColors.colorFor(red: 239, green: 239, blue: 244)
     static let darkish = PicsColors.colorFor(red: 180, green: 180, blue: 180)
     static let blackish = PicsColors.colorFor(red: 50, green: 50, blue: 50)
-//    static let background = light
+    static let lightBackground = light
     static let background = UIColor.black
 //    static let inputBackground = PicsColors.colorFor(red: 206, green: 206, blue: 210)
     static let inputBackground = blackish

@@ -11,5 +11,5 @@ import Foundation
 class EnvConf {
     static let DevBaseUrl = URL(string: "http://10.0.0.21:9000")!
     static let ProdBaseUrl = URL(string: "https://pics.malliina.com")!
-    static let BaseUrl = ProdBaseUrl
+    static let BaseUrl = DevBaseUrl
 }

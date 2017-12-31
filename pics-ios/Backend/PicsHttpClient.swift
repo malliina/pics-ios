@@ -24,16 +24,26 @@ class PicsHttpClient: HttpClient {
     static let DevUrl = "http://10.0.0.21:9000"
     static let ProdUrl = "https://pics.malliina.com"
     
-    convenience init(accessToken: AWSCognitoIdentityUserSessionToken) {
-        self.init(baseURL: EnvConf.BaseUrl, authValue: PicsHttpClient.authValueFor(forToken: accessToken))
+    convenience init(accessToken: AWSCognitoIdentityUserSessionToken?) {
+        if let accessToken = accessToken {
+            self.init(baseURL: EnvConf.BaseUrl, authValue: PicsHttpClient.authValueFor(forToken: accessToken))
+        } else {
+            self.init(baseURL: EnvConf.BaseUrl, authValue: nil)
+        }
     }
     
-    init(baseURL: URL, authValue: String) {
+    init(baseURL: URL, authValue: String?) {
         self.baseURL = baseURL
-        self.defaultHeaders = [
-            HttpClient.AUTHORIZATION: authValue,
-            HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
-        ]
+        if let authValue = authValue {
+            self.defaultHeaders = [
+                HttpClient.AUTHORIZATION: authValue,
+                HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
+            ]
+        } else {
+            self.defaultHeaders = [
+                HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
+            ]
+        }
         self.postSpecificHeaders = [
             HttpClient.CONTENT_TYPE: HttpClient.JSON
         ]

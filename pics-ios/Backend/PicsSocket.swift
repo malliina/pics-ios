@@ -20,16 +20,22 @@ class PicsSocket: SocketClient, TokenDelegate {
     
     var delegate: PicsDelegate? = nil
     
-    convenience init(authValue: String) {
+    convenience init(authValue: String?) {
         self.init(baseURL: URL(string: "/sockets", relativeTo: EnvConf.BaseUrl)!, authValue: authValue)
     }
     
-    init(baseURL: URL, authValue: String) {
-        let headers = [
-            HttpClient.AUTHORIZATION: authValue,
-            HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
-        ]
-        
+    init(baseURL: URL, authValue: String?) {
+        var headers: [String: String] = [:]
+        if let authValue = authValue {
+            headers = [
+                HttpClient.AUTHORIZATION: authValue,
+                HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
+            ]
+        } else {
+            headers = [
+                HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
+            ]
+        }
         super.init(baseURL: baseURL, headers: headers)
         Tokens.shared.addDelegate(self)
     }

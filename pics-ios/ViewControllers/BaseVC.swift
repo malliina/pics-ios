@@ -85,7 +85,7 @@ extension UIViewController {
         guard let navbar = self.navigationController?.navigationBar else { return }
         navbar.isHidden = false
         navbar.prefersLargeTitles = large
-        navbar.barStyle = .black
+//        navbar.barStyle = .black
         navbar.isTranslucent = true
     }
 }

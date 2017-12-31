@@ -22,8 +22,20 @@ class AuthVC: BaseVC {
     
     var passwordAuthenticationCompletion: AWSTaskCompletionSource<AWSCognitoIdentityPasswordAuthenticationDetails>?
     
+    var root: PicsVC? = nil
+    
+    init(root: PicsVC) {
+        self.root = root
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func initUI() {
-//        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(AuthVC.demo(_:)))
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(AuthVC.cancelClicked(_:)))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(AuthVC.demo(_:)))
         initNav(title: "Welcome")
         view.addSubview(username)
         username.snp.makeConstraints { (make) in
@@ -72,6 +84,20 @@ class AuthVC: BaseVC {
         loginWithCurrentInput()
     }
     
+    @objc func demo(_ sender: UIBarButtonItem) {
+//        let pool = Tokens.shared.pool
+//        log.info("current user: \(pool.currentUser()) username \(pool.getUser().username)")
+    }
+    
+    @objc func cancelClicked(_ sender: UIBarButtonItem) {
+        self.dismiss(animated: true) {
+            if let root = self.root {
+                // the login view has already been dismissed, yet no session has been obtained, so we reinitialize
+                root.reInit()
+            }
+        }
+    }
+    
     func loginWithCurrentInput() {
         log.info("Logging in with current input")
         guard let user = username.text, user != "" else { return }
@@ -114,7 +140,8 @@ extension AuthVC: AWSCognitoIdentityPasswordAuthentication {
             } else {
                 self.username.text = nil
                 self.password.text = nil
-                self.dismiss(animated: false, completion: nil)
+                self.root?.changeStyle(dark: true)
+                self.dismiss(animated: true, completion: nil)
             }
         }
     }

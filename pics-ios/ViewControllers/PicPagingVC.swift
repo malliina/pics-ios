@@ -18,10 +18,12 @@ class PicPagingVC: BaseVC {
     
     let pics: [Picture]
     private var index: Int
+    let isSignedIn: Bool
     
-    init(pics: [Picture], startIndex: Int) {
+    init(pics: [Picture], startIndex: Int, isSignedIn: Bool) {
         self.pics = pics
         self.index = startIndex
+        self.isSignedIn = isSignedIn
         super.init(nibName: nil, bundle: nil)
         self.edgesForExtendedLayout = []
     }
@@ -32,7 +34,7 @@ class PicPagingVC: BaseVC {
     
     override func initUI() {
         navigationController?.setNavigationBarHidden(true, animated: true)
-        pager.setViewControllers([PicVC(pic: pics[index], navHiddenInitially: true)], direction: .forward, animated: false, completion: nil)
+        pager.setViewControllers([PicVC(pic: pics[index], navHiddenInitially: true, isSignedIn: isSignedIn)], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
         addChildViewController(pager)
@@ -63,6 +65,14 @@ extension PicPagingVC: UIPageViewControllerDataSource {
         return go(to: index + 1)
     }
     
+    func go(to newIndex: Int) -> UIViewController? {
+        if newIndex >= 0 && newIndex < pics.count {
+            return PicVC(pic: pics[newIndex], navHiddenInitially: navigationController?.isNavigationBarHidden ?? true, isSignedIn: isSignedIn)
+        } else {
+            return nil
+        }
+    }
+    
     func presentationCount(for pageViewController: UIPageViewController) -> Int {
         return pics.count
     }
@@ -72,8 +82,4 @@ extension PicPagingVC: UIPageViewControllerDataSource {
 //    func presentationIndex(for pageViewController: UIPageViewController) -> Int {
 //        return index
 //    }
-    
-    func go(to newIndex: Int) -> UIViewController? {
-        if newIndex >= 0 && newIndex < pics.count { return PicVC(pic: pics[newIndex], navHiddenInitially: navigationController?.isNavigationBarHidden ?? true) } else { return nil }
-    }
 }
