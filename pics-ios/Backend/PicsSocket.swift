@@ -66,27 +66,25 @@ class PicsSocket: SocketClient, TokenDelegate {
     
     override func webSocket(_ webSocket: SRWebSocket!, didReceiveMessage message: Any!) {
         if let message = message as? String {
-            log.info("Got message \(message)")
-            if let dict = Json.asJson(message) as? NSDictionary {
-                if let event = dict["event"] as? String, event == "ping" {
+//            log.info("Got message \(message)")
+            do {
+                let dict = try Json.asJsonDict(message)
+                let event: String = try Json.readOrFail(dict, "event")
+                if event == "ping" {
                     return
+                } else if event == "pics" {
+                    let pics = try PicsLibrary.parsePics(obj: dict)
+                    delegate?.onPics(pics: pics)
+                } else if event == "keys" {
+                    let keys = try PicsLibrary.parseKeys(obj: dict)
+                    delegate?.onPicsRemoved(keys: keys)
                 } else {
-                    if let arr = dict["keys"] as? NSArray, let keys = arr as? [String] {
-                        delegate?.onPicsRemoved(keys: keys)
-                    } else {
-                        do {
-                            let pics = try PicsLibrary.parsePics(obj: dict)
-                            delegate?.onPics(pics: pics)
-                        } catch let error as JsonError {
-                            self.log.error("JSON parse error. \(error)")
-                        } catch _ {
-                            log.error("Unknown parse error for received message.")
-                        }
-                    }
+                    throw JsonError.invalid("Unknown event: '\(event)'.", message)
                 }
-                
-            } else {
-                log.error("Received a non-JSON object.")
+            } catch let error as JsonError {
+                log.error("JSON parse error. \(error) for message: '\(message)'.")
+            } catch _ {
+                log.error("Unknown parse error for received message: '\(message)'.")
             }
         } else {
             log.error("Received a non-string JSON message.")

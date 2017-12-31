@@ -139,7 +139,6 @@ class PicsHttpClient: HttpClient {
     }
     
     override func executeHttp(_ req: URLRequest, onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void, retryCount: Int = 0) {
-        let url = req.url!
         var r = req
         r.addValue("\(retryCount)", forHTTPHeaderField: "X-Retry")
         super.executeHttp(r, onResponse: { (response) in
@@ -151,7 +150,7 @@ class PicsHttpClient: HttpClient {
                     self.executeHttp(r, onResponse: onResponse, onError: onError, retryCount: retryCount + 1)
                 })
             } else {
-                self.log.info("Got a response for request to \(url).")
+//                self.log.info("Got a response for request to \(url).")
                 onResponse(response)
             }
         }, onError: onError, retryCount: retryCount)

@@ -51,7 +51,6 @@ class PicVC: BaseVC {
         }
         imageView.backgroundColor = isSignedIn ? PicsColors.background : PicsColors.lightBackground
         // Uses the small image until a larger is available
-        log.info("Init PicVC for \(pic.meta.large)")
         if let image = pic.large {
             imageView.image = image
         } else {
@@ -76,7 +75,6 @@ class PicVC: BaseVC {
 
 extension UIViewController {
     func downloadLarge(pic: Picture, onImage: @escaping (UIImage) -> Void) {
-        print("download large \(pic.meta.large)")
         if pic.large == nil {
             Downloader.shared.download(url: pic.meta.large) { data in
                 if let image = UIImage(data: data) {

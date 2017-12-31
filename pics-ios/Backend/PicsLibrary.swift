@@ -36,6 +36,12 @@ class PicsLibrary {
         return try pics.map(PicMeta.parse)
     }
     
+    static func parseKeys(obj: AnyObject) throws -> [String] {
+        let dict = try readObject(obj)
+        let keys: [String] = try Json.readOrFail(dict, "keys")
+        return keys
+    }
+    
     static func parsePic(obj: AnyObject) throws -> PicMeta {
         let dict = try readObject(obj)
         let pics: NSDictionary = try Json.readOrFail(dict, PicMeta.Pic)

@@ -138,7 +138,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func displayItems(at: [IndexPath]) {
         guard let coll = self.collectionView else { return }
         hideActivityIndicator()
-        self.log.info("Inserting \(at.count) items.")
+//        self.log.info("Inserting \(at.count) items.")
         coll.insertItems(at: at)
     }
     
@@ -283,7 +283,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func showActivityIndicator() {
-        log.info("Animating...")
         activityIndicator.activityIndicatorViewStyle = isSignedIn ? .white : .gray
         activityIndicator.backgroundColor = backgroundColor
         collectionView?.backgroundView = activityIndicator
@@ -291,7 +290,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func hideActivityIndicator() {
-        log.info("Stopping animation...")
         activityIndicator.stopAnimating()
         collectionView?.backgroundView = nil
     }

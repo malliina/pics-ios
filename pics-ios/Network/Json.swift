@@ -9,6 +9,14 @@
 import Foundation
 
 open class Json {
+    static func asJsonDict(_ input: String) throws -> NSDictionary {
+        if let dict = Json.asJson(input) as? NSDictionary {
+            return dict
+        } else {
+            throw JsonError.invalid("Not a JSON dictionary.", input)
+        }
+    }
+    
     open static func asJson(_ input: String) -> AnyObject? {
         if let data = input.data(using: String.Encoding.utf8, allowLossyConversion: false), let json = asJson(data) {
             return json

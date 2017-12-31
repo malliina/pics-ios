@@ -35,8 +35,7 @@ class ConfirmVC: BaseVC {
     override func initUI() {
         initNav(title: "Confirm")
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(ConfirmVC.cancelClicked(_:)))
-//        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(ConfirmVC.demo(_:)))
-        
+      
         view.addSubview(username)
         username.snp.makeConstraints { (make) in
             make.top.greaterThanOrEqualToSuperview().offset(8)

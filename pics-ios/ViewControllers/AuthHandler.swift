@@ -50,13 +50,13 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     }
     
     func startPasswordAuthentication() -> AWSCognitoIdentityPasswordAuthentication {
-        log.info("Start auth")
+        log.info("Start authentication flow")
         present(authVc, from: picsVc)
         return authVc
     }
     
     func startNewPasswordRequired() -> AWSCognitoIdentityNewPasswordRequired {
-        log.info("Start new pass")
+        log.info("Starting new password flow")
         present(newPassVc, from: picsVc)
         return newPassVc
     }
@@ -66,14 +66,14 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
             let navCtrl = UINavigationController(rootViewController: dest)
             navCtrl.navigationBar.barStyle = .black
             navCtrl.navigationBar.prefersLargeTitles = true
-            self.log.info("Presenting \(navCtrl) from \(from)")
+//            self.log.info("Presenting \(navCtrl) from \(from)")
             self.window.rootViewController?.present(navCtrl, animated: true, completion: nil)
 //            from.present(navCtrl, animated: true, completion: nil)
         }
     }
     
     func startRememberDevice() -> AWSCognitoIdentityRememberDevice {
-        log.info("Remember device")
+        log.info("Starting remember device flow")
         return rememberMe
     }
 }
