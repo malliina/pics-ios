@@ -24,12 +24,6 @@ class PicsLibrary {
         return http.picsPostParsed("/pics", data: picture, clientKey: clientKey, parse: PicsLibrary.parsePic, f: onResult, onError: onError)
     }
     
-    static func isPing(obj: AnyObject) throws -> Bool {
-        let dict = try readObject(obj)
-        let eventValue = dict["event"] as? String
-        return eventValue == "ping"
-    }
-    
     static func parsePics(obj: AnyObject) throws -> [PicMeta] {
         let dict = try readObject(obj)
         let pics: [NSDictionary] = try Json.readOrFail(dict, PicMeta.Pics)
