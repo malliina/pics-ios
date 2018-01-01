@@ -13,6 +13,7 @@ import AWSCognitoIdentityProvider
 class ConfirmVC: BaseVC {
     let log = LoggerFactory.shared.vc(ConfirmVC.self)
     
+    let welcomeText = PicsLabel.build(text: "Enter the code sent to the provided email address", alignment: .center, numberOfLines: 0)
     let username = PicsTextField.with(placeholder: "Username")
     let code = PicsTextField.with(placeholder: "Code")
     let confirmButton = PicsButton.create(title: "Confirm")
@@ -21,6 +22,10 @@ class ConfirmVC: BaseVC {
     let resendButton = PicsButton.secondary(title: "Resend Code")
     let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
     var onSuccess: (() -> Void)? = nil
+    
+    let maxWidth = 500
+    let marginSmall = 8
+    let marginLarge = 24
     
     init(user: String, onSuccess: @escaping (() -> Void)) {
         super.init(nibName: nil, bundle: nil)
@@ -36,28 +41,37 @@ class ConfirmVC: BaseVC {
         initNav(title: "Confirm")
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(ConfirmVC.cancelClicked(_:)))
       
+        view.addSubview(welcomeText)
+        welcomeText.textColor = .lightText
+        welcomeText.snp.makeConstraints { (make) in
+            make.top.greaterThanOrEqualToSuperview().offset(marginSmall)
+            make.leadingMargin.trailingMargin.equalToSuperview().priority(.high)
+            make.width.lessThanOrEqualTo(maxWidth)
+            make.centerX.equalToSuperview()
+        }
+        
         view.addSubview(username)
         username.snp.makeConstraints { (make) in
-            make.top.greaterThanOrEqualToSuperview().offset(8)
+            make.top.equalTo(welcomeText.snp.bottom).offset(marginLarge)
             make.leadingMargin.trailingMargin.equalToSuperview().priority(.medium)
-            make.width.lessThanOrEqualTo(500).priority(.high)
+            make.width.lessThanOrEqualTo(maxWidth).priority(.high)
             make.centerX.equalToSuperview()
         }
         
         view.addSubview(code)
         code.snp.makeConstraints { (make) in
             make.leadingMargin.trailingMargin.equalToSuperview().priority(.medium)
-            make.width.lessThanOrEqualTo(500).priority(.high)
+            make.width.lessThanOrEqualTo(maxWidth).priority(.high)
             make.centerX.equalToSuperview()
             make.centerY.lessThanOrEqualToSuperview().priority(.medium)
-            make.top.equalTo(username.snp.bottom).offset(8)
+            make.top.equalTo(username.snp.bottom).offset(marginSmall)
         }
         
         view.addSubview(confirmButton)
         confirmButton.snp.makeConstraints { (make) in
-            make.top.equalTo(code.snp.bottom).offset(24)
+            make.top.equalTo(code.snp.bottom).offset(marginLarge)
             make.leadingMargin.trailingMargin.equalToSuperview().priority(.medium)
-            make.width.lessThanOrEqualTo(500).priority(.high)
+            make.width.lessThanOrEqualTo(maxWidth).priority(.high)
             make.centerX.equalToSuperview()
         }
         confirmButton.addTarget(self, action: #selector(ConfirmVC.confirmClicked(_:)), for: .touchUpInside)
@@ -70,10 +84,10 @@ class ConfirmVC: BaseVC {
         
         view.addSubview(resendButton)
         resendButton.snp.makeConstraints { (make) in
-            make.top.greaterThanOrEqualTo(confirmButton.snp.bottom).offset(24).priority(.low)
+            make.top.greaterThanOrEqualTo(confirmButton.snp.bottom).offset(marginLarge).priority(.low)
             make.leadingMargin.trailingMargin.equalToSuperview().priority(.medium)
-            make.width.lessThanOrEqualTo(500).priority(.high)
-            make.bottom.equalToSuperview().inset(24)
+            make.width.lessThanOrEqualTo(maxWidth).priority(.high)
+            make.bottom.equalToSuperview().inset(marginLarge)
             make.centerX.equalToSuperview()
         }
         resendButton.addTarget(self, action: #selector(ConfirmVC.resendClicked(_:)), for: .touchUpInside)

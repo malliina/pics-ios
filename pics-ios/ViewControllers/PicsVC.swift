@@ -35,6 +35,16 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         guard let coll = collectionView else { return }
         coll.register(PicsCell.self, forCellWithReuseIdentifier: PicCellIdentifier)
         coll.delegate = self
+        self.initNav(title: "Pics", large: false)
+        let profileIcon = #imageLiteral(resourceName: "ProfileIcon")
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(image: profileIcon, style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.changeUserClicked(_:)))
+        let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
+        if isCameraAvailable {
+            self.navigationItem.rightBarButtonItems = [
+                UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(PicsVC.cameraClicked(_:))),
+//                UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(PicsVC.refreshClicked(_:)))
+            ]
+        }
         initAndLoad(forceSignIn: false)
     }
     
@@ -47,18 +57,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     private func initAndLoad(forceSignIn: Bool) {
         log.info("Initializing picture gallery...")
         self.onUiThread {
-            self.initNav(title: "Pics", large: false)
-            let profileIcon = #imageLiteral(resourceName: "ProfileIcon")
-//            let profileIcon = UIImage(named: "ProfileIcon")
-            self.navigationItem.leftBarButtonItem = UIBarButtonItem(image: profileIcon, style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.changeUserClicked(_:)))
-            //                self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Sign Out", style: .plain, target: self, action: #selector(PicsVC.signOutClicked(_:)))
-            let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
-            if isCameraAvailable {
-                self.navigationItem.rightBarButtonItems = [
-                    UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(PicsVC.cameraClicked(_:))),
-                    UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(PicsVC.refreshClicked(_:)))
-                ]
-            }
             self.showActivityIndicator()
         }
         
@@ -82,6 +80,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             self.view.backgroundColor = self.backgroundColor
             self.collectionView?.backgroundColor = self.backgroundColor
             self.navigationController?.navigationBar.barStyle = self.isSignedIn ? .black : .default
+            self.navigationController?.navigationBar.isHidden = false
         }
     }
     
@@ -221,6 +220,12 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     func onLoadError(error: AppError) {
         let message = AppError.stringify(error)
+        // app no longer supported
+        if case .responseFailure(let err) = error, err.code == 406 {
+            onUiThread {
+                self.navigationController?.navigationBar.isHidden = true
+            }
+        }
         log.error(message)
         displayText(text: message)
     }
@@ -311,6 +316,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             self.collectionView?.deleteItems(at: removables)
             self.displayNoItemsIfEmpty()
         }
+    }
+    
+    func onProfile(info: ProfileInfo) {
+        
     }
     
     func displayNewPics(pics: [Picture]) {

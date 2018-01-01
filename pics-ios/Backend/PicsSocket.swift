@@ -13,6 +13,7 @@ import AWSCognitoIdentityProvider
 protocol PicsDelegate {
     func onPics(pics: [PicMeta])
     func onPicsRemoved(keys: [String])
+    func onProfile(info: ProfileInfo)
 }
 
 class PicsSocket: SocketClient, TokenDelegate {
@@ -56,7 +57,6 @@ class PicsSocket: SocketClient, TokenDelegate {
         } else {
             return failWith("Unable to send payload, socket not available.")
         }
-        
     }
     
     func failWith(_ message: String) -> ErrorMessage {
@@ -78,6 +78,9 @@ class PicsSocket: SocketClient, TokenDelegate {
                 } else if event == "keys" {
                     let keys = try PicsLibrary.parseKeys(obj: dict)
                     delegate?.onPicsRemoved(keys: keys)
+                } else if event == "welcome" {
+                    let profile = try ProfileInfo.parse(dict)
+                    delegate?.onProfile(info: profile)
                 } else {
                     throw JsonError.invalid("Unknown event: '\(event)'.", message)
                 }

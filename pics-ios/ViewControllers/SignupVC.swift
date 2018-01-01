@@ -13,10 +13,15 @@ import AWSCognitoIdentityProvider
 class SignupVC: BaseVC {
     let log = LoggerFactory.shared.vc(SignupVC.self)
     
-    let username = PicsTextField.with(placeholder: "Username")
+    let welcomeText = PicsLabel.build(text: "A valid email address is required", alignment: .center, numberOfLines: 0)
+    let username = PicsTextField.with(placeholder: "Email")
     let password = PicsTextField.with(placeholder: "Password", isPassword: true)
     let signupButton = PicsButton.create(title: "Sign up")
     let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .white)
+    
+    let maxWidth = 500
+    let marginSmall = 8
+    let marginLarge = 24
     
     let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
     var passwordAuthenticationCompletion: AWSTaskCompletionSource<AWSCognitoIdentityPasswordAuthenticationDetails>?
@@ -34,17 +39,27 @@ class SignupVC: BaseVC {
         initNav(title: "Sign Up")
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(SignupVC.cancelClicked(_:)))
         
+        view.addSubview(welcomeText)
+        welcomeText.textColor = .lightText
+        welcomeText.snp.makeConstraints { (make) in
+            make.top.greaterThanOrEqualToSuperview().offset(marginSmall)
+            make.leadingMargin.trailingMargin.equalToSuperview().priority(.high)
+            make.width.lessThanOrEqualTo(maxWidth)
+            make.centerX.equalToSuperview()
+        }
+        
         view.addSubview(username)
         username.snp.makeConstraints { (make) in
+            make.top.equalTo(welcomeText.snp.bottom).offset(marginLarge)
             make.leadingMargin.trailingMargin.equalToSuperview().priority(.medium)
-            make.width.lessThanOrEqualTo(500).priority(.high)
+            make.width.lessThanOrEqualTo(maxWidth).priority(.high)
             make.centerX.equalToSuperview()
         }
         
         view.addSubview(password)
         password.snp.makeConstraints { (make) in
             make.leadingMargin.trailingMargin.equalToSuperview().priority(.medium)
-            make.width.lessThanOrEqualTo(500).priority(.high)
+            make.width.lessThanOrEqualTo(maxWidth).priority(.high)
             make.centerX.centerY.equalToSuperview()
             make.top.equalTo(username.snp.bottom).offset(8)
         }
@@ -53,7 +68,7 @@ class SignupVC: BaseVC {
         signupButton.snp.makeConstraints { (make) in
             make.top.greaterThanOrEqualTo(password.snp.bottom).offset(24)
             make.leadingMargin.trailingMargin.equalToSuperview().priority(.medium)
-            make.width.lessThanOrEqualTo(500).priority(.high)
+            make.width.lessThanOrEqualTo(maxWidth).priority(.high)
             make.centerX.equalToSuperview()
         }
         signupButton.addTarget(self, action: #selector(SignupVC.signupClicked(_:)), for: .touchUpInside)

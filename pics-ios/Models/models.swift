@@ -39,7 +39,7 @@ enum SignupError {
         case .userNotFound(_): return "User not found."
         case .invalidCredentials(_): return "Invalid credentials."
         case .userAlreadyExists(_): return "User already exists."
-        case .weakPassword(_): return "Weak password."
+        case .weakPassword(_): return "Weak password. Minimum 7 characters."
         case .userNotConfirmed(_): return "User not confirmed."
         case .codeExpired(_): return "Code expired."
         case .invalidCode(_): return "Invalid code."
@@ -122,6 +122,26 @@ class FullUrl {
             }
         }
         return ret
+    }
+}
+
+class ProfileInfo {
+    static let User = "user"
+    static let ReadOnly = "readOnly"
+    
+    let user: String
+    let readOnly: Bool
+    
+    init(user: String, readOnly: Bool) {
+        self.user = user
+        self.readOnly = readOnly
+    }
+    
+    static func parse(_ obj: AnyObject) throws -> ProfileInfo {
+        guard let dict = obj as? NSDictionary else { throw JsonError.invalid("object", obj) }
+        let user = try Json.readString(dict, User)
+        let readOnly: Bool = try Json.readOrFail(dict, ReadOnly)
+        return ProfileInfo(user: user, readOnly: readOnly)
     }
 }
 

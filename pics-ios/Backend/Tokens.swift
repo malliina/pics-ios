@@ -44,12 +44,11 @@ class Tokens {
     }
     
     private func process(task: AWSTask<AWSCognitoIdentityUserSession>, onToken: (AWSCognitoIdentityUserSessionToken) -> Void) {
-        log.info("Got session")
         if let error = task.error as NSError? {
             log.warn("Failed to get session with \(error)")
         } else {
             if let accessToken = task.result?.accessToken {
-                log.info("Got token \(accessToken.tokenString)")
+//                log.info("Got token \(accessToken.tokenString)")
                 onToken(accessToken)
                 delegates.forEach { $0.onAccessToken(accessToken) }
             } else {

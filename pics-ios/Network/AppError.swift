@@ -44,6 +44,8 @@ class AppErrorUtil {
                 return "Check your username/password."
             case 404:
                 return "Resource not found: \(details.resource)."
+            case 406:
+                return "Please update this app to the latest version to continue. This version is no longer supported."
             default:
                 if let message = details.message {
                     return "Error code: \(code), message: \(message)"
