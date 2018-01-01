@@ -72,10 +72,10 @@ class PicsSocket: SocketClient, TokenDelegate {
                 let event: String = try Json.readOrFail(dict, "event")
                 if event == "ping" {
                     return
-                } else if event == "pics" {
+                } else if event == "added" {
                     let pics = try PicsLibrary.parsePics(obj: dict)
                     delegate?.onPics(pics: pics)
-                } else if event == "keys" {
+                } else if event == "removed" {
                     let keys = try PicsLibrary.parseKeys(obj: dict)
                     delegate?.onPicsRemoved(keys: keys)
                 } else if event == "welcome" {
