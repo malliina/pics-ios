@@ -12,9 +12,12 @@ import AWSCognitoIdentityProvider
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    let log = LoggerFactory.shared.system(AppDelegate.self)
 
     var window: UIWindow?
     var auths: AuthHandler?
+    
+    var transferCompletionHandlers: [String: () -> Void] = [:]
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         let w = UIWindow(frame: UIScreen.main.bounds)
@@ -28,6 +31,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             w.rootViewController = OneLinerVC(text: "Unable to initialize app.")
         }
         return true
+    }
+    
+    func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
+        log.info("Complete: \(identifier)")
+        transferCompletionHandlers[identifier] = completionHandler
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

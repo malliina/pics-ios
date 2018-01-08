@@ -43,6 +43,7 @@ class HttpClient {
     }
     
     func postData(_ url: URL, headers: [String: String] = [:], payload: Data?, onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
+        // session.upload
         let req = buildRequest(url: url, httpMethod: HttpClient.POST, headers: headers, body: payload)
         executeHttp(req, onResponse: onResponse, onError: onError)
     }

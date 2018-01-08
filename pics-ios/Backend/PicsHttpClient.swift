@@ -77,7 +77,7 @@ class PicsHttpClient: HttpClient {
         }, onError: onError)
     }
     
-    func picsPostParsed<T>(_ resource: String, data: Data, clientKey: String, parse: @escaping (AnyObject) throws -> T, f: @escaping (T) -> Void, onError: @escaping (AppError) -> Void) {
+    func picsPostParsed<T>(_ resource: String, data: Data, clientKey: ClientKey, parse: @escaping (AnyObject) throws -> T, f: @escaping (T) -> Void, onError: @escaping (AppError) -> Void) {
         picsPost(resource, payload: data, clientKey: clientKey, f: {
             (data: Data) -> Void in
             if let obj: AnyObject = Json.asJson(data) {
@@ -92,7 +92,7 @@ class PicsHttpClient: HttpClient {
                 }
             } else {
                 self.log.error("Not JSON: \(data)")
-                onError(AppError.parseError(JsonError.notJson(data)))
+                onError(.parseError(JsonError.notJson(data)))
             }
         }, onError: onError)
     }
@@ -110,11 +110,11 @@ class PicsHttpClient: HttpClient {
         })
     }
     
-    func picsPost(_ resource: String, payload: Data, clientKey: String, f: @escaping (Data) -> Void, onError: @escaping (AppError) -> Void) {
-        let url = URL(string: resource, relativeTo: baseURL)!
+    func picsPost(_ resource: String, payload: Data, clientKey: ClientKey, f: @escaping (Data) -> Void, onError: @escaping (AppError) -> Void) {
+        let url = urlFor(resource: resource)
         self.postData(
             url,
-            headers: postHeaders.merging([PicsHttpClient.ClientPicHeader: clientKey]) { (current, _) in current },
+            headers: headersFor(clientKey: clientKey),
             payload: payload,
             onResponse: { response -> Void in
                 self.responseHandler(resource, response: response, f: f, onError: onError)
@@ -122,6 +122,14 @@ class PicsHttpClient: HttpClient {
             onError: { (err) -> Void in
                 onError(.networkFailure(err))
         })
+    }
+    
+    func urlFor(resource: String) -> URL {
+        return URL(string: resource, relativeTo: baseURL)!
+    }
+    
+    func headersFor(clientKey: ClientKey) -> [String: String] {
+        return postHeaders.merging([PicsHttpClient.ClientPicHeader: clientKey]) { (current, _) in current }
     }
     
     func responseHandler(_ resource: String, response: HttpResponse, f: (Data) -> Void, onError: (AppError) -> Void) {

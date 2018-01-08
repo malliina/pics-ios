@@ -377,7 +377,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         if let idx = indexFor(clientKey) {
             self.pics[idx] = self.pics[idx].withUrl(url: url)
         }
-        library.save(picture: data, clientKey: clientKey, onError: onSaveError) { pic in
+        library.saveURL(picture: url, clientKey: clientKey, onError: onSaveError) { pic in
             if let idx = self.indexFor(clientKey) {
                 self.pics[idx] = self.pics[idx].withMeta(meta: pic)
                 self.log.info("Saved pic '\(pic.key)'.")
