@@ -30,7 +30,7 @@ class SocketClient: NSObject, SRWebSocketDelegate {
         super.init()
     }
     
-    func updateAuthHeaderValue(newValue: String) {
+    func updateAuthHeaderValue(newValue: String?) {
         request.setValue(newValue, forHTTPHeaderField: HttpClient.AUTHORIZATION)
     }
     
@@ -42,6 +42,7 @@ class SocketClient: NSObject, SRWebSocketDelegate {
         }
     }
     
+    /// Calling this method on an already open socket will first close the socket then reconnect
     func open(_ onOpen: @escaping () -> Void, onError: @escaping (Error) -> Void) {
         close()
         let webSocket = SRWebSocket(urlRequest: request)
@@ -50,7 +51,7 @@ class SocketClient: NSObject, SRWebSocketDelegate {
         self.onOpenCallback = onOpen
         self.onOpenErrorCallback = onError
         webSocket?.open()
-        log.info("Connecting to \(baseURL)...")
+        // log.info("Connecting to \(baseURL)...")
     }
     
     public func webSocket(_ webSocket: SRWebSocket!, didReceiveMessage message: Any!) {

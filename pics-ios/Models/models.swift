@@ -153,6 +153,7 @@ class PicMeta {
     static let Small = "small"
     static let Medium = "medium"
     static let Large = "large"
+    static let Added = "added"
     static let ClientKey = "clientKey"
     
     let key: String
@@ -160,23 +161,37 @@ class PicMeta {
     let small: URL
     let medium: URL
     let large: URL
+    let added: Timestamp
     let clientKey: String?
     
-    convenience init(key: String, url: URL, clientKey: String?) {
-        self.init(key: key, url: url, small: url, medium: url, large: url, clientKey: clientKey)
+    convenience init(key: String, url: URL, added: Timestamp, clientKey: String?) {
+        self.init(key: key, url: url, small: url, medium: url, large: url, added: added, clientKey: clientKey)
     }
     
-    init(key: String, url: URL, small: URL, medium: URL, large: URL, clientKey: String?) {
+    init(key: String, url: URL, small: URL, medium: URL, large: URL, added: Timestamp, clientKey: String?) {
         self.key = key
         self.url = url
         self.small = small
         self.medium = medium
         self.large = large
+        self.added = added
         self.clientKey = clientKey
     }
     
     func withUrl(url: URL) -> PicMeta {
-        return PicMeta(key: key, url: url, clientKey: clientKey)
+        return PicMeta(key: key, url: url, added: added, clientKey: clientKey)
+    }
+    
+    static func write(pic: PicMeta) -> [String: AnyObject] {
+        return [
+            Key: pic.key as AnyObject,
+            Url: pic.url.absoluteString as AnyObject,
+            Small: pic.small.absoluteString as AnyObject,
+            Medium: pic.medium.absoluteString as AnyObject,
+            Large: pic.large.absoluteString as AnyObject,
+            Added: pic.added as AnyObject,
+            ClientKey: pic.clientKey as AnyObject
+        ]
     }
     
     static func readUrl(key: String, dict: NSDictionary) throws -> URL {
@@ -187,19 +202,23 @@ class PicMeta {
             throw JsonError.invalid(key, dict)
         }
     }
+    
     static func parse(_ obj: AnyObject) throws -> PicMeta {
         if let dict = obj as? NSDictionary {
             let key = try Json.readString(dict, PicMeta.Key)
             let url = try readUrl(key: PicMeta.Url, dict: dict)
-            let small = try readUrl(key: PicMeta.Small, dict: dict)
-            let medium = try readUrl(key: PicMeta.Large, dict: dict)
-            let large = try readUrl(key: PicMeta.Large, dict: dict)
-            let clientKey = try? Json.readString(dict, PicMeta.ClientKey)
-            return PicMeta(key: key, url: url, small: small, medium: medium, large: large, clientKey: clientKey)
+            let small = try readUrl(key: Small, dict: dict)
+            let medium = try readUrl(key: Medium, dict: dict)
+            let large = try readUrl(key: Large, dict: dict)
+            let added: Timestamp = try Json.readOrFail(dict, Added)
+            let clientKey = try? Json.readString(dict, ClientKey)
+            return PicMeta(key: key, url: url, small: small, medium: medium, large: large, added: added, clientKey: clientKey)
         }
         throw JsonError.invalid("meta", obj)
     }
 }
+
+typealias Timestamp = UInt64
 
 class Picture {
     static let TempFakeUrl = URL(string: "https://pics.malliina.com")!
@@ -210,12 +229,17 @@ class Picture {
     var large: UIImage? = nil
     
     convenience init(image: UIImage) {
-        self.init(url: Picture.TempFakeUrl, image: image)
+        let millis = Timestamp(Date().timeIntervalSince1970 * 1000)
+        self.init(url: Picture.TempFakeUrl, image: image, added: millis)
     }
     
-    convenience init(url: URL, image: UIImage) {
+    convenience init(image: UIImage, added: Timestamp) {
+        self.init(url: Picture.TempFakeUrl, image: image, added: added)
+    }
+    
+    convenience init(url: URL, image: UIImage, added: Timestamp) {
         let clientKey: String = String(UUID().uuidString.prefix(7)).lowercased()
-        self.init(meta: PicMeta(key: clientKey, url: url, clientKey: clientKey))
+        self.init(meta: PicMeta(key: clientKey, url: url, added: added, clientKey: clientKey))
         self.url = image
         small = image
         medium = image

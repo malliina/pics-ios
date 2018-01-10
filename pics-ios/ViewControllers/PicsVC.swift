@@ -10,18 +10,39 @@ import SnapKit
 import UIKit
 import AWSCognitoIdentityProvider
 
-class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate {
+protocol PicsRenderer {
+    func updateUI()
+}
+
+class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate, PicsRenderer {
+    static let preferredItemSize: Double = Devices.isIpad ? 200 : 130
+    static let itemsPerLoad = 100
+    
     let log = LoggerFactory.shared.vc(PicsVC.self)
     let PicCellIdentifier = "PicCell"
     let minItemsRemainingBeforeLoadMore = 20
-    static let itemsPerLoad = 100
     
-    private var pics: [Picture] = []
-    var library: PicsLibrary? = nil
-    var socket: PicsSocket? = nil
+    private var isOnline = false
+    private var offlinePics: [Picture] {
+        get { return PicsDatabase.shared.pics }
+        set (newPics) { PicsDatabase.shared.savePics(ps: newPics) }
+    }
+    
+    private var loadedPics: [Picture] = []
+    private var pics: [Picture] {
+        get { return isOnline ? loadedPics : offlinePics }
+        set (newPics) {
+            offlinePics = newPics
+            if isOnline {
+                loadedPics = newPics
+            }
+        }
+    }
+    
+    var library: PicsLibrary { return Backend.shared.library }
+    var socket: PicsSocket { return Backend.shared.socket }
     let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
     var authCancellation: AWSCancellationTokenSource? = nil
-    static let preferredItemSize: Double = Devices.isIpad ? 200 : 130
     
     let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .white)
     
@@ -45,6 +66,8 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
 //                UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(PicsVC.refreshClicked(_:)))
             ]
         }
+        self.socket.delegate = self
+        LifeCycle.shared.renderer = self
         initAndLoad(forceSignIn: false)
     }
     
@@ -55,12 +78,20 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     private func initAndLoad(forceSignIn: Bool) {
-        log.info("Initializing picture gallery...")
+        log.info("Initializing picture gallery with \(offlinePics.count) offline pics.")
         self.onUiThread {
             self.showActivityIndicator()
         }
         
-        if isSignedIn || forceSignIn {
+        updateUI(needsToken: isSignedIn || forceSignIn)
+    }
+    
+    func updateUI() {
+        updateUI(needsToken: isSignedIn)
+    }
+    
+    private func updateUI(needsToken: Bool) {
+        if needsToken {
             authCancellation = AWSCancellationTokenSource()
             Tokens.shared.retrieve(onToken: { (token) in
                 self.load(with: token)
@@ -69,6 +100,75 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             // anonymous
             load(with: nil)
         }
+    }
+    
+    private func load(with token: AWSCognitoIdentityUserSessionToken?) {
+        Backend.shared.updateToken(new: token)
+        self.socket.openSilently()
+        self.log.info("Loading pics...")
+        self.syncPics()
+        onUiThread {
+            self.updateStyle()
+        }
+    }
+
+    func syncPics() {
+        let syncLimit = max(loadedPics.count, PicsVC.itemsPerLoad)
+        library.load(from: 0, limit: syncLimit, onError: onLoadError) { (result) in
+            self.onUiThread {
+                self.hideActivityIndicator()
+                
+                self.merge(gallery: result)
+                
+            }
+        }
+    }
+    
+    func loadPics(limit: Int) {
+        let beforeCount = loadedPics.count
+        let wasOffline = !isOnline
+        library.load(from: loadedPics.count, limit: limit, onError: onLoadError) { (result) in
+            self.onUiThread {
+                self.log.info("Loaded \(result.count) items, from \(beforeCount)")
+                self.hideActivityIndicator()
+                if self.loadedPics.count == beforeCount {
+                    if !result.isEmpty {
+                        self.pics = self.loadedPics + result.map { p in Picture(meta: p) }
+                        let rows: [Int] = Array(beforeCount..<beforeCount+result.count)
+                        
+                        if wasOffline {
+                            self.log.info("Replacing offline pics with fresh pics.")
+                            self.isOnline = true
+                            self.collectionView?.reloadData()
+                            self.displayNoItemsIfEmpty()
+                        } else {
+                            let indexPaths = rows.map { row in IndexPath(item: row, section: 0) }
+                            self.displayItems(at: indexPaths)
+                        }
+                    } else {
+                        self.displayNoItemsIfEmpty()
+                    }
+                } else {
+                    self.log.info("Count mismatch")
+                    self.displayNoItemsIfEmpty()
+                }
+            }
+        }
+    }
+    
+    func displayNoItemsIfEmpty() {
+        if pics.isEmpty {
+            onUiThread {
+                self.displayText(text: "You have no pictures yet.")
+            }
+        }
+    }
+    
+    func displayItems(at: [IndexPath]) {
+        guard let coll = self.collectionView else { return }
+        hideActivityIndicator()
+//        self.log.info("Inserting \(at.count) items.")
+        coll.insertItems(at: at)
     }
     
     func updateStyle() {
@@ -82,63 +182,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             self.navigationController?.navigationBar.barStyle = self.isSignedIn ? .black : .default
             self.navigationController?.navigationBar.isHidden = false
         }
-    }
-    
-    private func load(with token: AWSCognitoIdentityUserSessionToken?) {
-        self.library = PicsLibrary(http: PicsHttpClient(accessToken: token))
-        self.socket?.close()
-        self.socket = PicsSocket(authValue: authValue(token: token))
-        self.socket?.openSilently()
-        self.socket?.delegate = self
-        self.log.info("Loading pics...")
-        self.loadPics(limit: PicsVC.itemsPerLoad)
-        onUiThread {
-            self.updateStyle()
-        }
-    }
-    
-    private func authValue(token: AWSCognitoIdentityUserSessionToken?) -> String? {
-        guard let token = token else { return nil }
-        return PicsHttpClient.authValueFor(forToken: token)
-    }
-
-    func loadPics(limit: Int) {
-        let beforeCount = pics.count
-        guard let library = library else {
-            log.info("No library initialized, aborting.")
-            hideActivityIndicator()
-            return
-        }
-        library.load(from: pics.count, limit: limit, onError: onLoadError) { (result) in
-            self.log.info("Loaded \(result.count) items, from \(beforeCount)")
-            if self.pics.count == beforeCount {
-                if !result.isEmpty {
-                    self.pics = self.pics + result.map { p in Picture(meta: p) }
-                    let rows: [Int] = Array(beforeCount..<beforeCount+result.count)
-                    let indexPaths = rows.map { row in IndexPath(item: row, section: 0) }
-                    self.onUiThread {
-                        self.displayItems(at: indexPaths)
-                    }
-                } else {
-                    self.displayNoItemsIfEmpty()
-                }
-            }
-        }
-    }
-    
-    func displayNoItemsIfEmpty() {
-        if self.pics.isEmpty {
-            self.onUiThread {
-                self.displayText(text: "You have no pictures yet.")
-            }
-        }
-    }
-    
-    func displayItems(at: [IndexPath]) {
-        guard let coll = self.collectionView else { return }
-        hideActivityIndicator()
-//        self.log.info("Inserting \(at.count) items.")
-        coll.insertItems(at: at)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -189,7 +232,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         self.navigationController?.pushViewController(PicPagingVC(pics: self.pics, startIndex: indexPath.row, isSignedIn: isSignedIn), animated: true)
     }
     
-    func download(_ indexPath: IndexPath) {
+    private func download(_ indexPath: IndexPath) {
         let pic = pics[indexPath.row]
         if pic.small == nil {
             Downloader.shared.download(url: pic.meta.small) { data in
@@ -200,21 +243,24 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     func onDownloaded(data: Data, indexPath: IndexPath) {
         onUiThread {
-            if let image = UIImage(data: data), let coll = self.collectionView {
+            if let image = UIImage(data: data), let coll = self.collectionView, self.pics.count > indexPath.row {
                 self.pics[indexPath.row].small = image
                 coll.reloadItems(at: [indexPath])
+            } else {
+                self.log.info("Unable to update downloaded pic count \(self.pics.count) \(self.isOnline) row \(indexPath.row) \(self.pics.count > indexPath.row)")
             }
         }
     }
     
     func maybeLoadMore(atItemIndex: Int) {
         let trackCount = pics.count
-        if atItemIndex + minItemsRemainingBeforeLoadMore == trackCount {
+        if isOnline && atItemIndex + minItemsRemainingBeforeLoadMore == trackCount {
             loadMore(atItemIndex)
         }
     }
     
     func loadMore(_ atItemIndex: Int) {
+        // log.info("Loading more...")
         loadPics(limit: PicsVC.itemsPerLoad)
     }
     
@@ -250,11 +296,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         control.sourceType = .camera
         control.allowsEditing = false
         control.delegate = self
-        if library != nil {
-            self.present(control, animated: true, completion: nil)
-        } else {
-            log.error("No library available, refusing to show camera")
-        }
+        self.present(control, animated: true, completion: nil)
     }
     
     @objc func refreshClicked(_ sender: UIBarButtonItem) {
@@ -275,15 +317,16 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func resetData() {
+        offlinePics = []
+        loadedPics = []
         Tokens.shared.clearDelegates()
-        library = nil
-        socket?.close()
-        socket = nil
+        socket.close()
+        isOnline = false
         resetDisplay()
     }
     
     func resetDisplay() {
-        pics = []
+        PicsDatabase.shared.clear()
         collectionView?.reloadData()
     }
     
@@ -302,9 +345,30 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func onPics(pics: [PicMeta]) {
         // By the time we get this notification, pics recently taken on this device are probably already displayed.
         // So we filter out already added pics to avoid duplicates.
-        let newPics = pics.filter { newPic -> Bool in !self.pics.contains(where: { p -> Bool in (newPic.clientKey != nil && p.meta.clientKey == newPic.clientKey) || p.meta.key == newPic.key }) }
+        let (existingPics, newPics) = pics.partition(contains)
+        onUiThread {
+            existingPics.forEach(self.updateMeta)
+        }
         log.info("Got \(pics.count) pic(s), out of which \(newPics.count) are new.")
         displayNewPics(pics: newPics.map { p in Picture(meta: p) })
+    }
+    
+    func updateMeta(pic: PicMeta) {
+        if let clientKey = pic.clientKey, let idx = self.indexFor(clientKey) {
+            self.pics[idx] = self.pics[idx].withMeta(meta: pic)
+        } else {
+            log.info("Cannot update \(pic.key), pic not found in memory.")
+        }
+    }
+    
+    func indexFor(_ clientKey: String) -> Int? {
+        return self.pics.index(where: { (p) -> Bool in
+            p.meta.clientKey == clientKey
+        })
+    }
+    
+    func contains(pic: PicMeta) -> Bool {
+        return self.pics.contains(where: { p -> Bool in (pic.clientKey != nil && p.meta.clientKey == pic.clientKey) || p.meta.key == pic.key })
     }
     
     func onPicsRemoved(keys: [String]) {
@@ -323,13 +387,30 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func displayNewPics(pics: [Picture]) {
-        self.onUiThread {
+        onUiThread {
             let ordered: [Picture] = pics.reversed()
             self.pics = ordered + self.pics
             let indexPaths = ordered.enumerated().map({ (offset, pic) -> IndexPath in
                 IndexPath(row: offset, section: 0)
             })
             self.displayItems(at: indexPaths)
+        }
+    }
+    
+    func merge(gallery: [PicMeta]) {
+        onUiThread {
+            self.isOnline = true
+            let newPics = gallery
+                .filter { (pic) in !self.contains(pic: pic) }
+                .map { p in Picture(meta: p) }
+            if newPics.count > 0 {
+                let merged = (self.pics + newPics)
+                    .filter({ (p) -> Bool in gallery.contains(where: { (meta) -> Bool in meta.key == p.meta.key }) })
+                    .sorted(by: { (p1, p2) -> Bool in p1.meta.added > p2.meta.added })
+                self.pics = merged
+            }
+            self.collectionView?.reloadData()
+            self.log.info("Refresh complete.")
         }
     }
 }
@@ -367,10 +448,6 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
             log.info("Taken image is not in JPEG format")
             return
         }
-        guard let library = library else {
-            log.info("Library not available")
-            return
-        }
         log.info("Saving pic to file...")
         let url = try LocalPics.shared.saveAsJpg(data: data)
         let clientKey = pic.meta.clientKey ?? ""
@@ -378,24 +455,13 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
             self.pics[idx] = self.pics[idx].withUrl(url: url)
         }
         library.saveURL(picture: url, clientKey: clientKey, onError: onSaveError) { pic in
-            if let idx = self.indexFor(clientKey) {
-                self.pics[idx] = self.pics[idx].withMeta(meta: pic)
-                self.log.info("Saved pic '\(pic.key)'.")
-            } else {
-                self.log.warn("Saved pic '\(pic.key)', but it was not in the collection. This is most likely a bug.")
-            }
+            self.log.info("Uploaded pic \(clientKey).")
         }
 //        if let metadata = info[UIImagePickerControllerMediaMetadata] as? NSDictionary {
 //            metadata.forEach({ (key, value) in
 //                print("\(key) = \(value)")
 //            })
 //        }
-    }
-    
-    func indexFor(_ clientKey: String) -> Int? {
-        return self.pics.index(where: { (p) -> Bool in
-            p.meta.clientKey == clientKey
-        })
     }
     
     func onSaveError(error: AppError) {

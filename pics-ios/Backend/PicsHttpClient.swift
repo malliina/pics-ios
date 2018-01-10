@@ -153,7 +153,7 @@ class PicsHttpClient: HttpClient {
             if retryCount == 0 && response.statusCode == 401 && response.isTokenExpired {
                 self.log.info("Token expired, retrieving new token and retrying...")
                 Tokens.shared.retrieveToken(onToken: { (token) in
-                    self.defaultHeaders.updateValue(PicsHttpClient.authValueFor(forToken: token), forKey: HttpClient.AUTHORIZATION)
+                    self.updateToken(token: token)
                     r.setValue(PicsHttpClient.authValueFor(forToken: token), forHTTPHeaderField: HttpClient.AUTHORIZATION)
                     self.executeHttp(r, onResponse: onResponse, onError: onError, retryCount: retryCount + 1)
                 })
@@ -162,6 +162,14 @@ class PicsHttpClient: HttpClient {
                 onResponse(response)
             }
         }, onError: onError, retryCount: retryCount)
+    }
+    
+    func updateToken(token: AWSCognitoIdentityUserSessionToken?) {
+        if let token = token {
+            self.defaultHeaders.updateValue(PicsHttpClient.authValueFor(forToken: token), forKey: HttpClient.AUTHORIZATION)
+        } else {
+            self.defaultHeaders.removeValue(forKey: HttpClient.AUTHORIZATION)
+        }
     }
     
     func onRequestError(_ data: Data, error: NSError) -> Void {
