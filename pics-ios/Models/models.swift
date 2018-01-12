@@ -32,6 +32,7 @@ enum SignupError {
     case userNotConfirmed(String)
     case codeExpired(String)
     case invalidCode(String)
+    case noInternet(String)
     case unknown
     
     var message: String {
@@ -42,7 +43,8 @@ enum SignupError {
         case .weakPassword(_): return "Weak password. Minimum 7 characters."
         case .userNotConfirmed(_): return "User not confirmed."
         case .codeExpired(_): return "Code expired."
-        case .invalidCode(_): return "Invalid code."
+        case .invalidCode(_): return "Invalid code."
+        case .noInternet(_): return "Check your network connectivity."
         default: return "Unknown error."
         }
     }
@@ -51,6 +53,7 @@ enum SignupError {
         guard let error = error as NSError? else { return nil }
         return parse(user: user, error: error)
     }
+    
     static func parse(user: String, error: Error) -> SignupError {
         let err: NSError = error as NSError
         if let message = err.userInfo["message"] as? String, let type = err.userInfo["__type"] as? String {
@@ -65,7 +68,13 @@ enum SignupError {
             default: return .unknown
             }
         } else {
-            return .unknown
+            guard let urlError = error as? URLError else { return .unknown }
+            switch urlError.code {
+            case .notConnectedToInternet:
+                return .noInternet(user)
+            default:
+                return .unknown
+            }
         }
     }
 }

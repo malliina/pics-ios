@@ -316,9 +316,9 @@
 		61EB2D871FE5AE6E00A27F1A /* Pics */ = {
 			isa = PBXGroup;
 			children = (
+				61A9C4D020069DF10085BA25 /* LifeCycle.swift */,
 				61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */,
 				61A9C4CC200557330085BA25 /* PicsDatabase.swift */,
-				61A9C4D020069DF10085BA25 /* LifeCycle.swift */,
 			);
 			path = Pics;
 			sourceTree = "<group>";

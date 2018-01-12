@@ -13,6 +13,9 @@ enum AppError {
     case responseFailure(ResponseDetails)
     case networkFailure(RequestFailure)
     case simpleError(ErrorMessage)
+    case tokenError(Error)
+    
+    var describe: String { return AppError.stringify(self) }
     
     static func stringify(_ error: AppError) -> String {
         return AppErrorUtil.stringify(error)
@@ -54,6 +57,8 @@ class AppErrorUtil {
                 }
             }
         case .networkFailure( _):
+            return "A network error occurred."
+        case .tokenError(_):
             return "A network error occurred."
         case .simpleError(let message):
             return message.message

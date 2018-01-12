@@ -10,7 +10,7 @@ import UIKit
 import SnapKit
 
 /// Swipe horizontally to show the next/previous image in the gallery.
-/// Uses a UIPageViewController for the paging.
+/// Uses a UIPageViewController for paging.
 class PicPagingVC: BaseVC {
     private let log = LoggerFactory.shared.vc(PicPagingVC.self)
     
@@ -19,11 +19,13 @@ class PicPagingVC: BaseVC {
     let pics: [Picture]
     private var index: Int
     let isSignedIn: Bool
+    let delegate: PicDelegate
     
-    init(pics: [Picture], startIndex: Int, isSignedIn: Bool) {
+    init(pics: [Picture], startIndex: Int, isSignedIn: Bool, delegate: PicDelegate) {
         self.pics = pics
         self.index = startIndex
         self.isSignedIn = isSignedIn
+        self.delegate = delegate
         super.init(nibName: nil, bundle: nil)
         self.edgesForExtendedLayout = []
     }
@@ -33,8 +35,13 @@ class PicPagingVC: BaseVC {
     }
     
     override func initUI() {
+        navigationItem.title = "Pic"
+        if isSignedIn {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(onRemoveClicked(_:)))
+        }
         navigationController?.setNavigationBarHidden(true, animated: true)
-        pager.setViewControllers([PicVC(pic: pics[index], navHiddenInitially: true, isSignedIn: isSignedIn)], direction: .forward, animated: false, completion: nil)
+        let vc = PicVC(pic: pics[index], navHiddenInitially: true, isSignedIn: isSignedIn)
+        pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
         addChildViewController(pager)
@@ -43,6 +50,18 @@ class PicPagingVC: BaseVC {
         pager.view.snp.makeConstraints { (make) in
             make.top.bottom.leading.trailing.equalToSuperview()
         }
+    }
+    
+    @objc func onRemoveClicked(_ sender: UIBarButtonItem) {
+        goToPics()
+        if index < pics.count {
+            delegate.removePic(key: pics[index].meta.key)
+        }
+    }
+    
+    func goToPics() {
+        navigationController?.popViewController(animated: true)
+        navigationController?.setNavigationBarHidden(false, animated: true)
     }
 }
 

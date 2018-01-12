@@ -10,7 +10,7 @@ import Foundation
 
 class HttpClient {
     private let log = LoggerFactory.shared.network(HttpClient.self)
-    static let JSON = "application/json", CONTENT_TYPE = "Content-Type", ACCEPT = "Accept", GET = "GET", POST = "POST", AUTHORIZATION = "Authorization", BASIC = "Basic"
+    static let JSON = "application/json", CONTENT_TYPE = "Content-Type", ACCEPT = "Accept", DELETE = "DELETE", GET = "GET", POST = "POST", AUTHORIZATION = "Authorization", BASIC = "Basic"
     
     static func basicAuthValue(_ username: String, password: String) -> String {
         let encodable = "\(username):\(password)"
@@ -43,7 +43,6 @@ class HttpClient {
     }
     
     func postData(_ url: URL, headers: [String: String] = [:], payload: Data?, onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
-        // session.upload
         let req = buildRequest(url: url, httpMethod: HttpClient.POST, headers: headers, body: payload)
         executeHttp(req, onResponse: onResponse, onError: onError)
     }
@@ -51,6 +50,11 @@ class HttpClient {
     func postGeneric(_ url: URL, headers: [String: String] = [:], payload: Data?, completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
         let req = buildRequest(url: url, httpMethod: HttpClient.POST, headers: headers, body: payload)
         executeRequest(req, completionHandler: completionHandler)
+    }
+    
+    func delete(_ url: URL, headers: [String: String] = [:], onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
+        let req = buildRequest(url: url, httpMethod: HttpClient.DELETE, headers: headers, body: nil)
+        executeHttp(req, onResponse: onResponse, onError: onError)
     }
     
     func executeHttp(_ req: URLRequest, onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void, retryCount: Int = 0) {

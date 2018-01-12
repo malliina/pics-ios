@@ -9,7 +9,7 @@
 import Foundation
 
 class LocalPics {
-    private let log = LoggerFactory.shared.pics("Pics", category: LocalPics.self)
+    private let log = LoggerFactory.shared.pics(LocalPics.self)
     
     static let shared = LocalPics()
     
@@ -22,7 +22,8 @@ class LocalPics {
     }
     
     func saveAsJpg(data: Data) throws -> URL {
-        let name = "pic-\(Double(Date().timeIntervalSinceNow)).jpg"
+        let millis = Int(Date().timeIntervalSince1970 * 1000)
+        let name = "pic-\(millis).jpg"
         let dest = dir.appendingPathComponent(name)
         try data.write(to: dest)
         log.info("Saved pic as \(name)")

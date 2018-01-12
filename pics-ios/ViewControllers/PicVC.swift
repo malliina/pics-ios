@@ -33,7 +33,7 @@ class PicVC: BaseVC {
     }
     
     override func initUI() {
-        navigationController?.setNavigationBarHidden(navHiddenInitially, animated: true)
+        //navigationController?.setNavigationBarHidden(navHiddenInitially, animated: true)
         
         // shows navbar on tap
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PicVC.onTap(_:)))
@@ -68,6 +68,10 @@ class PicVC: BaseVC {
     }
     
     @objc func onSwipeUp(_ sender: UISwipeGestureRecognizer) {
+        goToPics()
+    }
+    
+    func goToPics() {
         navigationController?.popViewController(animated: true)
         navigationController?.setNavigationBarHidden(false, animated: true)
     }

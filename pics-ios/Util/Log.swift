@@ -49,22 +49,26 @@ class LoggerFactory {
     }
     
     func network<Subject>(_ subject: Subject) -> Logger {
-        return pics("Network", category: subject)
+        return base("Network", category: subject)
     }
     
     func system<Subject>(_ subject: Subject) -> Logger {
-        return pics("System", category: subject)
+        return base("System", category: subject)
     }
     
     func view<Subject>(_ subject: Subject) -> Logger {
-        return pics("Views", category: subject)
+        return base("Views", category: subject)
     }
     
     func vc<Subject>(_ subject: Subject) -> Logger {
-        return pics("ViewControllers", category: String(describing: subject))
+        return base("ViewControllers", category: String(describing: subject))
     }
     
-    func pics<Subject>(_ suffix: String, category: Subject) -> Logger {
+    func pics<Subject>(_ subject: Subject) -> Logger {
+        return base("Pics", category: String(describing: subject))
+    }
+    
+    func base<Subject>(_ suffix: String, category: Subject) -> Logger {
         return Logger("\(packageName).\(suffix)", category: String(describing: category))
     }
 }

@@ -14,7 +14,11 @@ protocol PicsRenderer {
     func updateUI()
 }
 
-class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate, PicsRenderer {
+protocol PicDelegate {
+    func removePic(key: String)
+}
+
+class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate, PicDelegate, PicsRenderer {
     static let preferredItemSize: Double = Devices.isIpad ? 200 : 130
     static let itemsPerLoad = 100
     
@@ -51,12 +55,12 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationController?.navigationBar.isHidden = true
         view.backgroundColor = backgroundColor
         guard let coll = collectionView else { return }
         coll.register(PicsCell.self, forCellWithReuseIdentifier: PicCellIdentifier)
         coll.delegate = self
         self.initNav(title: "Pics", large: false)
+        initStyle()
         let profileIcon = #imageLiteral(resourceName: "ProfileIcon")
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(image: profileIcon, style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.changeUserClicked(_:)))
         let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
@@ -95,7 +99,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             authCancellation = AWSCancellationTokenSource()
             Tokens.shared.retrieve(onToken: { (token) in
                 self.load(with: token)
-            }, cancellationToken: authCancellation?.token)
+            }, onError: onLoadError, cancellationToken: authCancellation?.token)
         } else {
             // anonymous
             load(with: nil)
@@ -117,9 +121,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         library.load(from: 0, limit: syncLimit, onError: onLoadError) { (result) in
             self.onUiThread {
                 self.hideActivityIndicator()
-                
                 self.merge(gallery: result)
-                
             }
         }
     }
@@ -184,6 +186,12 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         }
     }
     
+    func initStyle() {
+        self.view.backgroundColor = self.backgroundColor
+        self.collectionView?.backgroundColor = self.backgroundColor
+        self.navigationController?.navigationBar.barStyle = self.isSignedIn ? .black : .default
+    }
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let spaceBetweenItems = 10.0
         let minWidthPerItem = PicsVC.preferredItemSize
@@ -221,6 +229,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             cell.imageView.image = nil
             download(indexPath)
         }
+        cell.backgroundColor = PicsColors.purple
         return cell
     }
     
@@ -229,7 +238,8 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        self.navigationController?.pushViewController(PicPagingVC(pics: self.pics, startIndex: indexPath.row, isSignedIn: isSignedIn), animated: true)
+        let dest = PicPagingVC(pics: self.pics, startIndex: indexPath.row, isSignedIn: isSignedIn, delegate: self)
+        self.navigationController?.pushViewController(dest, animated: true)
     }
     
     private func download(_ indexPath: IndexPath) {
@@ -273,7 +283,16 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             }
         }
         log.error(message)
-        displayText(text: message)
+        if pics.isEmpty {
+            log.info("Failed and empty, displaying text")
+            displayText(text: message)
+        } else {
+            log.error("Failed and nonempty, noop.")
+            // TODO Indicate somehow that loading failed
+            onUiThread {
+                self.hideActivityIndicator()
+            }
+        }
     }
     
     func displayText(text: String) {
@@ -326,7 +345,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func resetDisplay() {
-        PicsDatabase.shared.clear()
+        self.pics = []
         collectionView?.reloadData()
     }
     
@@ -372,6 +391,21 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func onPicsRemoved(keys: [String]) {
+        removePicsLocally(keys: keys)
+    }
+    
+    func removePic(key: String) {
+        removePicsLocally(keys: [key])
+        library.delete(key: key, onError: onRemoveError) { (response) in
+            
+        }
+    }
+    
+    func onRemoveError(_ error: AppError) {
+        log.error("Failed to remove pic.")
+    }
+    
+    func removePicsLocally(keys: [String]) {
         onUiThread {
             let removables = self.pics.enumerated()
                 .filter { (offset, pic) -> Bool in keys.contains(pic.meta.key)}
@@ -439,13 +473,13 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
     
     func handleMedia(info: [String: Any]) throws {
         guard let originalImage = info[UIImagePickerControllerOriginalImage] as? UIImage else {
-            log.info("Original image is not an UIImage")
+            log.error("Original image is not an UIImage")
             return
         }
         let pic = Picture(image: originalImage)
         displayNewPics(pics: [pic])
         guard let data = UIImageJPEGRepresentation(originalImage, 1) else {
-            log.info("Taken image is not in JPEG format")
+            log.error("Taken image is not in JPEG format")
             return
         }
         log.info("Saving pic to file...")

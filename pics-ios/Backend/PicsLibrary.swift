@@ -26,6 +26,10 @@ class PicsLibrary {
         return http.picsPostParsed("/pics", data: picture, clientKey: clientKey, parse: PicsLibrary.parsePic, f: onResult, onError: onError)
     }
     
+    func delete(key: String, onError: @escaping (AppError) -> Void, onResult: @escaping (HttpResponse) -> Void) {
+        return http.picsDelete("/pics/\(key)", f: onResult, onError: onError)
+    }
+    
     func saveURL(picture: URL, clientKey: ClientKey, onError: @escaping (AppError) -> Void, onResult: @escaping (PicMeta) -> Void) {
         let url = http.urlFor(resource: "/pics")
         let headers = http.headersFor(clientKey: clientKey)

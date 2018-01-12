@@ -59,8 +59,8 @@ class PicsHttpClient: HttpClient {
     
     func picsGetParsed<T>(_ resource: String, parse: @escaping (AnyObject) throws -> T, f: @escaping (T) -> Void, onError: @escaping (AppError) -> Void) {
         picsGet(resource, f: {
-            (data: Data) -> Void in
-            if let obj: AnyObject = Json.asJson(data) {
+            (response: HttpResponse) -> Void in
+            if let obj: AnyObject = Json.asJson(response.data) {
                 do {
                     let parsed = try parse(obj)
                     f(parsed)
@@ -71,16 +71,16 @@ class PicsHttpClient: HttpClient {
                     onError(.simple("Unknown parse error."))
                 }
             } else {
-                self.log.error("Not JSON: \(data)")
-                onError(AppError.parseError(JsonError.notJson(data)))
+                self.log.error("Not JSON: \(response.data)")
+                onError(AppError.parseError(JsonError.notJson(response.data)))
             }
         }, onError: onError)
     }
     
     func picsPostParsed<T>(_ resource: String, data: Data, clientKey: ClientKey, parse: @escaping (AnyObject) throws -> T, f: @escaping (T) -> Void, onError: @escaping (AppError) -> Void) {
         picsPost(resource, payload: data, clientKey: clientKey, f: {
-            (data: Data) -> Void in
-            if let obj: AnyObject = Json.asJson(data) {
+            (response: HttpResponse) -> Void in
+            if let obj: AnyObject = Json.asJson(response.data) {
                 do {
                     let parsed = try parse(obj)
                     f(parsed)
@@ -97,7 +97,7 @@ class PicsHttpClient: HttpClient {
         }, onError: onError)
     }
     
-    func picsGet(_ resource: String, f: @escaping (Data) -> Void, onError: @escaping (AppError) -> Void) {
+    func picsGet(_ resource: String, f: @escaping (HttpResponse) -> Void, onError: @escaping (AppError) -> Void) {
         let url = URL(string: resource, relativeTo: baseURL)!
         self.get(
             url,
@@ -110,12 +110,25 @@ class PicsHttpClient: HttpClient {
         })
     }
     
-    func picsPost(_ resource: String, payload: Data, clientKey: ClientKey, f: @escaping (Data) -> Void, onError: @escaping (AppError) -> Void) {
+    func picsPost(_ resource: String, payload: Data, clientKey: ClientKey, f: @escaping (HttpResponse) -> Void, onError: @escaping (AppError) -> Void) {
         let url = urlFor(resource: resource)
         self.postData(
             url,
             headers: headersFor(clientKey: clientKey),
             payload: payload,
+            onResponse: { response -> Void in
+                self.responseHandler(resource, response: response, f: f, onError: onError)
+        },
+            onError: { (err) -> Void in
+                onError(.networkFailure(err))
+        })
+    }
+    
+    func picsDelete(_ resource: String, f: @escaping (HttpResponse) -> Void, onError: @escaping (AppError) -> Void) {
+        let url = URL(string: resource, relativeTo: baseURL)!
+        self.delete(
+            url,
+            headers: defaultHeaders,
             onResponse: { response -> Void in
                 self.responseHandler(resource, response: response, f: f, onError: onError)
         },
@@ -132,10 +145,9 @@ class PicsHttpClient: HttpClient {
         return postHeaders.merging([PicsHttpClient.ClientPicHeader: clientKey]) { (current, _) in current }
     }
     
-    func responseHandler(_ resource: String, response: HttpResponse, f: (Data) -> Void, onError: (AppError) -> Void) {
+    func responseHandler(_ resource: String, response: HttpResponse, f: (HttpResponse) -> Void, onError: (AppError) -> Void) {
         if response.isStatusOK {
-//            log.info("Response to '\(resource)' received with status '\(statusCode)'.")
-            f(response.data)
+            f(response)
         } else {
             log.error("Request to '\(resource)' failed with status '\(response.statusCode)'.")
             var errorMessage: String? = nil
@@ -152,16 +164,20 @@ class PicsHttpClient: HttpClient {
         super.executeHttp(r, onResponse: { (response) in
             if retryCount == 0 && response.statusCode == 401 && response.isTokenExpired {
                 self.log.info("Token expired, retrieving new token and retrying...")
-                Tokens.shared.retrieveToken(onToken: { (token) in
+                Tokens.shared.retrieve(onToken: { (token) in
                     self.updateToken(token: token)
                     r.setValue(PicsHttpClient.authValueFor(forToken: token), forHTTPHeaderField: HttpClient.AUTHORIZATION)
                     self.executeHttp(r, onResponse: onResponse, onError: onError, retryCount: retryCount + 1)
-                })
+                }, onError: self.handleError, cancellationToken: nil)
             } else {
 //                self.log.info("Got a response for request to \(url).")
                 onResponse(response)
             }
         }, onError: onError, retryCount: retryCount)
+    }
+    
+    func handleError(error: AppError) {
+        log.error(error.describe)
     }
     
     func updateToken(token: AWSCognitoIdentityUserSessionToken?) {
