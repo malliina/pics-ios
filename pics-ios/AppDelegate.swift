@@ -30,6 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } catch {
             w.rootViewController = OneLinerVC(text: "Unable to initialize app.")
         }
+        LocalPics.shared
         return true
     }
     
@@ -58,7 +59,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // Reconnects socket, loads any new pics, etc
         LifeCycle.shared.renderer?.updateUI()
-        
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {

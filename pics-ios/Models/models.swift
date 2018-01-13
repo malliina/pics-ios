@@ -205,10 +205,13 @@ class PicMeta {
     
     static func readUrl(key: String, dict: NSDictionary) throws -> URL {
         let asString = try Json.readString(dict, key)
-        if let url = URL(string: asString) {
-            return url
+        guard let url = URL(string: asString) else { throw JsonError.invalid(key, dict) }
+        if url.isFileURL {
+            // Absolute file URLs are specific to the app version and thus unsuitable for persistence,
+            // so we only take the last component here and reconstruct a valid file URL for this app version.
+            return LocalPics.shared.urlFor(name: url.lastPathComponent)
         } else {
-            throw JsonError.invalid(key, dict)
+            return url
         }
     }
     

@@ -179,9 +179,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     func changeStyle(dark: Bool) {
         UIView.animate(withDuration: 0.5) { () -> Void in
-            self.view.backgroundColor = self.backgroundColor
-            self.collectionView?.backgroundColor = self.backgroundColor
-            self.navigationController?.navigationBar.barStyle = self.isSignedIn ? .black : .default
+            self.initStyle()
             self.navigationController?.navigationBar.isHidden = false
         }
     }
@@ -491,11 +489,6 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         library.saveURL(picture: url, clientKey: clientKey, onError: onSaveError) { pic in
             self.log.info("Uploaded pic \(clientKey).")
         }
-//        if let metadata = info[UIImagePickerControllerMediaMetadata] as? NSDictionary {
-//            metadata.forEach({ (key, value) in
-//                print("\(key) = \(value)")
-//            })
-//        }
     }
     
     func onSaveError(error: AppError) {

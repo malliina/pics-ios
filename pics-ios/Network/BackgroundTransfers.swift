@@ -175,10 +175,6 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
             req.addValue(value, forHTTPHeaderField: key)
         }
         let task = session.uploadTask(with: req, fromFile: file)
-//        let task = session.uploadTask(with: req, fromFile: file) { (data, response, error) in
-//            self.log.info("Upload task complete.")
-//            onComplete(TransferResult(url: dest, data: data, response: response, error: error))
-//        }
         saveTask(task.taskIdentifier, di: DownloadInfo(relativePath: file.lastPathComponent, destinationURL: dest))
         task.resume()
     }
