@@ -30,7 +30,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } catch {
             w.rootViewController = OneLinerVC(text: "Unable to initialize app.")
         }
-        LocalPics.shared
         return true
     }
     
@@ -58,7 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
         
         // Reconnects socket, loads any new pics, etc
-        LifeCycle.shared.renderer?.updateUI()
+        LifeCycle.shared.renderer?.reconnectAndSync()
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {

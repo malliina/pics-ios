@@ -11,7 +11,7 @@ import UIKit
 import AWSCognitoIdentityProvider
 
 protocol PicsRenderer {
-    func updateUI()
+    func reconnectAndSync()
 }
 
 protocol PicDelegate {
@@ -48,10 +48,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
     var authCancellation: AWSCancellationTokenSource? = nil
     
-    let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .white)
-    
     var isSignedIn: Bool { return Tokens.shared.pool.currentUser()?.isSignedIn ?? false }
     var backgroundColor: UIColor { return isSignedIn ? PicsColors.background : PicsColors.lightBackground }
+    var cellBackgroundColor: UIColor { return isSignedIn ? PicsColors.almostBlack : PicsColors.almostLight }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,14 +82,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     private func initAndLoad(forceSignIn: Bool) {
         log.info("Initializing picture gallery with \(offlinePics.count) offline pics.")
-        self.onUiThread {
-            self.showActivityIndicator()
-        }
-        
         updateUI(needsToken: isSignedIn || forceSignIn)
     }
     
-    func updateUI() {
+    func reconnectAndSync() {
         updateUI(needsToken: isSignedIn)
     }
     
@@ -117,22 +112,30 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
 
     func syncPics() {
+        networkActivity(visible: true)
         let syncLimit = max(loadedPics.count, PicsVC.itemsPerLoad)
         library.load(from: 0, limit: syncLimit, onError: onLoadError) { (result) in
+            self.networkActivity(visible: false)
             self.onUiThread {
-                self.hideActivityIndicator()
                 self.merge(gallery: result)
             }
+        }
+    }
+    
+    func networkActivity(visible: Bool) {
+        onUiThread {
+            UIApplication.shared.isNetworkActivityIndicatorVisible = visible
         }
     }
     
     func loadPics(limit: Int) {
         let beforeCount = loadedPics.count
         let wasOffline = !isOnline
+        networkActivity(visible: true)
         library.load(from: loadedPics.count, limit: limit, onError: onLoadError) { (result) in
             self.onUiThread {
+                self.networkActivity(visible: false)
                 self.log.info("Loaded \(result.count) items, from \(beforeCount)")
-                self.hideActivityIndicator()
                 if self.loadedPics.count == beforeCount {
                     if !result.isEmpty {
                         self.pics = self.loadedPics + result.map { p in Picture(meta: p) }
@@ -167,10 +170,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func displayItems(at: [IndexPath]) {
-        guard let coll = self.collectionView else { return }
-        hideActivityIndicator()
-//        self.log.info("Inserting \(at.count) items.")
-        coll.insertItems(at: at)
+        self.collectionView?.insertItems(at: at)
     }
     
     func updateStyle() {
@@ -227,7 +227,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             cell.imageView.image = nil
             download(indexPath)
         }
-        cell.backgroundColor = PicsColors.purple
+        cell.backgroundColor = cellBackgroundColor
         return cell
     }
     
@@ -243,13 +243,23 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     private func download(_ indexPath: IndexPath) {
         let pic = pics[indexPath.row]
         if pic.small == nil {
-            Downloader.shared.download(url: pic.meta.small) { data in
-                self.onDownloaded(data: data, indexPath: indexPath)
+            let key = pic.meta.key
+            if let local = LocalPics.shared.readSmall(key: key) {
+                updateSmall(data: local, indexPath: indexPath)
+            } else {
+                Downloader.shared.download(url: pic.meta.small) { data in
+                    self.onDownloaded(key: key, data: data, indexPath: indexPath)
+                }
             }
         }
     }
     
-    func onDownloaded(data: Data, indexPath: IndexPath) {
+    private func onDownloaded(key: String, data: Data, indexPath: IndexPath) {
+        let _ = LocalPics.shared.saveSmall(data: data, key: key)
+        updateSmall(data: data, indexPath: indexPath)
+    }
+    
+    private func updateSmall(data: Data, indexPath: IndexPath) {
         onUiThread {
             if let image = UIImage(data: data), let coll = self.collectionView, self.pics.count > indexPath.row {
                 self.pics[indexPath.row].small = image
@@ -286,16 +296,12 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             displayText(text: message)
         } else {
             log.error("Failed and nonempty, noop.")
-            // TODO Indicate somehow that loading failed
-            onUiThread {
-                self.hideActivityIndicator()
-            }
         }
+        self.networkActivity(visible: false)
     }
     
     func displayText(text: String) {
         onUiThread {
-            self.activityIndicator.stopAnimating()
             let feedbackLabel = PicsLabel.build(text: text, alignment: .center, numberOfLines: 0)
             feedbackLabel.textColor = self.isSignedIn ? .lightText : .darkText
             feedbackLabel.backgroundColor = self.backgroundColor
@@ -319,7 +325,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     @objc func refreshClicked(_ sender: UIBarButtonItem) {
         let loadLimit = max(pics.count, PicsVC.itemsPerLoad)
         resetDisplay()
-        showActivityIndicator()
         loadPics(limit: loadLimit)
     }
     
@@ -345,18 +350,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func resetDisplay() {
         self.pics = []
         collectionView?.reloadData()
-    }
-    
-    func showActivityIndicator() {
-        activityIndicator.activityIndicatorViewStyle = isSignedIn ? .white : .gray
-        activityIndicator.backgroundColor = backgroundColor
-        collectionView?.backgroundView = activityIndicator
-        activityIndicator.startAnimating()
-    }
-    
-    func hideActivityIndicator() {
-        activityIndicator.stopAnimating()
-        collectionView?.backgroundView = nil
     }
     
     func onPics(pics: [PicMeta]) {
@@ -453,11 +446,6 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        if self.pics.isEmpty {
-            self.onUiThread {
-                self.showActivityIndicator()
-            }
-        }
         picker.dismiss(animated: true) { () in
             DispatchQueue.global(qos: .background).async {
                 do {
