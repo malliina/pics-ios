@@ -525,7 +525,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"${CONFIGURATION}\" == \"Release\" ]; then\ncp -r \"${PROJECT_DIR}/pics-ios/Credentials.plist\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app\"\nfi";
+			shellScript = "if [ \"${CONFIGURATION}\" == \"CI\" ]; then\ncp -r \"${PROJECT_DIR}/pics-ios/Credentials.plist\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app\"\nfi";
 		};
 		AE3722912C7A3DF724190C36 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1016,7 +1016,7 @@
 				614230681FC1891F00CD4173 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = CI;
+			defaultConfigurationName = Release;
 		};
 		614230691FC1891F00CD4173 /* Build configuration list for PBXNativeTarget "pics-ios" */ = {
 			isa = XCConfigurationList;
@@ -1026,7 +1026,7 @@
 				6142306B1FC1891F00CD4173 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = CI;
+			defaultConfigurationName = Release;
 		};
 		6142306C1FC1891F00CD4173 /* Build configuration list for PBXNativeTarget "pics-iosTests" */ = {
 			isa = XCConfigurationList;
@@ -1036,7 +1036,7 @@
 				6142306E1FC1891F00CD4173 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = CI;
+			defaultConfigurationName = Release;
 		};
 		6142306F1FC1891F00CD4173 /* Build configuration list for PBXNativeTarget "pics-iosUITests" */ = {
 			isa = XCConfigurationList;
@@ -1046,7 +1046,7 @@
 				614230711FC1891F00CD4173 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = CI;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
