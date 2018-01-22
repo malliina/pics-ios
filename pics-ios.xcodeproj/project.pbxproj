@@ -46,6 +46,7 @@
 		61D214C61FD464B800781DC7 /* AuthHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C51FD464B800781DC7 /* AuthHandler.swift */; };
 		61D214C81FD488DD00781DC7 /* ConfirmVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C71FD488DD00781DC7 /* ConfirmVC.swift */; };
 		61D214CA1FD499C200781DC7 /* PicsLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C91FD499C200781DC7 /* PicsLabel.swift */; };
+		61E9FBEE20167F3800FA4F42 /* Credentials.plist in Resources */ = {isa = PBXBuildFile; fileRef = 618623CD1FD71DB60009345E /* Credentials.plist */; };
 		61EB2D841FDD45BB00A27F1A /* PicVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D831FDD45BB00A27F1A /* PicVC.swift */; };
 		61EB2D861FDD517500A27F1A /* Devices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D851FDD517500A27F1A /* Devices.swift */; };
 		61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */; };
@@ -348,7 +349,6 @@
 				6142303D1FC1891E00CD4173 /* Sources */,
 				6142303E1FC1891E00CD4173 /* Frameworks */,
 				6142303F1FC1891E00CD4173 /* Resources */,
-				61E9FBED201675B700FA4F42 /* ShellScript */,
 				528A15193F279FB5F9577A3F /* [CP] Embed Pods Frameworks */,
 				AE3722912C7A3DF724190C36 /* [CP] Copy Pods Resources */,
 			);
@@ -451,6 +451,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61E9FBEE20167F3800FA4F42 /* Credentials.plist in Resources */,
 				6142304F1FC1891E00CD4173 /* LaunchScreen.storyboard in Resources */,
 				6142304C1FC1891E00CD4173 /* Assets.xcassets in Resources */,
 			);
@@ -513,19 +514,6 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
-		};
-		61E9FBED201675B700FA4F42 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [ \"${CONFIGURATION}\" == \"CI\" ]; then\ncp -r \"${PROJECT_DIR}/pics-ios/Credentials.plist\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app\"\nfi";
 		};
 		AE3722912C7A3DF724190C36 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
