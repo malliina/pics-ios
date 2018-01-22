@@ -16,7 +16,6 @@
 		6142304F1FC1891E00CD4173 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6142304D1FC1891E00CD4173 /* LaunchScreen.storyboard */; };
 		6142305A1FC1891E00CD4173 /* pics_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614230591FC1891E00CD4173 /* pics_iosTests.swift */; };
 		614230651FC1891E00CD4173 /* pics_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614230641FC1891E00CD4173 /* pics_iosUITests.swift */; };
-		618623CE1FD71DB60009345E /* Credentials.plist in Resources */ = {isa = PBXBuildFile; fileRef = 618623CD1FD71DB60009345E /* Credentials.plist */; };
 		618623D11FD71DFC0009345E /* CognitoConf.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618623D01FD71DFC0009345E /* CognitoConf.swift */; };
 		61A702CE1FC5E54300814051 /* PicsLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702CD1FC5E54300814051 /* PicsLibrary.swift */; };
 		61A702D21FCAC6C200814051 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702D11FCAC6C200814051 /* Log.swift */; };
@@ -119,6 +118,9 @@
 		61D214C51FD464B800781DC7 /* AuthHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthHandler.swift; sourceTree = "<group>"; };
 		61D214C71FD488DD00781DC7 /* ConfirmVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmVC.swift; sourceTree = "<group>"; };
 		61D214C91FD499C200781DC7 /* PicsLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsLabel.swift; sourceTree = "<group>"; };
+		61E9FBE2201666BD00FA4F42 /* AWSCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AWSCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		61E9FBE42016670000FA4F42 /* Pods_pics_iosTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Pods_pics_iosTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		61E9FBE62016677F00FA4F42 /* AWSCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AWSCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61EB2D831FDD45BB00A27F1A /* PicVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicVC.swift; sourceTree = "<group>"; };
 		61EB2D851FDD517500A27F1A /* Devices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Devices.swift; sourceTree = "<group>"; };
 		61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPics.swift; sourceTree = "<group>"; };
@@ -326,6 +328,9 @@
 		C077EB4D4C9FA66D03D63B5D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				61E9FBE62016677F00FA4F42 /* AWSCore.framework */,
+				61E9FBE42016670000FA4F42 /* Pods_pics_iosTests.framework */,
+				61E9FBE2201666BD00FA4F42 /* AWSCore.framework */,
 				7FF88EA2B44CF858EFE37A7B /* Pods_pics_ios.framework */,
 				74DAFE60A1153E29379F07CA /* Pods_pics_iosTests.framework */,
 			);
@@ -343,6 +348,7 @@
 				6142303D1FC1891E00CD4173 /* Sources */,
 				6142303E1FC1891E00CD4173 /* Frameworks */,
 				6142303F1FC1891E00CD4173 /* Resources */,
+				61E9FBED201675B700FA4F42 /* ShellScript */,
 				528A15193F279FB5F9577A3F /* [CP] Embed Pods Frameworks */,
 				AE3722912C7A3DF724190C36 /* [CP] Copy Pods Resources */,
 			);
@@ -445,7 +451,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				618623CE1FD71DB60009345E /* Credentials.plist in Resources */,
 				6142304F1FC1891E00CD4173 /* LaunchScreen.storyboard in Resources */,
 				6142304C1FC1891E00CD4173 /* Assets.xcassets in Resources */,
 			);
@@ -508,6 +513,19 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		61E9FBED201675B700FA4F42 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"${CONFIGURATION}\" == \"Release\" ]; then\ncp -r \"${PROJECT_DIR}/pics-ios/Credentials.plist\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app\"\nfi";
 		};
 		AE3722912C7A3DF724190C36 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -878,6 +896,115 @@
 			};
 			name = Release;
 		};
+		61E9FBE820166E0400FA4F42 /* CI */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = CI;
+		};
+		61E9FBE920166E0400FA4F42 /* CI */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F85C31D8DD5E7E37D1FDA418 /* Pods-pics-ios.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_UNCHECKEDRETURN = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = D2T2QC36Z9;
+				INFOPLIST_FILE = "pics-ios/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = CI;
+		};
+		61E9FBEA20166E0400FA4F42 /* CI */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 07263DBF67E3C0D90142BCD5 /* Pods-pics-iosTests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = D2T2QC36Z9;
+				INFOPLIST_FILE = "pics-iosTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/pics-ios.app/pics-ios";
+			};
+			name = CI;
+		};
+		61E9FBEB20166E0400FA4F42 /* CI */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = D2T2QC36Z9;
+				INFOPLIST_FILE = "pics-iosUITests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "pics-ios";
+			};
+			name = CI;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -885,6 +1012,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				614230671FC1891F00CD4173 /* Debug */,
+				61E9FBE820166E0400FA4F42 /* CI */,
 				614230681FC1891F00CD4173 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -894,6 +1022,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6142306A1FC1891F00CD4173 /* Debug */,
+				61E9FBE920166E0400FA4F42 /* CI */,
 				6142306B1FC1891F00CD4173 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -903,6 +1032,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6142306D1FC1891F00CD4173 /* Debug */,
+				61E9FBEA20166E0400FA4F42 /* CI */,
 				6142306E1FC1891F00CD4173 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -912,6 +1042,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				614230701FC1891F00CD4173 /* Debug */,
+				61E9FBEB20166E0400FA4F42 /* CI */,
 				614230711FC1891F00CD4173 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
