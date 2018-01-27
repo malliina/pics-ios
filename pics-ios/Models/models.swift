@@ -191,6 +191,18 @@ class PicMeta {
         return PicMeta(key: key, url: url, added: added, clientKey: clientKey)
     }
     
+    static func random() -> PicMeta {
+        return PicMeta(key: Picture.randomKey(), url: Picture.TempFakeUrl, added: Picture.nowMillis(), clientKey: nil)
+    }
+    
+    static func randoms() -> [PicMeta] {
+        let size = Int(arc4random_uniform(10))
+        print(size)
+        return (0...size).map { (i) -> PicMeta in
+            PicMeta.random()
+        }
+    }
+    
     static func write(pic: PicMeta) -> [String: AnyObject] {
         return [
             Key: pic.key as AnyObject,
@@ -241,7 +253,7 @@ class Picture {
     var large: UIImage? = nil
     
     convenience init(image: UIImage) {
-        let millis = Timestamp(Date().timeIntervalSince1970 * 1000)
+        let millis = Picture.nowMillis()
         self.init(url: Picture.TempFakeUrl, image: image, added: millis)
     }
     
@@ -250,7 +262,7 @@ class Picture {
     }
     
     convenience init(url: URL, image: UIImage, added: Timestamp) {
-        let clientKey: String = String(UUID().uuidString.prefix(7)).lowercased()
+        let clientKey = Picture.randomKey()
         self.init(meta: PicMeta(key: clientKey, url: url, added: added, clientKey: clientKey))
         self.url = image
         small = image
@@ -260,6 +272,14 @@ class Picture {
     
     init(meta: PicMeta) {
         self.meta = meta
+    }
+    
+    static func nowMillis() -> Timestamp {
+        return Timestamp(Date().timeIntervalSince1970 * 1000)
+    }
+    
+    static func randomKey() -> String {
+        return String(UUID().uuidString.prefix(7)).lowercased()
     }
     
     func withMeta(meta: PicMeta) -> Picture {

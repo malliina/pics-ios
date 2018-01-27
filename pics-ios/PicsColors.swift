@@ -26,7 +26,8 @@ class PicsColors {
 //    static let inputBackground = tealBlue
     static let inputText: UIColor = .white
     static let placeholder = UIColor.lightText
-    static let buttonText = UIColor(red: 0, green: 0.478431, blue: 1, alpha: 1)
+    static let blueish = UIColor(red: 0, green: 0.478431, blue: 1, alpha: 1)
+    static let buttonText = blueish
     
     static func colorFor(red: Int, green: Int, blue: Int) -> UIColor {
         return UIColor(red: CGFloat(red) / PicsColors.divisor, green: CGFloat(green) / PicsColors.divisor, blue: CGFloat(blue) / PicsColors.divisor, alpha: 1.0)

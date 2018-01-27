@@ -18,13 +18,13 @@ class PicPagingVC: BaseVC {
     
     let pics: [Picture]
     private var index: Int
-    let isSignedIn: Bool
+    let isPrivate: Bool
     let delegate: PicDelegate
     
-    init(pics: [Picture], startIndex: Int, isSignedIn: Bool, delegate: PicDelegate) {
+    init(pics: [Picture], startIndex: Int, isPrivate: Bool, delegate: PicDelegate) {
         self.pics = pics
         self.index = startIndex
-        self.isSignedIn = isSignedIn
+        self.isPrivate = isPrivate
         self.delegate = delegate
         super.init(nibName: nil, bundle: nil)
         self.edgesForExtendedLayout = []
@@ -36,11 +36,11 @@ class PicPagingVC: BaseVC {
     
     override func initUI() {
         navigationItem.title = "Pic"
-        if isSignedIn {
+        if isPrivate {
             navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(onRemoveClicked(_:)))
         }
         navigationController?.setNavigationBarHidden(true, animated: true)
-        let vc = PicVC(pic: pics[index], navHiddenInitially: true, isSignedIn: isSignedIn)
+        let vc = PicVC(pic: pics[index], navHiddenInitially: true, isPrivate: isPrivate)
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
@@ -86,7 +86,7 @@ extension PicPagingVC: UIPageViewControllerDataSource {
     
     func go(to newIndex: Int) -> UIViewController? {
         if newIndex >= 0 && newIndex < pics.count {
-            return PicVC(pic: pics[newIndex], navHiddenInitially: navigationController?.isNavigationBarHidden ?? true, isSignedIn: isSignedIn)
+            return PicVC(pic: pics[newIndex], navHiddenInitially: navigationController?.isNavigationBarHidden ?? true, isPrivate: isPrivate)
         } else {
             return nil
         }

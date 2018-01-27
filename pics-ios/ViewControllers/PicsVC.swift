@@ -26,10 +26,11 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     let PicCellIdentifier = "PicCell"
     let minItemsRemainingBeforeLoadMore = 20
     
+    private var mightHaveMore: Bool = true
     private var isOnline = false
     private var offlinePics: [Picture] {
-        get { return PicsDatabase.shared.pics }
-        set (newPics) { PicsDatabase.shared.savePics(ps: newPics) }
+        get { return PicsSettings.shared.localPics }
+        set (newPics) { PicsSettings.shared.localPics = newPics }
     }
     
     private var loadedPics: [Picture] = []
@@ -48,9 +49,16 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
     var authCancellation: AWSCancellationTokenSource? = nil
     
-    var isSignedIn: Bool { return Tokens.shared.pool.currentUser()?.isSignedIn ?? false }
-    var backgroundColor: UIColor { return isSignedIn ? PicsColors.background : PicsColors.lightBackground }
-    var cellBackgroundColor: UIColor { return isSignedIn ? PicsColors.almostBlack : PicsColors.almostLight }
+    var currentUser: AWSCognitoIdentityUser? { return Tokens.shared.pool.currentUser() }
+    var isPrivate: Bool {
+        get { return isSignedIn && PicsSettings.shared.isPrivate }
+        set(newValue) { PicsSettings.shared.isPrivate = newValue }
+    }
+    var isSignedIn: Bool { return currentUser?.isSignedIn ?? false }
+    var backgroundColor: UIColor { return isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    var cellBackgroundColor: UIColor { return isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
+    var barStyle: UIBarStyle { return isPrivate ? UIBarStyle.black : UIBarStyle.default }
+    var textColor: UIColor { return isPrivate ? .lightText : .darkText}
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,7 +69,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         self.initNav(title: "Pics", large: false)
         initStyle()
         let profileIcon = #imageLiteral(resourceName: "ProfileIcon")
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(image: profileIcon, style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.changeUserClicked(_:)))
+        self.navigationItem.leftBarButtonItems = [
+            UIBarButtonItem(image: profileIcon, style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.profileClicked(_:))),
+//            UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(PicsVC.demoClicked(_:)))
+        ]
         let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
         if isCameraAvailable {
             self.navigationItem.rightBarButtonItems = [
@@ -74,22 +85,41 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         initAndLoad(forceSignIn: false)
     }
     
+    @objc func demoClicked(_ button: UIBarButtonItem) {
+        merge(gallery: PicMeta.randoms())
+    }
+    
+    @objc func profileClicked(_ button: UIBarButtonItem) {
+        let content = ProfilePopover(user: currentUser?.username, isPrivate: isPrivate, delegate: self)
+        content.modalPresentationStyle = .popover
+        guard let popover = content.popoverPresentationController else { return }
+        popover.barButtonItem = button
+        popover.delegate = content
+//        let nav = UINavigationController(rootViewController: content)
+//        nav.navigationItem.title = "Select gallery"
+//        nav.navigationItem.rightBarButtonItems = [
+//            UIBarButtonItem(barButtonSystemItem: .done, target: content, action: #selector(ProfilePopover.dismissSelf(_:)))
+//        ]
+        self.present(content, animated: true, completion: nil)
+    }
+    
     func reInit() {
         authCancellation?.cancel()
         authCancellation?.dispose()
-        initAndLoad(forceSignIn: false)
+        initAndLoad(forceSignIn: isPrivate)
     }
     
     private func initAndLoad(forceSignIn: Bool) {
         log.info("Initializing picture gallery with \(offlinePics.count) offline pics.")
-        updateUI(needsToken: isSignedIn || forceSignIn)
+        updateUI(needsToken: isPrivate && (isSignedIn || forceSignIn))
     }
     
     func reconnectAndSync() {
-        updateUI(needsToken: isSignedIn)
+        updateUI(needsToken: isPrivate)
     }
     
     private func updateUI(needsToken: Bool) {
+        mightHaveMore = true
         if needsToken {
             authCancellation = AWSCancellationTokenSource()
             Tokens.shared.retrieve(onToken: { (token) in
@@ -104,7 +134,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     private func load(with token: AWSCognitoIdentityUserSessionToken?) {
         Backend.shared.updateToken(new: token)
         self.socket.openSilently()
-        self.log.info("Loading pics...")
+//        self.log.info("Loading pics...")
         self.syncPics()
         onUiThread {
             self.updateStyle()
@@ -115,6 +145,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         networkActivity(visible: true)
         let syncLimit = max(loadedPics.count, PicsVC.itemsPerLoad)
         library.load(from: 0, limit: syncLimit, onError: onLoadError) { (result) in
+            self.mightHaveMore = result.count >= syncLimit
             self.networkActivity(visible: false)
             self.onUiThread {
                 self.merge(gallery: result)
@@ -128,11 +159,14 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         }
     }
     
+    
+    
     func loadPics(limit: Int) {
         let beforeCount = loadedPics.count
         let wasOffline = !isOnline
         networkActivity(visible: true)
         library.load(from: loadedPics.count, limit: limit, onError: onLoadError) { (result) in
+            self.mightHaveMore = result.count >= limit
             self.onUiThread {
                 self.networkActivity(visible: false)
                 self.log.info("Loaded \(result.count) items, from \(beforeCount)")
@@ -154,7 +188,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                         self.displayNoItemsIfEmpty()
                     }
                 } else {
-                    self.log.info("Count mismatch")
+                    self.log.warn("Count mismatch")
                     self.displayNoItemsIfEmpty()
                 }
             }
@@ -174,7 +208,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func updateStyle() {
-        changeStyle(dark: isSignedIn)
+        changeStyle(dark: isPrivate)
     }
     
     func changeStyle(dark: Bool) {
@@ -185,9 +219,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func initStyle() {
-        self.view.backgroundColor = self.backgroundColor
-        self.collectionView?.backgroundColor = self.backgroundColor
-        self.navigationController?.navigationBar.barStyle = self.isSignedIn ? .black : .default
+        self.view.backgroundColor = backgroundColor
+        self.collectionView?.backgroundColor = backgroundColor
+        self.navigationController?.navigationBar.barStyle = barStyle
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -221,7 +255,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PicCellIdentifier, for: indexPath) as! PicsCell
         let pic = pics[indexPath.row]
-        if let thumb = pic.small {
+        if let thumb = pic.small ?? cached(key: pic.meta.key) {
             cell.imageView.image = thumb
         } else {
             cell.imageView.image = nil
@@ -231,12 +265,17 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         return cell
     }
     
+    func cached(key: String) -> UIImage? {
+        guard let data = LocalPics.shared.readSmall(key: key) else { return nil }
+        return UIImage(data: data)
+    }
+    
     override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         maybeLoadMore(atItemIndex: indexPath.row)
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let dest = PicPagingVC(pics: self.pics, startIndex: indexPath.row, isSignedIn: isSignedIn, delegate: self)
+        let dest = PicPagingVC(pics: self.pics, startIndex: indexPath.row, isPrivate: isPrivate, delegate: self)
         self.navigationController?.pushViewController(dest, animated: true)
     }
     
@@ -263,6 +302,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         onUiThread {
             if let image = UIImage(data: data), let coll = self.collectionView, self.pics.count > indexPath.row {
                 self.pics[indexPath.row].small = image
+//                self.log.info("Reloading \(indexPath.row)")
                 coll.reloadItems(at: [indexPath])
             } else {
                 self.log.info("Unable to update downloaded pic count \(self.pics.count) \(self.isOnline) row \(indexPath.row) \(self.pics.count > indexPath.row)")
@@ -272,13 +312,12 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     func maybeLoadMore(atItemIndex: Int) {
         let trackCount = pics.count
-        if isOnline && atItemIndex + minItemsRemainingBeforeLoadMore == trackCount {
+        if mightHaveMore && isOnline && atItemIndex + minItemsRemainingBeforeLoadMore == trackCount {
             loadMore(atItemIndex)
         }
     }
     
     func loadMore(_ atItemIndex: Int) {
-        // log.info("Loading more...")
         loadPics(limit: PicsVC.itemsPerLoad)
     }
     
@@ -303,7 +342,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func displayText(text: String) {
         onUiThread {
             let feedbackLabel = PicsLabel.build(text: text, alignment: .center, numberOfLines: 0)
-            feedbackLabel.textColor = self.isSignedIn ? .lightText : .darkText
+            feedbackLabel.textColor = self.textColor
             feedbackLabel.backgroundColor = self.backgroundColor
             self.collectionView?.backgroundView = feedbackLabel
             self.resetDisplay()
@@ -329,7 +368,11 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     @objc func changeUserClicked(_ sender: UIBarButtonItem) {
-        let wasSignedIn = pool.currentUser()?.isSignedIn ?? false
+        signOutAndReload()
+    }
+    
+    func signOutAndReload() {
+        let wasSignedIn = isSignedIn
         pool.currentUser()?.signOut()
         pool.clearLastKnownUser()
         self.collectionView?.backgroundView = nil
@@ -424,19 +467,48 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     func merge(gallery: [PicMeta]) {
         onUiThread {
+            self.log.info("Got gallery with \(gallery.count) pics")
             self.isOnline = true
-            let newPics = gallery
-                .filter { (pic) in !self.contains(pic: pic) }
-                .map { p in Picture(meta: p) }
-            if newPics.count > 0 {
-                let merged = (self.pics + newPics)
-                    .filter({ (p) -> Bool in gallery.contains(where: { (meta) -> Bool in meta.key == p.meta.key }) })
-                    .sorted(by: { (p1, p2) -> Bool in p1.meta.added > p2.meta.added })
-                self.pics = merged
-            }
-            self.collectionView?.reloadData()
-            self.log.info("Refresh complete.")
+            let old = self.pics
+            self.pics = gallery.map { p in Picture(meta: p) }
+            let newEntries = gallery.enumerated().filter({ (offset, elem) -> Bool in
+                !old.contains(where: { $0.meta.key == elem.key })
+            }).map({ (pair) -> IndexPath in
+                let (index, _) = pair
+                return IndexPath(row: index, section: 0)
+            })
+            // Probably buggy and crashes the app
+            guard let coll = self.collectionView else { return }
+            coll.performBatchUpdates({
+                let renderedItems = self.collectionView?.numberOfItems(inSection: 0) ?? 0
+                let (updates, inserts) = newEntries.partition { $0.row < renderedItems }
+                coll.reloadItems(at: updates)
+                coll.insertItems(at: inserts)
+                let tail = old.count - gallery.count
+                if tail > 0 {
+                    self.log.info("Removing tail of \(tail) items")
+                    let removed = (gallery.count..<(gallery.count + tail)).filter { $0 < renderedItems }.map { IndexPath(row: $0, section: 0) }
+                    coll.deleteItems(at: removed)
+                }
+            }, completion: nil)
+            
         }
+    }
+}
+
+extension PicsVC: ProfileDelegate {
+    func onPublic() {
+        isPrivate = false
+        updateUI(needsToken: false)
+    }
+    
+    func onPrivate() {
+        isPrivate = true
+        updateUI(needsToken: true)
+    }
+    
+    func onLogout() {
+        signOutAndReload()
     }
 }
 

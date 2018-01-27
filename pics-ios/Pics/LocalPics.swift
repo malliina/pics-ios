@@ -40,7 +40,7 @@ class LocalPics {
         let dest = fileFor(key: key, dir: small)
         let exists = (try? dest.checkResourceIsReachable()) ?? false
         if !exists {
-            log.info("Saving \(key) to \(dest)")
+//            log.info("Saving \(key) to \(dest)")
             let success = (try? data.write(to: dest)) != nil
             if success {
                 log.info("Saved \(key) locally to \(dest)")

@@ -17,12 +17,14 @@ class PicVC: BaseVC {
     let pic: Picture
     
     let navHiddenInitially: Bool
-    let isSignedIn: Bool
+    let isPrivate: Bool
     
-    init(pic: Picture, navHiddenInitially: Bool, isSignedIn: Bool) {
+    var backgroundColor: UIColor { return isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    
+    init(pic: Picture, navHiddenInitially: Bool, isPrivate: Bool) {
         self.pic = pic
         self.navHiddenInitially = navHiddenInitially
-        self.isSignedIn = isSignedIn
+        self.isPrivate = isPrivate
         super.init(nibName: nil, bundle: nil)
         imageView.image = pic.url
         self.edgesForExtendedLayout = []
@@ -49,12 +51,13 @@ class PicVC: BaseVC {
         imageView.snp.makeConstraints { (make) in
             make.leading.trailing.top.bottom.equalToSuperview()
         }
-        imageView.backgroundColor = isSignedIn ? PicsColors.background : PicsColors.lightBackground
+        imageView.backgroundColor = backgroundColor
         // Uses the small image until a larger is available
         if let image = pic.large {
             imageView.image = image
         } else {
             imageView.image = pic.small
+            log.info("Using image \(pic.small)")
             downloadLarge(pic: pic) { large in
                 self.onUiThread {
                     self.imageView.image = large
