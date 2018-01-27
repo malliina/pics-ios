@@ -54,6 +54,7 @@
 		61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */; };
 		61EB2D8D1FF1849800A27F1A /* SocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8C1FF1849800A27F1A /* SocketClient.swift */; };
 		61EB2D8F1FF1855500A27F1A /* PicsSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */; };
+		DFE096B8419DFE37A7047661 /* Pods_pics_iosTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61E9FBE42016670000FA4F42 /* Pods_pics_iosTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,6 +77,7 @@
 /* Begin PBXFileReference section */
 		052DFB5A9DAABCDDAADC98F0 /* Pods-pics-iosTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pics-iosTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-pics-iosTests/Pods-pics-iosTests.release.xcconfig"; sourceTree = "<group>"; };
 		07263DBF67E3C0D90142BCD5 /* Pods-pics-iosTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pics-iosTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-pics-iosTests/Pods-pics-iosTests.debug.xcconfig"; sourceTree = "<group>"; };
+		4C3FF5B759F0C2901B42283F /* Pods-pics-ios.ci.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pics-ios.ci.xcconfig"; path = "Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios.ci.xcconfig"; sourceTree = "<group>"; };
 		6115D5231FCB2F0A003445F7 /* Downloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Downloader.swift; sourceTree = "<group>"; };
 		614230411FC1891E00CD4173 /* pics-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "pics-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		614230441FC1891E00CD4173 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 		61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsSocket.swift; sourceTree = "<group>"; };
 		74DAFE60A1153E29379F07CA /* Pods_pics_iosTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pics_iosTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FF88EA2B44CF858EFE37A7B /* Pods_pics_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pics_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFA6D9C752FA56A8BC2D6BE3 /* Pods-pics-iosTests.ci.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pics-iosTests.ci.xcconfig"; path = "Pods/Target Support Files/Pods-pics-iosTests/Pods-pics-iosTests.ci.xcconfig"; sourceTree = "<group>"; };
 		B4BCCFA0628F078A9969EC4C /* Pods-pics-ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pics-ios.release.xcconfig"; path = "Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios.release.xcconfig"; sourceTree = "<group>"; };
 		F85C31D8DD5E7E37D1FDA418 /* Pods-pics-ios.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pics-ios.debug.xcconfig"; path = "Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -150,6 +153,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				54BE435F482AF3E2ADBB7C86 /* Pods_pics_iosTests.framework in Frameworks */,
+				DFE096B8419DFE37A7047661 /* Pods_pics_iosTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -170,6 +174,8 @@
 				B4BCCFA0628F078A9969EC4C /* Pods-pics-ios.release.xcconfig */,
 				07263DBF67E3C0D90142BCD5 /* Pods-pics-iosTests.debug.xcconfig */,
 				052DFB5A9DAABCDDAADC98F0 /* Pods-pics-iosTests.release.xcconfig */,
+				4C3FF5B759F0C2901B42283F /* Pods-pics-ios.ci.xcconfig */,
+				AFA6D9C752FA56A8BC2D6BE3 /* Pods-pics-iosTests.ci.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -557,9 +563,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-pics-iosTests/Pods-pics-iosTests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/AWSCognito/AWSCognito.framework",
+				"${BUILT_PRODUCTS_DIR}/AWSCognitoIdentityProvider/AWSCognitoIdentityProvider.framework",
+				"${BUILT_PRODUCTS_DIR}/AWSCore/AWSCore.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSCognito.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSCognitoIdentityProvider.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSCore.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -947,7 +960,7 @@
 		};
 		61E9FBE920166E0400FA4F42 /* CI */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F85C31D8DD5E7E37D1FDA418 /* Pods-pics-ios.debug.xcconfig */;
+			baseConfigurationReference = 4C3FF5B759F0C2901B42283F /* Pods-pics-ios.ci.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_UNCHECKEDRETURN = YES;
@@ -965,7 +978,7 @@
 		};
 		61E9FBEA20166E0400FA4F42 /* CI */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 07263DBF67E3C0D90142BCD5 /* Pods-pics-iosTests.debug.xcconfig */;
+			baseConfigurationReference = AFA6D9C752FA56A8BC2D6BE3 /* Pods-pics-iosTests.ci.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";

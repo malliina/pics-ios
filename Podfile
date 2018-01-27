@@ -10,5 +10,6 @@ target 'pics-ios' do
 end
 
 target 'pics-iosTests' do
-
+    pod 'AWSCognito'
+    pod 'AWSCognitoIdentityProvider'
 end
