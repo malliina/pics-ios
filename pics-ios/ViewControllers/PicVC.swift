@@ -57,7 +57,6 @@ class PicVC: BaseVC {
             imageView.image = image
         } else {
             imageView.image = pic.small
-            log.info("Using image \(pic.small)")
             downloadLarge(pic: pic) { large in
                 self.onUiThread {
                     self.imageView.image = large

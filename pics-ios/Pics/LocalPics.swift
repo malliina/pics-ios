@@ -23,11 +23,11 @@ class LocalPics {
         small = dir.appendingPathComponent("small", isDirectory: true)
         LocalPics.createDirectory(at: dir)
         LocalPics.createDirectory(at: small)
-        let files = try! FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)
-        files.forEach { (url) in
-            log.info("\(url)")
-        }
-        log.info("Local pics: \(files.count)")
+        let smallFiles = try! FileManager.default.contentsOfDirectory(at: small, includingPropertiesForKeys: nil)
+//        smallFiles.forEach { (url) in
+//            log.info("\(url)")
+//        }
+        log.info("Local small files: \(smallFiles.count)")
     }
     
     func readSmall(key: String) -> Data? {

@@ -95,11 +95,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         guard let popover = content.popoverPresentationController else { return }
         popover.barButtonItem = button
         popover.delegate = content
-//        let nav = UINavigationController(rootViewController: content)
-//        nav.navigationItem.title = "Select gallery"
-//        nav.navigationItem.rightBarButtonItems = [
-//            UIBarButtonItem(barButtonSystemItem: .done, target: content, action: #selector(ProfilePopover.dismissSelf(_:)))
-//        ]
         self.present(content, animated: true, completion: nil)
     }
     
@@ -254,14 +249,18 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PicCellIdentifier, for: indexPath) as! PicsCell
+        cell.backgroundColor = cellBackgroundColor
         let pic = pics[indexPath.row]
         if let thumb = pic.small ?? cached(key: pic.meta.key) {
+            if pic.small == nil {
+                pic.small = thumb
+            }
+            pics[indexPath.row] = pic
             cell.imageView.image = thumb
         } else {
             cell.imageView.image = nil
             download(indexPath)
         }
-        cell.backgroundColor = cellBackgroundColor
         return cell
     }
     
@@ -467,10 +466,20 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     func merge(gallery: [PicMeta]) {
         onUiThread {
-            self.log.info("Got gallery with \(gallery.count) pics")
-            self.isOnline = true
             let old = self.pics
-            self.pics = gallery.map { p in Picture(meta: p) }
+            self.log.info("Got gallery with \(gallery.count) pics, had \(self.pics.count)")
+            self.isOnline = true
+            let newPics = gallery.map { p -> Picture in
+                let merged = Picture(meta: p)
+                if let oldPic = old.first(where: { $0.meta.key == p.key }) {
+                    merged.url = oldPic.url
+                    merged.small = oldPic.small
+                    merged.medium = oldPic.medium
+                    merged.large = oldPic.large
+                }
+                return merged
+            }
+            self.pics = newPics
             let newEntries = gallery.enumerated().filter({ (offset, elem) -> Bool in
                 !old.contains(where: { $0.meta.key == elem.key })
             }).map({ (pair) -> IndexPath in

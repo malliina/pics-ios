@@ -12,9 +12,11 @@ class PicsSettings {
     static let shared = PicsSettings()
     
     let IsPublic = "is_private"
-    let PicsKey = "pics"
+    static let PicsKey = "pics"
     
     let prefs = UserDefaults.standard
+    
+    private var cachedPictures: [Picture] = PicsSettings.loadPics()
     
     var isPrivate: Bool {
         get { return prefs.bool(forKey: IsPublic) }
@@ -28,8 +30,11 @@ class PicsSettings {
     }
     
     var localPics: [Picture] {
-        get { return loadPics() }
-        set (newValue) { savePics(pics: newValue) }
+        get { return cachedPictures }
+        set (newValue) {
+            cachedPictures = newValue
+            savePics(pics: newValue)
+        }
     }
     
     func clearPics() {
@@ -40,11 +45,11 @@ class PicsSettings {
         let jsons = pics.map { PicMeta.write(pic: $0.meta) } as AnyObject
         let json = [ PicMeta.Pics : jsons ]
         let stringified = Json.stringifyObject(json)
-        prefs.set(stringified, forKey: PicsKey)
+        prefs.set(stringified, forKey: PicsSettings.PicsKey)
     }
     
-    private func loadPics() -> [Picture] {
-        guard let stringified = prefs.string(forKey: PicsKey) else { return [] }
+    static func loadPics() -> [Picture] {
+        guard let stringified = UserDefaults.standard.string(forKey: PicsKey) else { return [] }
         guard let asJson = Json.asJson(stringified) else { return [] }
         do {
             return try PicsLibrary.parsePics(obj: asJson).map({ (p) in Picture(meta: p) })
