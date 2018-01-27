@@ -35,8 +35,6 @@ class PicVC: BaseVC {
     }
     
     override func initUI() {
-        //navigationController?.setNavigationBarHidden(navHiddenInitially, animated: true)
-        
         // shows navbar on tap
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PicVC.onTap(_:)))
         view.addGestureRecognizer(gestureRecognizer)
