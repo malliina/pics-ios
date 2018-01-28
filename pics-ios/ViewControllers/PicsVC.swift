@@ -204,9 +204,11 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func displayNoItemsIfEmpty() {
-        if pics.isEmpty {
-            onUiThread {
+        onUiThread {
+            if self.pics.isEmpty {
                 self.displayText(text: "You have no pictures yet.")
+            } else {
+                self.collectionView?.backgroundView = nil
             }
         }
     }
@@ -508,7 +510,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                     coll.deleteItems(at: removed)
                 }
             }, completion: nil)
-            
+            self.displayNoItemsIfEmpty()
         }
     }
 }

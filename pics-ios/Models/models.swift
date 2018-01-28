@@ -29,6 +29,7 @@ enum SignupError {
     case invalidCredentials(String)
     case userAlreadyExists(String)
     case weakPassword(String)
+    case passwordMismatch(String)
     case userNotConfirmed(String)
     case codeExpired(String)
     case invalidCode(String)
@@ -45,6 +46,7 @@ enum SignupError {
         case .codeExpired(_): return "Code expired."
         case .invalidCode(_): return "Invalid code."
         case .noInternet(_): return "Check your network connectivity."
+        case .passwordMismatch(_): return "Passwords do not match."
         default: return "Unknown error."
         }
     }
