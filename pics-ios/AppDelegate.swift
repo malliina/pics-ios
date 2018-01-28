@@ -9,6 +9,9 @@
 import UIKit
 import AWSCognito
 import AWSCognitoIdentityProvider
+import AppCenter
+import AppCenterAnalytics
+import AppCenterCrashes
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,6 +23,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var transferCompletionHandlers: [String: () -> Void] = [:]
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        MSAppCenter.start("cf2aa399-806a-406e-b72d-f4d6e1978e02", withServices: [
+            MSAnalytics.self,
+            MSCrashes.self
+        ])
         let w = UIWindow(frame: UIScreen.main.bounds)
         window = w
         w.makeKeyAndVisible()
