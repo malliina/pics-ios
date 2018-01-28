@@ -13,10 +13,13 @@ class PicsSettings {
     
     let IsPublic = "is_private"
     static let PicsKey = "pics"
+    let EulaAccepted = "eula_accepted"
+    static let BlockedImageKeys = "blocked_keys"
     
     let prefs = UserDefaults.standard
     
     private var cachedPictures: [Picture] = PicsSettings.loadPics()
+    private var blockedKeys: [String] = PicsSettings.loadBlocked()
     
     var isPrivate: Bool {
         get { return prefs.bool(forKey: IsPublic) }
@@ -27,6 +30,24 @@ class PicsSettings {
                 clearPics()
             }
         }
+    }
+    
+    var isEulaAccepted: Bool {
+        get { return prefs.bool(forKey: EulaAccepted) }
+        set (newValue) { prefs.set(newValue, forKey: EulaAccepted) }
+    }
+    
+    var blockedImageKeys: [String] {
+        get { return blockedKeys }
+        set (newValue) {
+            blockedKeys = newValue
+            prefs.set(newValue, forKey: PicsSettings.BlockedImageKeys)
+        }
+    }
+    
+    func block(key: String) {
+        let blockedList = blockedImageKeys + [key]
+        blockedImageKeys = blockedList
     }
     
     var localPics: [Picture] {
@@ -56,5 +77,9 @@ class PicsSettings {
         } catch {
             return []
         }
+    }
+    
+    static func loadBlocked() -> [String] {
+        return UserDefaults.standard.stringArray(forKey: BlockedImageKeys) ?? []
     }
 }

@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import SnapKit
+import MessageUI
 
 /// Swipe horizontally to show the next/previous image in the gallery.
 /// Uses a UIPageViewController for paging.
@@ -16,6 +17,7 @@ class PicPagingVC: BaseVC {
     
     let pager = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
     
+    let abuseEmail = "info@skogberglabs.com"
     let pics: [Picture]
     private var index: Int
     let isPrivate: Bool
@@ -36,9 +38,7 @@ class PicPagingVC: BaseVC {
     
     override func initUI() {
         navigationItem.title = "Pic"
-        if isPrivate {
-            navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(onRemoveClicked(_:)))
-        }
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(actionsClicked(_:)))
         navigationController?.setNavigationBarHidden(true, animated: true)
         let vc = PicVC(pic: pics[index], navHiddenInitially: true, isPrivate: isPrivate)
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
@@ -52,16 +52,70 @@ class PicPagingVC: BaseVC {
         }
     }
     
+    @objc func actionsClicked(_ button: UIBarButtonItem) {
+        if index < pics.count {
+            let key = pics[index].meta.key
+            let content = UIAlertController(title: "Actions for this image", message: nil, preferredStyle: .actionSheet)
+            content.popoverPresentationController?.barButtonItem = button
+            if isPrivate {
+                content.addAction(UIAlertAction(title: "Delete image", style: .destructive) { action in
+                    self.goToPics()
+                    self.delegate.remove(key: key)
+                })
+            }
+            content.addAction(UIAlertAction(title: "Report objectionable content", style: .default) { action in
+                self.openReportAbuse(key: key)
+            })
+            content.addAction(UIAlertAction(title: "Hide from this device", style: .default) { action in
+                self.goToPics()
+                self.delegate.block(key: key)
+            })
+            content.addAction(UIAlertAction(title: "Cancel", style: .cancel) { action in
+                
+            })
+            present(content, animated: true, completion: nil)
+        }
+    }
+    
     @objc func onRemoveClicked(_ sender: UIBarButtonItem) {
         goToPics()
         if index < pics.count {
-            delegate.removePic(key: pics[index].meta.key)
+            delegate.remove(key: pics[index].meta.key)
         }
     }
     
     func goToPics() {
         navigationController?.popViewController(animated: true)
         navigationController?.setNavigationBarHidden(false, animated: true)
+    }
+}
+
+extension PicPagingVC: MFMailComposeViewControllerDelegate {
+    func openReportAbuse(key: String) {
+        if MFMailComposeViewController.canSendMail() {
+            let composeVC = MFMailComposeViewController()
+            composeVC.mailComposeDelegate = self
+            
+            // Configure the fields of the interface.
+            composeVC.setToRecipients([abuseEmail])
+            composeVC.setSubject("Objectionable content report")
+            composeVC.setMessageBody("Objectionable content. Content ID: \(key)", isHTML: false)
+            
+            // Present the view controller modally.
+            self.present(composeVC, animated: true, completion: nil)
+        } else {
+            showReportAbuseInstructions(key: key)
+        }
+    }
+    
+    func showReportAbuseInstructions(key: String) {
+        let a = UIAlertController(title: "Reporting Objectionable Content", message: "Report objectionable content to \(abuseEmail). For reference, the image ID is: \(key).", preferredStyle: .alert)
+        a.addAction(UIAlertAction(title: "OK", style: .default) { action in a.dismiss(animated: true, completion: nil) } )
+        present(a, animated: true, completion: nil)
+    }
+    
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        controller.dismiss(animated: true, completion: nil)
     }
 }
 

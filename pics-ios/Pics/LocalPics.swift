@@ -24,9 +24,6 @@ class LocalPics {
         LocalPics.createDirectory(at: dir)
         LocalPics.createDirectory(at: small)
         let smallFiles = try! FileManager.default.contentsOfDirectory(at: small, includingPropertiesForKeys: nil)
-//        smallFiles.forEach { (url) in
-//            log.info("\(url)")
-//        }
         log.info("Local small files: \(smallFiles.count)")
     }
     

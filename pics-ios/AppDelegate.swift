@@ -30,12 +30,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let w = UIWindow(frame: UIScreen.main.bounds)
         window = w
         w.makeKeyAndVisible()
-        do {
-            auths = try AuthHandler.configure(window: w)
-//            let root = UINavigationController(rootViewController: ConfirmVC(user: "test"))
-            w.rootViewController = auths?.active
-        } catch {
-            w.rootViewController = OneLinerVC(text: "Unable to initialize app.")
+        if PicsSettings.shared.isEulaAccepted {
+            do {
+                auths = try AuthHandler.configure(window: w)
+                w.rootViewController = auths?.active
+            } catch {
+                w.rootViewController = OneLinerVC(text: "Unable to initialize app.")
+            }
+        } else {
+            w.rootViewController = EulaVC(w: w)
         }
         return true
     }

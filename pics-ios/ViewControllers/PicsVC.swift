@@ -9,16 +9,18 @@
 import SnapKit
 import UIKit
 import AWSCognitoIdentityProvider
+import MessageUI
 
 protocol PicsRenderer {
     func reconnectAndSync()
 }
 
 protocol PicDelegate {
-    func removePic(key: String)
+    func remove(key: String)
+    func block(key: String)
 }
 
-class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate, PicDelegate, PicsRenderer {
+class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate, PicsRenderer {
     static let preferredItemSize: Double = Devices.isIpad ? 200 : 130
     static let itemsPerLoad = 100
     
@@ -58,7 +60,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     var backgroundColor: UIColor { return isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var cellBackgroundColor: UIColor { return isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
     var barStyle: UIBarStyle { return isPrivate ? UIBarStyle.black : UIBarStyle.default }
-    var textColor: UIColor { return isPrivate ? .lightText : .darkText}
+    var textColor: UIColor { return isPrivate ? .lightText : .darkText }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -68,16 +70,14 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         coll.delegate = self
         self.initNav(title: "Pics", large: false)
         initStyle()
-        let profileIcon = #imageLiteral(resourceName: "ProfileIcon")
         self.navigationItem.leftBarButtonItems = [
-            UIBarButtonItem(image: profileIcon, style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.profileClicked(_:))),
-//            UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(PicsVC.demoClicked(_:)))
+            UIBarButtonItem(image: #imageLiteral(resourceName: "ProfileIcon"), style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.profileClicked(_:))),
+            UIBarButtonItem(image: #imageLiteral(resourceName: "HelpIcon"), style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.helpClicked(_:)))
         ]
         let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
         if isCameraAvailable {
             self.navigationItem.rightBarButtonItems = [
                 UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(PicsVC.cameraClicked(_:))),
-//                UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(PicsVC.refreshClicked(_:)))
             ]
         }
         self.socket.delegate = self
@@ -89,12 +89,22 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         merge(gallery: PicMeta.randoms())
     }
     
+    @objc func helpClicked(_ button: UIBarButtonItem) {
+        let helpVC = HelpVC(isPrivate: isPrivate)
+        let dest = UINavigationController(rootViewController: helpVC)
+        dest.modalPresentationStyle = .formSheet
+        dest.navigationBar.barStyle = barStyle
+        dest.navigationBar.prefersLargeTitles = true
+        present(dest, animated: true, completion: nil)
+    }
+    
     @objc func profileClicked(_ button: UIBarButtonItem) {
         let content = ProfilePopover(user: currentUser?.username, isPrivate: isPrivate, delegate: self)
         content.modalPresentationStyle = .popover
-        guard let popover = content.popoverPresentationController else { return }
-        popover.barButtonItem = button
-        popover.delegate = content
+        if let popover = content.popoverPresentationController {
+            popover.barButtonItem = button
+            popover.delegate = content
+        }
         self.present(content, animated: true, completion: nil)
     }
     
@@ -143,7 +153,8 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             self.mightHaveMore = result.count >= syncLimit
             self.networkActivity(visible: false)
             self.onUiThread {
-                self.merge(gallery: result)
+                let filtered = result.filter { pic in !self.isBlocked(pic: pic) }
+                self.merge(gallery: filtered)
             }
         }
     }
@@ -153,8 +164,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             UIApplication.shared.isNetworkActivityIndicatorVisible = visible
         }
     }
-    
-    
     
     func loadPics(limit: Int) {
         let beforeCount = loadedPics.count
@@ -167,9 +176,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                 self.log.info("Loaded \(result.count) items, from \(beforeCount)")
                 if self.loadedPics.count == beforeCount {
                     if !result.isEmpty {
-                        self.pics = self.loadedPics + result.map { p in Picture(meta: p) }
-                        let rows: [Int] = Array(beforeCount..<beforeCount+result.count)
-                        
+                        let filtered = result.filter { pic in !self.isBlocked(pic: pic) }
+                        self.pics = self.loadedPics + filtered.map { p in Picture(meta: p) }
+                        let rows: [Int] = Array(beforeCount..<beforeCount+filtered.count)
                         if wasOffline {
                             self.log.info("Replacing offline pics with fresh pics.")
                             self.isOnline = true
@@ -188,6 +197,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                 }
             }
         }
+    }
+    
+    func isBlocked(pic: PicMeta) -> Bool {
+        return PicsSettings.shared.blockedImageKeys.contains { $0 == pic.key }
     }
     
     func displayNoItemsIfEmpty() {
@@ -324,21 +337,23 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func onLoadError(error: AppError) {
+        self.networkActivity(visible: false)
         let message = AppError.stringify(error)
+        log.error(message)
         // app no longer supported
         if case .responseFailure(let err) = error, err.code == 406 {
             onUiThread {
                 self.navigationController?.navigationBar.isHidden = true
+                self.displayText(text: message)
+            }
+        } else {
+            if pics.isEmpty {
+                log.info("Failed and empty, displaying text")
+                displayText(text: message)
+            } else {
+                log.error("Failed and nonempty, noop.")
             }
         }
-        log.error(message)
-        if pics.isEmpty {
-            log.info("Failed and empty, displaying text")
-            displayText(text: message)
-        } else {
-            log.error("Failed and nonempty, noop.")
-        }
-        self.networkActivity(visible: false)
     }
     
     func displayText(text: String) {
@@ -405,7 +420,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             existingPics.forEach(self.updateMeta)
         }
         log.info("Got \(pics.count) pic(s), out of which \(newPics.count) are new.")
-        displayNewPics(pics: newPics.map { p in Picture(meta: p) })
+        displayNewPics(pics: newPics.filter { !isBlocked(pic: $0) }.map { p in Picture(meta: p) })
     }
     
     func updateMeta(pic: PicMeta) {
@@ -428,17 +443,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     func onPicsRemoved(keys: [String]) {
         removePicsLocally(keys: keys)
-    }
-    
-    func removePic(key: String) {
-        removePicsLocally(keys: [key])
-        library.delete(key: key, onError: onRemoveError) { (response) in
-            
-        }
-    }
-    
-    func onRemoveError(_ error: AppError) {
-        log.error("Failed to remove pic.")
     }
     
     func removePicsLocally(keys: [String]) {
@@ -472,6 +476,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             let old = self.pics
             self.log.info("Got gallery with \(gallery.count) pics, had \(self.pics.count)")
             self.isOnline = true
+            
             let newPics = gallery.map { p -> Picture in
                 let merged = Picture(meta: p)
                 if let oldPic = old.first(where: { $0.meta.key == p.key }) {
@@ -505,6 +510,24 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             }, completion: nil)
             
         }
+    }
+}
+
+extension PicsVC: PicDelegate {
+    func remove(key: String) {
+        removePicsLocally(keys: [key])
+        library.delete(key: key, onError: onRemoveError) { (response) in
+            
+        }
+    }
+    
+    func block(key: String) {
+        PicsSettings.shared.block(key: key)
+        removePicsLocally(keys: [key])
+    }
+    
+    func onRemoveError(_ error: AppError) {
+        log.error("Failed to remove pic.")
     }
 }
 
