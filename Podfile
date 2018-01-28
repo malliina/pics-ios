@@ -7,6 +7,7 @@ target 'pics-ios' do
     pod 'SnapKit', '4.0.0'
     pod 'AWSCognito'
     pod 'AWSCognitoIdentityProvider'
+    pod 'AppCenter', '1.2.0'
 end
 
 target 'pics-iosTests' do

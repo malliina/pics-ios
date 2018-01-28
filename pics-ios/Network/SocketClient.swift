@@ -67,7 +67,7 @@ class SocketClient: NSObject, SRWebSocketDelegate {
             return
         }
         isConnected = true
-        log.info("Socket opened to \(baseURL)")
+        log.info("Socket opened to \(baseURL.absoluteString)")
         if let onOpen = onOpenCallback {
             onOpen()
             onOpenCallback = nil
@@ -77,12 +77,12 @@ class SocketClient: NSObject, SRWebSocketDelegate {
     
     func webSocket(_ webSocket: SRWebSocket!, didCloseWithCode code: Int, reason: String!, wasClean: Bool) {
         isConnected = false
-        log.info("Error for connection to \(baseURL)")
+        log.info("Error for connection to \(baseURL.absoluteString)")
     }
     
     func webSocket(_ webSocket: SRWebSocket!, didFailWithError error: Error!) {
         isConnected = false
-        log.info("Connection failed to \(baseURL). \(error)")
+        log.info("Connection failed to \(baseURL.absoluteString). \(error)")
         if let onError = onOpenErrorCallback {
             onError(error)
             onOpenCallback = nil

@@ -251,15 +251,11 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PicCellIdentifier, for: indexPath) as! PicsCell
         cell.backgroundColor = cellBackgroundColor
         let pic = pics[indexPath.row]
-        if let thumb = pic.small ?? cached(key: pic.meta.key) {
-            if pic.small == nil {
-                pic.small = thumb
-            }
-            pics[indexPath.row] = pic
+        if let thumb = pic.small {
             cell.imageView.image = thumb
         } else {
             cell.imageView.image = nil
-            download(indexPath)
+            self.download(indexPath, pic: pic)
         }
         return cell
     }
@@ -267,6 +263,13 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func cached(key: String) -> UIImage? {
         guard let data = LocalPics.shared.readSmall(key: key) else { return nil }
         return UIImage(data: data)
+    }
+    
+    func loadCached(key: String, onData: @escaping (Data?) -> Void) {
+        onBackgroundThread {
+            let file = LocalPics.shared.readSmall(key: key)
+            onData(file)
+        }
     }
     
     override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
@@ -278,35 +281,35 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         self.navigationController?.pushViewController(dest, animated: true)
     }
     
-    private func download(_ indexPath: IndexPath) {
-        let pic = pics[indexPath.row]
+    private func download(_ indexPath: IndexPath, pic: Picture) {
         if pic.small == nil {
             let key = pic.meta.key
-            if let local = LocalPics.shared.readSmall(key: key) {
-                updateSmall(data: local, indexPath: indexPath)
-            } else {
-                Downloader.shared.download(url: pic.meta.small) { data in
-                    self.onDownloaded(key: key, data: data, indexPath: indexPath)
+            onBackgroundThread {
+                if let data = LocalPics.shared.readSmall(key: key) {
+                    self.updateSmall(data: data, indexPath: indexPath, pic: pic)
+                } else {
+                    Downloader.shared.download(url: pic.meta.small) { data in
+                        self.onDownloaded(key: key, data: data, indexPath: indexPath, pic: pic)
+                    }
                 }
             }
         }
     }
     
-    private func onDownloaded(key: String, data: Data, indexPath: IndexPath) {
-        let _ = LocalPics.shared.saveSmall(data: data, key: key)
-        updateSmall(data: data, indexPath: indexPath)
-    }
-    
-    private func updateSmall(data: Data, indexPath: IndexPath) {
+    private func updateSmall(data: Data, indexPath: IndexPath, pic: Picture) {
         onUiThread {
             if let image = UIImage(data: data), let coll = self.collectionView, self.pics.count > indexPath.row {
-                self.pics[indexPath.row].small = image
-//                self.log.info("Reloading \(indexPath.row)")
+                pic.small = image
                 coll.reloadItems(at: [indexPath])
             } else {
                 self.log.info("Unable to update downloaded pic count \(self.pics.count) \(self.isOnline) row \(indexPath.row) \(self.pics.count > indexPath.row)")
             }
         }
+    }
+    
+    private func onDownloaded(key: String, data: Data, indexPath: IndexPath, pic: Picture) {
+        let _ = LocalPics.shared.saveSmall(data: data, key: key)
+        updateSmall(data: data, indexPath: indexPath, pic: pic)
     }
     
     func maybeLoadMore(atItemIndex: Int) {
