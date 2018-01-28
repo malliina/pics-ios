@@ -50,6 +50,10 @@ extension UIViewController {
         DispatchQueue.main.async(execute: f)
     }
     
+    func onBackgroundThread(_ f: @escaping () -> Void) {
+        DispatchQueue.global(qos: .background).async(execute: f)
+    }
+    
     func goBack() {
         dismiss(animated: true, completion: nil)
     }

@@ -528,7 +528,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         picker.dismiss(animated: true) { () in
-            DispatchQueue.global(qos: .background).async {
+            self.onBackgroundThread {
                 do {
                     try self.handleMedia(info: info)
                 } catch {
@@ -553,7 +553,9 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         let url = try LocalPics.shared.saveAsJpg(data: data)
         let clientKey = pic.meta.clientKey ?? ""
         if let idx = indexFor(clientKey) {
-            self.pics[idx] = self.pics[idx].withUrl(url: url)
+            onUiThread {
+                self.pics[idx] = self.pics[idx].withUrl(url: url)
+            }
         }
         library.saveURL(picture: url, clientKey: clientKey, onError: onSaveError) { pic in
             self.log.info("Uploaded pic \(clientKey).")
