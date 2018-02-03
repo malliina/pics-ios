@@ -5,7 +5,6 @@
 //  Created by Michael Skogberg on 19/11/2017.
 //  Copyright © 2017 Michael Skogberg. All rights reserved.
 //
-
 import SnapKit
 import UIKit
 import AWSCognitoIdentityProvider
@@ -139,22 +138,54 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     private func load(with token: AWSCognitoIdentityUserSessionToken?) {
         Backend.shared.updateToken(new: token)
         self.socket.openSilently()
-//        self.log.info("Loading pics...")
         self.syncPics()
         onUiThread {
             self.updateStyle()
         }
     }
 
+    // Called on first load
     func syncPics() {
-        networkActivity(visible: true)
         let syncLimit = max(loadedPics.count, PicsVC.itemsPerLoad)
-        library.load(from: 0, limit: syncLimit, onError: onLoadError) { (result) in
-            self.mightHaveMore = result.count >= syncLimit
+        withLoading(from: 0, limit: syncLimit, f: self.merge)
+    }
+    
+    // Called when more pics are needed (while scrolling down)
+    func appendPics(limit: Int) {
+        let beforeCount = loadedPics.count
+        let wasOffline = !isOnline
+        withLoading(from: beforeCount, limit: limit) { (filtered) in
+            if self.loadedPics.count == beforeCount {
+                if !filtered.isEmpty {
+                    self.pics = self.loadedPics + filtered.map { p in Picture(meta: p) }
+                    let rows: [Int] = Array(beforeCount..<beforeCount+filtered.count)
+                    if wasOffline {
+                        self.log.info("Replacing offline pics with fresh pics.")
+                        self.isOnline = true
+                        self.collectionView?.reloadData()
+                        self.displayNoItemsIfEmpty()
+                    } else {
+                        let indexPaths = rows.map { row in IndexPath(item: row, section: 0) }
+                        self.displayItems(at: indexPaths)
+                    }
+                } else {
+                    self.displayNoItemsIfEmpty()
+                }
+            } else {
+                self.log.warn("Count mismatch")
+                self.displayNoItemsIfEmpty()
+            }
+        }
+    }
+    
+    private func withLoading(from: Int, limit: Int, f: @escaping ([PicMeta]) -> Void) {
+        networkActivity(visible: true)
+        library.load(from: from, limit: limit, onError: onLoadError) { (result) in
+            self.mightHaveMore = result.count >= limit
             self.networkActivity(visible: false)
             self.onUiThread {
                 let filtered = result.filter { pic in !self.isBlocked(pic: pic) }
-                self.merge(gallery: filtered)
+                f(filtered)
             }
         }
     }
@@ -162,40 +193,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func networkActivity(visible: Bool) {
         onUiThread {
             UIApplication.shared.isNetworkActivityIndicatorVisible = visible
-        }
-    }
-    
-    func loadPics(limit: Int) {
-        let beforeCount = loadedPics.count
-        let wasOffline = !isOnline
-        networkActivity(visible: true)
-        library.load(from: loadedPics.count, limit: limit, onError: onLoadError) { (result) in
-            self.mightHaveMore = result.count >= limit
-            self.onUiThread {
-                self.networkActivity(visible: false)
-                self.log.info("Loaded \(result.count) items, from \(beforeCount)")
-                if self.loadedPics.count == beforeCount {
-                    if !result.isEmpty {
-                        let filtered = result.filter { pic in !self.isBlocked(pic: pic) }
-                        self.pics = self.loadedPics + filtered.map { p in Picture(meta: p) }
-                        let rows: [Int] = Array(beforeCount..<beforeCount+filtered.count)
-                        if wasOffline {
-                            self.log.info("Replacing offline pics with fresh pics.")
-                            self.isOnline = true
-                            self.collectionView?.reloadData()
-                            self.displayNoItemsIfEmpty()
-                        } else {
-                            let indexPaths = rows.map { row in IndexPath(item: row, section: 0) }
-                            self.displayItems(at: indexPaths)
-                        }
-                    } else {
-                        self.displayNoItemsIfEmpty()
-                    }
-                } else {
-                    self.log.warn("Count mismatch")
-                    self.displayNoItemsIfEmpty()
-                }
-            }
         }
     }
     
@@ -335,7 +332,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func loadMore(_ atItemIndex: Int) {
-        loadPics(limit: PicsVC.itemsPerLoad)
+        appendPics(limit: PicsVC.itemsPerLoad)
     }
     
     func onLoadError(error: AppError) {
@@ -383,7 +380,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     @objc func refreshClicked(_ sender: UIBarButtonItem) {
         let loadLimit = max(pics.count, PicsVC.itemsPerLoad)
         resetDisplay()
-        loadPics(limit: loadLimit)
+        appendPics(limit: loadLimit)
     }
     
     @objc func changeUserClicked(_ sender: UIBarButtonItem) {
