@@ -70,22 +70,18 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         self.initNav(title: "Pics", large: false)
         initStyle()
         self.navigationItem.leftBarButtonItems = [
-            UIBarButtonItem(image: #imageLiteral(resourceName: "ProfileIcon"), style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.profileClicked(_:))),
-            UIBarButtonItem(image: #imageLiteral(resourceName: "HelpIcon"), style: UIBarButtonItemStyle.plain, target: self, action: #selector(PicsVC.helpClicked(_:)))
+            UIBarButtonItem(image: #imageLiteral(resourceName: "ProfileIcon"), style: .plain, target: self, action: #selector(profileClicked(_:))),
+            UIBarButtonItem(image: #imageLiteral(resourceName: "HelpIcon"), style: .plain, target: self, action: #selector(helpClicked(_:)))
         ]
         let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
         if isCameraAvailable {
             self.navigationItem.rightBarButtonItems = [
-                UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(PicsVC.cameraClicked(_:))),
+                UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(cameraClicked(_:))),
             ]
         }
         self.socket.delegate = self
         LifeCycle.shared.renderer = self
         initAndLoad(forceSignIn: false)
-    }
-    
-    @objc func demoClicked(_ button: UIBarButtonItem) {
-        merge(gallery: PicMeta.randoms())
     }
     
     @objc func helpClicked(_ button: UIBarButtonItem) {
@@ -369,20 +365,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         showCamera()
     }
     
-    func showCamera() {
-        let control = UIImagePickerController()
-        control.sourceType = .camera
-        control.allowsEditing = false
-        control.delegate = self
-        self.present(control, animated: true, completion: nil)
-    }
-    
-    @objc func refreshClicked(_ sender: UIBarButtonItem) {
-        let loadLimit = max(pics.count, PicsVC.itemsPerLoad)
-        resetDisplay()
-        appendPics(limit: loadLimit)
-    }
-    
     @objc func changeUserClicked(_ sender: UIBarButtonItem) {
         signOutAndReload()
     }
@@ -540,6 +522,14 @@ extension PicsVC: ProfileDelegate {
 }
 
 extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func showCamera() {
+        let control = UIImagePickerController()
+        control.sourceType = .camera
+        control.allowsEditing = false
+        control.delegate = self
+        self.present(control, animated: true, completion: nil)
+    }
+    
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
     }

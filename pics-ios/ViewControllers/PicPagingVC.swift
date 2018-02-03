@@ -54,7 +54,8 @@ class PicPagingVC: BaseVC {
     
     @objc func actionsClicked(_ button: UIBarButtonItem) {
         if index < pics.count {
-            let key = pics[index].meta.key
+            let meta = pics[index].meta
+            let key = meta.key
             let content = UIAlertController(title: "Actions for this image", message: nil, preferredStyle: .actionSheet)
             content.popoverPresentationController?.barButtonItem = button
             if isPrivate {
@@ -63,6 +64,16 @@ class PicPagingVC: BaseVC {
                     self.delegate.remove(key: key)
                 })
             }
+            content.addAction(UIAlertAction(title: "Copy link URL", style: .default) { action in
+                UIPasteboard.general.string = meta.url.absoluteString
+            })
+            content.addAction(UIAlertAction(title: "Open in Safari", style: .default) { action in
+                if !meta.url.isFileURL {
+                    UIApplication.shared.open(meta.url, options: [:], completionHandler: nil)
+                } else {
+                    self.log.warn("Refusing to open a file URL in browser.")
+                }
+            })
             content.addAction(UIAlertAction(title: "Report objectionable content", style: .default) { action in
                 self.openReportAbuse(key: key)
             })
