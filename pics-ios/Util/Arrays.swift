@@ -113,6 +113,22 @@ extension Array {
         return (trues, falses)
     }
     
+    func diff<U>(against: [U], compare: (Element, U) -> Bool) -> [Element] {
+        return self.filter { (elem) -> Bool in
+            !against.exists({ (compareElement) -> Bool in
+                compare(elem, compareElement)
+            })
+        }
+    }
+    
+    func distinctIndices<U>(other: [U], compare: (Element, U) -> Bool) -> [Int] {
+        return self.indicesWhere { elem -> Bool in !other.contains { u -> Bool in compare(elem, u) } }
+    }
+ 
+    func indicesWhere(p: (Element) -> Bool) -> [Int] {
+        return self.enumerated().filter { (offset, elem) -> Bool in p(elem) }.map { $0.offset }
+    }
+    
     func mkString(_ sep: String) -> String {
         return mkString("", sep: sep, suffix: "")
     }

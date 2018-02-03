@@ -30,17 +30,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let w = UIWindow(frame: UIScreen.main.bounds)
         window = w
         w.makeKeyAndVisible()
+        w.rootViewController = initialView(w: w)
+        return true
+    }
+    
+    func initialView(w: UIWindow) -> UIViewController {
         if PicsSettings.shared.isEulaAccepted {
             do {
-                auths = try AuthHandler.configure(window: w)
-                w.rootViewController = auths?.active
+                let authHandler = try AuthHandler.configure(window: w)
+                auths = authHandler
+                return authHandler.active
             } catch {
-                w.rootViewController = OneLinerVC(text: "Unable to initialize app.")
+                return OneLinerVC(text: "Unable to initialize app.")
             }
         } else {
-            w.rootViewController = EulaVC(w: w)
+            return EulaVC(w: w)
         }
-        return true
     }
     
     func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {

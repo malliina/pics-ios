@@ -476,10 +476,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func merge(gallery: [PicMeta]) {
         onUiThread {
             let old = self.pics
-            self.log.info("Got gallery with \(gallery.count) pics, had \(self.pics.count)")
+            self.log.info("Got gallery with \(gallery.count) pics, had \(old.count)")
             self.isOnline = true
-            
-            let newPics = gallery.map { p -> Picture in
+            let syncedPics = gallery.map { p -> Picture in
                 let merged = Picture(meta: p)
                 if let oldPic = old.first(where: { $0.meta.key == p.key }) {
                     merged.url = oldPic.url
@@ -489,27 +488,21 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                 }
                 return merged
             }
-            self.pics = newPics
-            let newEntries = gallery.enumerated().filter({ (offset, elem) -> Bool in
-                !old.contains(where: { $0.meta.key == elem.key })
-            }).map({ (pair) -> IndexPath in
-                let (index, _) = pair
-                return IndexPath(row: index, section: 0)
-            })
-            // Probably buggy and crashes the app
-            guard let coll = self.collectionView else { return }
-            coll.performBatchUpdates({
-                let renderedItems = self.collectionView?.numberOfItems(inSection: 0) ?? 0
-                let (updates, inserts) = newEntries.partition { $0.row < renderedItems }
-                coll.reloadItems(at: updates)
-                coll.insertItems(at: inserts)
-                let tail = old.count - gallery.count
-                if tail > 0 {
-                    self.log.info("Removing tail of \(tail) items")
-                    let removed = (gallery.count..<(gallery.count + tail)).filter { $0 < renderedItems }.map { IndexPath(row: $0, section: 0) }
-                    coll.deleteItems(at: removed)
-                }
-            }, completion: nil)
+            self.pics = syncedPics
+            
+            // Indices of pics in syncedPics which are not in old
+            let inserts = syncedPics.distinctIndices(other: old) { (elem, other) -> Bool in elem.meta.key == other.meta.key }
+                .map { (idx) -> IndexPath in IndexPath(row: idx, section: 0) }
+            // Indices of pics in old which are not in gallery (before any modifications)
+            let removes = old.distinctIndices(other: syncedPics) { (elem, other) -> Bool in elem.meta.key == other.meta.key }
+                .map { (idx) -> IndexPath in IndexPath(row: idx, section: 0) }
+            if !inserts.isEmpty || !removes.isEmpty {
+                guard let coll = self.collectionView else { return }
+                coll.performBatchUpdates({
+                    coll.insertItems(at: inserts)
+                    coll.deleteItems(at: removes)
+                }, completion: nil)
+            }
             self.displayNoItemsIfEmpty()
         }
     }
