@@ -42,7 +42,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
         let serviceConfiguration = AWSServiceConfiguration(region: .EUWest1, credentialsProvider: nil)
         // create pool configuration
         let poolConfiguration = AWSCognitoIdentityUserPoolConfiguration(clientId: conf.clientId,
-                                                                        clientSecret: conf.clientSecret,
+                                                                        clientSecret: nil,
                                                                         poolId: conf.userPoolId)
         // initialize user pool client
         AWSCognitoIdentityUserPool.register(with: serviceConfiguration, userPoolConfiguration: poolConfiguration, forKey: AuthVC.PoolKey)
