@@ -122,9 +122,15 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         mightHaveMore = true
         if needsToken {
             authCancellation = AWSCancellationTokenSource()
-            Tokens.shared.retrieve(onToken: { (token) in
-                self.load(with: token)
-            }, onError: onLoadError, cancellationToken: authCancellation?.token)
+            let _ = Tokens.shared.retrieve(cancellationToken: authCancellation).subscribe { (event) in
+                guard !event.isCompleted else { return }
+                if let token = event.element {
+                    self.load(with: token)
+                }
+                if let error = event.error {
+                    self.onLoadError(error: error)
+                }
+            }
         } else {
             // anonymous
             load(with: nil)
@@ -176,12 +182,18 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     private func withLoading(from: Int, limit: Int, f: @escaping ([PicMeta]) -> Void) {
         networkActivity(visible: true)
-        library.load(from: from, limit: limit, onError: onLoadError) { (result) in
-            self.mightHaveMore = result.count >= limit
-            self.networkActivity(visible: false)
-            self.onUiThread {
-                let filtered = result.filter { pic in !self.isBlocked(pic: pic) }
-                f(filtered)
+        let _ = library.load(from: from, limit: limit).subscribe { (event) in
+            guard !event.isCompleted else { return }
+            if let result = event.element {
+                self.mightHaveMore = result.count >= limit
+                self.networkActivity(visible: false)
+                self.onUiThread {
+                    let filtered = result.filter { pic in !self.isBlocked(pic: pic) }
+                    f(filtered)
+                }
+            }
+            if let error = event.error {
+                self.onLoadError(error: error)
             }
         }
     }
@@ -331,23 +343,27 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         appendPics(limit: PicsVC.itemsPerLoad)
     }
     
-    func onLoadError(error: AppError) {
+    func onLoadError(error: Error) {
         self.networkActivity(visible: false)
-        let message = AppError.stringify(error)
-        log.error(message)
-        // app no longer supported
-        if case .responseFailure(let err) = error, err.code == 406 {
-            onUiThread {
-                self.navigationController?.navigationBar.isHidden = true
-                self.displayText(text: message)
+        if let error = error as? AppError {
+            let message = AppError.stringify(error)
+            log.error(message)
+            // app no longer supported
+            if case .responseFailure(let err) = error, err.code == 406 {
+                onUiThread {
+                    self.navigationController?.navigationBar.isHidden = true
+                    self.displayText(text: message)
+                }
+            } else {
+                if pics.isEmpty {
+                    log.info("Failed and empty, displaying text")
+                    displayText(text: message)
+                } else {
+                    log.error("Failed and nonempty, noop.")
+                }
             }
         } else {
-            if pics.isEmpty {
-                log.info("Failed and empty, displaying text")
-                displayText(text: message)
-            } else {
-                log.error("Failed and nonempty, noop.")
-            }
+            log.error("Unknown error \(error)")
         }
     }
     
@@ -490,8 +506,19 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
 extension PicsVC: PicDelegate {
     func remove(key: String) {
         removePicsLocally(keys: [key])
-        library.delete(key: key, onError: onRemoveError) { (response) in
-            
+        let _ = library.delete(key: key).subscribe { (event) in
+            guard !event.isCompleted else { return }
+            if let response = event.element {
+                self.log.info("Deletion completed with status \(response.statusCode).")
+            } else if let error = event.error {
+                if let error = error as? AppError {
+                    self.onRemoveError(error)
+                } else {
+                    self.log.error("Delete error. \(error)")
+                }
+            } else {
+                // completed
+            }
         }
     }
     
@@ -547,27 +574,33 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
     }
     
     func handleMedia(info: [String: Any]) throws {
+        log.info("Pic taken, processing...")
         guard let originalImage = info[UIImagePickerControllerOriginalImage] as? UIImage else {
             log.error("Original image is not an UIImage")
             return
         }
-        let pic = Picture(image: originalImage)
+        let clientKey = Picture.randomKey()
+//        let small = originalImage.toPixels(CGSize(width: 400, height: 300))
+//        if let smallData = UIImageJPEGRepresentation(small, 0.7) {
+//            log.info("Small is \(smallData) bytes")
+//            library.save(picture: smallData, clientKey: clientKey)
+//        }
+        let pic = Picture(image: originalImage, clientKey: clientKey)
         displayNewPics(pics: [pic])
         guard let data = UIImageJPEGRepresentation(originalImage, 1) else {
             log.error("Taken image is not in JPEG format")
             return
         }
-        log.info("Saving pic to file...")
+        
+        log.info("Saving pic to file, in total \(data.count) bytes...")
         let url = try LocalPics.shared.saveAsJpg(data: data)
-        let clientKey = pic.meta.clientKey ?? ""
+//        let clientKey = pic.meta.clientKey ?? ""
         if let idx = indexFor(clientKey) {
             onUiThread {
                 self.pics[idx] = self.pics[idx].withUrl(url: url)
             }
         }
-        library.saveURL(picture: url, clientKey: clientKey, onError: onSaveError) { pic in
-            self.log.info("Uploaded pic \(clientKey).")
-        }
+        library.saveURL(picture: url, clientKey: clientKey)
     }
     
     func onSaveError(error: AppError) {

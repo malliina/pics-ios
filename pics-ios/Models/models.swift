@@ -254,17 +254,16 @@ class Picture {
     var medium: UIImage? = nil
     var large: UIImage? = nil
     
-    convenience init(image: UIImage) {
+    convenience init(image: UIImage, clientKey: ClientKey) {
         let millis = Picture.nowMillis()
-        self.init(url: Picture.TempFakeUrl, image: image, added: millis)
+        self.init(url: Picture.TempFakeUrl, image: image, clientKey: clientKey, added: millis)
     }
     
     convenience init(image: UIImage, added: Timestamp) {
-        self.init(url: Picture.TempFakeUrl, image: image, added: added)
+        self.init(url: Picture.TempFakeUrl, image: image, clientKey: Picture.randomKey(), added: added)
     }
     
-    convenience init(url: URL, image: UIImage, added: Timestamp) {
-        let clientKey = Picture.randomKey()
+    convenience init(url: URL, image: UIImage, clientKey: ClientKey, added: Timestamp) {
         self.init(meta: PicMeta(key: clientKey, url: url, added: added, clientKey: clientKey))
         self.url = image
         small = image

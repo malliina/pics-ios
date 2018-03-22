@@ -7,6 +7,8 @@
 //
 
 import Foundation
+import RxSwift
+import RxCocoa
 
 class HttpClient {
     private let log = LoggerFactory.shared.network(HttpClient.self)
@@ -33,18 +35,18 @@ class HttpClient {
         self.session = URLSession.shared
     }
     
-    func get(_ url: URL, headers: [String: String] = [:], onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
+    func get(_ url: URL, headers: [String: String] = [:]) -> Observable<HttpResponse> {
         let req = buildRequest(url: url, httpMethod: HttpClient.GET, headers: headers, body: nil)
-        executeHttp(req, onResponse: onResponse, onError: onError)
+        return executeHttp(req)
     }
     
-    func postJSON(_ url: URL, headers: [String: String] = [:], payload: [String: AnyObject], onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
-        postData(url, headers: headers, payload: try? JSONSerialization.data(withJSONObject: payload, options: []), onResponse: onResponse, onError: onError)
+    func postJSON(_ url: URL, headers: [String: String] = [:], payload: [String: AnyObject]) -> Observable<HttpResponse> {
+        return postData(url, headers: headers, payload: try? JSONSerialization.data(withJSONObject: payload, options: []))
     }
     
-    func postData(_ url: URL, headers: [String: String] = [:], payload: Data?, onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
+    func postData(_ url: URL, headers: [String: String] = [:], payload: Data?) -> Observable<HttpResponse> {
         let req = buildRequest(url: url, httpMethod: HttpClient.POST, headers: headers, body: payload)
-        executeHttp(req, onResponse: onResponse, onError: onError)
+        return executeHttp(req)
     }
     
     func postGeneric(_ url: URL, headers: [String: String] = [:], payload: Data?, completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
@@ -52,28 +54,24 @@ class HttpClient {
         executeRequest(req, completionHandler: completionHandler)
     }
     
-    func delete(_ url: URL, headers: [String: String] = [:], onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void) {
+    func delete(_ url: URL, headers: [String: String] = [:]) -> Observable<HttpResponse> {
         let req = buildRequest(url: url, httpMethod: HttpClient.DELETE, headers: headers, body: nil)
-        executeHttp(req, onResponse: onResponse, onError: onError)
+        return executeHttp(req)
     }
     
-    func executeHttp(_ req: URLRequest, onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void, retryCount: Int = 0) {
-        let url = req.url!
-        executeRequest(req) { (data, response, error) in
-            if let error = error {
-                self.log.warn("Request to \(url) failed: '\(error)'.")
-                // _code is not the http status code
-                onError(RequestFailure(url: url, code: error._code, data: data))
-            } else if let httpResponse = response as? HTTPURLResponse, let data = data {
-                onResponse(HttpResponse(http: httpResponse, data: data))
-            } else {
-                self.log.error("Unable to interpret HTTP response to URL \(url.absoluteString)")
-            }
+    func executeHttp(_ req: URLRequest, retryCount: Int = 0) -> Observable<HttpResponse> {
+        return session.rx.response(request: req).flatMap { (result) -> Observable<HttpResponse> in
+            let (response, data) = result
+            return Observable.just(HttpResponse(http: response, data: data))
         }
     }
     
     func buildRequest(url: URL, httpMethod: String, headers: [String: String], body: Data?) -> URLRequest {
         var req = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 3600)
+        let useCsrfHeader = httpMethod != HttpClient.GET
+        if useCsrfHeader {
+            req.addValue("nocheck", forHTTPHeaderField: "Csrf-Token")
+        }
         req.httpMethod = httpMethod
         for (key, value) in headers {
             req.addValue(value, forHTTPHeaderField: key)

@@ -12,6 +12,9 @@ PODS:
   - AWSCognitoIdentityProvider (2.6.1):
     - AWSCore (= 2.6.1)
   - AWSCore (2.6.1)
+  - RxCocoa (4.1.1):
+    - RxSwift (~> 4.0)
+  - RxSwift (4.1.1)
   - SnapKit (4.0.0)
   - SocketRocket (0.5.1)
 
@@ -19,6 +22,8 @@ DEPENDENCIES:
   - AppCenter (= 1.2.0)
   - AWSCognito
   - AWSCognitoIdentityProvider
+  - RxCocoa (~> 4.0)
+  - RxSwift (~> 4.0)
   - SnapKit (= 4.0.0)
   - SocketRocket (= 0.5.1)
 
@@ -27,9 +32,11 @@ SPEC CHECKSUMS:
   AWSCognito: 9aad635e11de0febf026e8a8acbbd345b2016801
   AWSCognitoIdentityProvider: a335678a0024fa2b44213bc4e86b46b21773e567
   AWSCore: e7d37fa0715def975acf1b0d75556576780088b8
+  RxCocoa: fd0862fd2df95fa55562ad28ffd2522c25eb4a85
+  RxSwift: c6e3b1c7b325c7d121cd4327e9d98b7ed746b570
   SnapKit: a42d492c16e80209130a3379f73596c3454b7694
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
 
-PODFILE CHECKSUM: 25154dff33d087c79f246d9dc4bcf36c189bab30
+PODFILE CHECKSUM: 833c029e3c5c6d3191bcfe687fea1fd16cb6aeae
 
 COCOAPODS: 1.4.0

@@ -38,7 +38,7 @@ class TransferResult {
     }
 }
 class DownloadProgressUpdate {
-    let info: DownloadInfo
+    let info: TransferInfo
     let writtenDelta: StorageSize
     let written: StorageSize
     let totalExpected: StorageSize?
@@ -48,7 +48,7 @@ class DownloadProgressUpdate {
     
     var isComplete: Bool? { get { return written == totalExpected } }
     
-    init(info: DownloadInfo, writtenDelta: StorageSize, written: StorageSize, totalExpected: StorageSize?) {
+    init(info: TransferInfo, writtenDelta: StorageSize, written: StorageSize, totalExpected: StorageSize?) {
         self.info = info
         self.writtenDelta = writtenDelta
         self.written = written
@@ -59,12 +59,12 @@ class DownloadProgressUpdate {
         return DownloadProgressUpdate(info: info, writtenDelta: writtenDelta, written: written, totalExpected: newTotalExpected)
     }
     
-    static func initial(info: DownloadInfo, size: StorageSize) -> DownloadProgressUpdate {
+    static func initial(info: TransferInfo, size: StorageSize) -> DownloadProgressUpdate {
         return DownloadProgressUpdate(info: info, writtenDelta: StorageSize.Zero, written: StorageSize.Zero, totalExpected: size)
     }
 }
 
-open class DownloadInfo {
+open class TransferInfo {
     open let relativePath: RelativePath
     open let destinationURL: DestinationURL
     
@@ -86,12 +86,12 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
     let basePath: String
     
     fileprivate let sessionID: SessionID
-    fileprivate var tasks: [TaskID: DownloadInfo] = [:]
+    fileprivate var tasks: [TaskID: TransferInfo] = [:]
     let lockQueue: DispatchQueue
     
     lazy var session: Foundation.URLSession = self.setupSession()
     
-    init(basePath: String, sessionID: SessionID, oldTasks: [TaskID:DownloadInfo]) {
+    init(basePath: String, sessionID: SessionID, oldTasks: [TaskID:TransferInfo]) {
         self.basePath = basePath
         self.sessionID = sessionID
         self.tasks = oldTasks // PimpSettings.sharedInstance.tasks(sessionID)
@@ -144,11 +144,11 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         }
     }
     
-    func download(_ url: URL, relativePath: RelativePath) -> DownloadInfo? {
+    func download(_ url: URL, relativePath: RelativePath) -> TransferInfo? {
         log.info("Preparing download of \(relativePath) from \(url)")
         if let destPath = prepareDestination(relativePath) {
             let destURL = URL(fileURLWithPath: destPath)
-            let info = DownloadInfo(relativePath: relativePath, destinationURL: destURL)
+            let info = TransferInfo(relativePath: relativePath, destinationURL: destURL)
             self.log.info("Download \(url) to dest path \(destPath) with url \(destURL)")
             download(url, info: info)
             return info
@@ -158,7 +158,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         }
     }
     
-    private func download(_ src: URL, info: DownloadInfo) {
+    private func download(_ src: URL, info: TransferInfo) {
         let request = URLRequest(url: src)
         let task = session.downloadTask(with: request)
         saveTask(task.taskIdentifier, di: info)
@@ -168,18 +168,26 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         })
     }
     
-    func upload(_ dest: URL, headers: [String: String], file: URL, onComplete: @escaping (TransferResult) -> Void) {
+    func upload(_ dest: URL, headers: [String: String], data: Data) {
+        upload(dest, headers: headers, toTask: { req in session.uploadTask(with: req, from: data) }, name: "data.jpg")
+    }
+    
+    func upload(_ dest: URL, headers: [String: String], file: URL) {
+        upload(dest, headers: headers, toTask: { req in session.uploadTask(with: req, fromFile: file) }, name: file.lastPathComponent)
+    }
+    
+    func upload(_ dest: URL, headers: [String: String], toTask: (URLRequest) -> URLSessionUploadTask, name: String) {
         var req = URLRequest(url: dest)
         req.httpMethod = HttpClient.POST
         for (key, value) in headers {
             req.addValue(value, forHTTPHeaderField: key)
         }
-        let task = session.uploadTask(with: req, fromFile: file)
-        saveTask(task.taskIdentifier, di: DownloadInfo(relativePath: file.lastPathComponent, destinationURL: dest))
+        let task = toTask(req)
+        saveTask(task.taskIdentifier, di: TransferInfo(relativePath: name, destinationURL: dest))
         task.resume()
     }
     
-    func saveTask(_ taskID: Int, di: DownloadInfo) {
+    func saveTask(_ taskID: Int, di: TransferInfo) {
         synchronized {
             self.tasks[taskID] = di
             self.persistTasks()

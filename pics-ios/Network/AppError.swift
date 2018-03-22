@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum AppError {
+enum AppError: Error {
     case parseError(JsonError)
     case responseFailure(ResponseDetails)
     case networkFailure(RequestFailure)

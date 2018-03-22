@@ -8,6 +8,7 @@
 
 import Foundation
 import AWSCognitoIdentityProvider
+import RxSwift
 
 class PicsHttpClient: HttpClient {
     private let log = LoggerFactory.shared.network(PicsHttpClient.self)
@@ -20,9 +21,6 @@ class PicsHttpClient: HttpClient {
     static let PicsVersion10 = "application/vnd.pics.v10+json"
 //    static let PicsVersion10 = "application/json"
     static let ClientPicHeader = "X-Client-Pic"
-    
-    static let DevUrl = "http://10.0.0.21:9000"
-    static let ProdUrl = "https://pics.malliina.com"
     
     convenience init(accessToken: AWSCognitoIdentityUserSessionToken?) {
         if let accessToken = accessToken {
@@ -53,88 +51,52 @@ class PicsHttpClient: HttpClient {
         return "Bearer \(forToken.tokenString)"
     }
     
-    func pingAuth(_ onError: @escaping (AppError) -> Void, f: @escaping (Version) -> Void) {
-        picsGetParsed("/ping", parse: Version.parse, f: f, onError: onError)
+    func pingAuth() -> Observable<Version> {
+        return picsGetParsed("/ping", parse: Version.parse)
     }
     
-    func picsGetParsed<T>(_ resource: String, parse: @escaping (AnyObject) throws -> T, f: @escaping (T) -> Void, onError: @escaping (AppError) -> Void) {
-        picsGet(resource, f: {
-            (response: HttpResponse) -> Void in
-            if let obj: AnyObject = Json.asJson(response.data) {
-                do {
-                    let parsed = try parse(obj)
-                    f(parsed)
-                } catch let error as JsonError {
-                    self.log.error("Parse error.")
-                    onError(.parseError(error))
-                } catch _ {
-                    onError(.simple("Unknown parse error."))
-                }
-            } else {
-                self.log.error("Not JSON: \(response.data)")
-                onError(AppError.parseError(JsonError.notJson(response.data)))
+    func picsGetParsed<T>(_ resource: String, parse: @escaping (AnyObject) throws -> T) -> Observable<T> {
+        return picsGet(resource).flatMap { (response) -> Observable<T> in
+            return self.parseAs(response: response, parse: parse)
+        }
+    }
+    
+    func picsPostParsed<T>(_ resource: String, data: Data, clientKey: ClientKey, parse: @escaping (AnyObject) throws -> T) -> Observable<T> {
+        return picsPost(resource, payload: data, clientKey: clientKey).flatMap { (response) -> Observable<T> in
+            return self.parseAs(response: response, parse: parse)
+        }
+    }
+    
+    private func parseAs<T>(response: HttpResponse, parse: @escaping (AnyObject) throws -> T) -> Observable<T> {
+        if let obj: AnyObject = Json.asJson(response.data) {
+            do {
+                let parsed = try parse(obj)
+                return Observable.just(parsed)
+            } catch let error as JsonError {
+                self.log.error("Parse error.")
+                return Observable.error(AppError.parseError(error))
+            } catch _ {
+                return Observable.error(AppError.simple("Unknown parse error."))
             }
-        }, onError: onError)
+        } else {
+            self.log.error("Not JSON: \(response.data)")
+            return Observable.error(AppError.parseError(JsonError.notJson(response.data)))
+        }
     }
     
-    func picsPostParsed<T>(_ resource: String, data: Data, clientKey: ClientKey, parse: @escaping (AnyObject) throws -> T, f: @escaping (T) -> Void, onError: @escaping (AppError) -> Void) {
-        picsPost(resource, payload: data, clientKey: clientKey, f: {
-            (response: HttpResponse) -> Void in
-            if let obj: AnyObject = Json.asJson(response.data) {
-                do {
-                    let parsed = try parse(obj)
-                    f(parsed)
-                } catch let error as JsonError {
-                    self.log.error("Parse error.")
-                    onError(.parseError(error))
-                } catch _ {
-                    onError(.simple("Unknown parse error."))
-                }
-            } else {
-                self.log.error("Not JSON: \(data)")
-                onError(.parseError(JsonError.notJson(data)))
-            }
-        }, onError: onError)
-    }
-    
-    func picsGet(_ resource: String, f: @escaping (HttpResponse) -> Void, onError: @escaping (AppError) -> Void) {
-        let url = URL(string: resource, relativeTo: baseURL)!
-        self.get(
-            url,
-            headers: defaultHeaders,
-            onResponse: { response -> Void in
-                self.responseHandler(resource, response: response, f: f, onError: onError)
-        },
-            onError: { (err) -> Void in
-                onError(.networkFailure(err))
-        })
-    }
-    
-    func picsPost(_ resource: String, payload: Data, clientKey: ClientKey, f: @escaping (HttpResponse) -> Void, onError: @escaping (AppError) -> Void) {
+    func picsGet(_ resource: String) -> Observable<HttpResponse> {
         let url = urlFor(resource: resource)
-        self.postData(
-            url,
-            headers: headersFor(clientKey: clientKey),
-            payload: payload,
-            onResponse: { response -> Void in
-                self.responseHandler(resource, response: response, f: f, onError: onError)
-        },
-            onError: { (err) -> Void in
-                onError(.networkFailure(err))
-        })
+        return statusChecked(resource, response: self.get(url, headers: defaultHeaders))
     }
     
-    func picsDelete(_ resource: String, f: @escaping (HttpResponse) -> Void, onError: @escaping (AppError) -> Void) {
+    func picsPost(_ resource: String, payload: Data, clientKey: ClientKey) -> Observable<HttpResponse> {
+        let url = urlFor(resource: resource)
+        return statusChecked(resource, response: self.postData(url, headers: headersFor(clientKey: clientKey), payload: payload))
+    }
+    
+    func picsDelete(_ resource: String) -> Observable<HttpResponse> {
         let url = URL(string: resource, relativeTo: baseURL)!
-        self.delete(
-            url,
-            headers: defaultHeaders,
-            onResponse: { response -> Void in
-                self.responseHandler(resource, response: response, f: f, onError: onError)
-        },
-            onError: { (err) -> Void in
-                onError(.networkFailure(err))
-        })
+        return statusChecked(resource, response: self.delete(url, headers: defaultHeaders))
     }
     
     func urlFor(resource: String) -> URL {
@@ -145,35 +107,35 @@ class PicsHttpClient: HttpClient {
         return postHeaders.merging([PicsHttpClient.ClientPicHeader: clientKey]) { (current, _) in current }
     }
     
-    func responseHandler(_ resource: String, response: HttpResponse, f: (HttpResponse) -> Void, onError: (AppError) -> Void) {
-        if response.isStatusOK {
-            f(response)
-        } else {
-            log.error("Request to '\(resource)' failed with status '\(response.statusCode)'.")
-            var errorMessage: String? = nil
-            if let json = Json.asJson(response.data) as? NSDictionary {
-                errorMessage = json[JsonError.Key] as? String
+    func statusChecked(_ resource: String, response: Observable<HttpResponse>) -> Observable<HttpResponse> {
+        return response.flatMap { (response) -> Observable<HttpResponse> in
+            if response.isStatusOK {
+                return Observable.just(response)
+            } else {
+                self.log.error("Request to '\(resource)' failed with status '\(response.statusCode)'.")
+                var errorMessage: String? = nil
+                if let json = Json.asJson(response.data) as? NSDictionary {
+                    errorMessage = json[JsonError.Key] as? String
+                }
+                return Observable.error(AppError.responseFailure(ResponseDetails(resource: resource, code: response.statusCode, message: errorMessage)))
             }
-            onError(.responseFailure(ResponseDetails(resource: resource, code: response.statusCode, message: errorMessage)))
         }
     }
     
-    override func executeHttp(_ req: URLRequest, onResponse: @escaping (HttpResponse) -> Void, onError: @escaping (RequestFailure) -> Void, retryCount: Int = 0) {
+    override func executeHttp(_ req: URLRequest, retryCount: Int = 0) -> Observable<HttpResponse> {
         var r = req
         r.addValue("\(retryCount)", forHTTPHeaderField: "X-Retry")
-        super.executeHttp(r, onResponse: { (response) in
+        return super.executeHttp(r).flatMap { (response) -> Observable<HttpResponse> in
             if retryCount == 0 && response.statusCode == 401 && response.isTokenExpired {
-                self.log.info("Token expired, retrieving new token and retrying...")
-                Tokens.shared.retrieve(onToken: { (token) in
+                return Tokens.shared.retrieve(cancellationToken: nil).flatMap { (token) -> Observable<HttpResponse> in
                     self.updateToken(token: token)
                     r.setValue(PicsHttpClient.authValueFor(forToken: token), forHTTPHeaderField: HttpClient.AUTHORIZATION)
-                    self.executeHttp(r, onResponse: onResponse, onError: onError, retryCount: retryCount + 1)
-                }, onError: self.handleError, cancellationToken: nil)
+                    return self.executeHttp(r, retryCount: retryCount + 1)
+                }
             } else {
-//                self.log.info("Got a response for request to \(url).")
-                onResponse(response)
+                return Observable.just(response)
             }
-        }, onError: onError, retryCount: retryCount)
+        }
     }
     
     func handleError(error: AppError) {

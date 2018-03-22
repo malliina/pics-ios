@@ -8,6 +8,8 @@
 
 import Foundation
 import AWSCognitoIdentityProvider
+import RxSwift
+import RxCocoa
 
 protocol TokenDelegate {
     func onAccessToken(_ token: AWSCognitoIdentityUserSessionToken)
@@ -30,30 +32,29 @@ class Tokens {
     
     let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
     
-    func retrieve(onToken: @escaping (AWSCognitoIdentityUserSessionToken) -> Void,
-                  onError: @escaping (AppError) -> Void,
-                  cancellationToken: AWSCancellationToken?) {
+    func retrieve(cancellationToken: AWSCancellationTokenSource?) -> Observable<AWSCognitoIdentityUserSessionToken> {
         log.info("Retrieving token...")
         let user = pool.currentUser() ?? pool.getUser()
-        user.getSession().continueWith(block: { (task) -> Any? in
-            self.process(task: task, onToken: onToken, onError: onError)
-            return nil
-        }, cancellationToken: cancellationToken)
-    }
-    
-    private func process(task: AWSTask<AWSCognitoIdentityUserSession>,
-                         onToken: (AWSCognitoIdentityUserSessionToken) -> Void,
-                         onError: @escaping (AppError) -> Void) {
-        if let error = task.error as NSError? {
-            log.warn("Failed to get session with \(error)")
-            onError(.tokenError(error))
-        } else {
-            if let accessToken = task.result?.accessToken {
-//                log.info("Got token \(accessToken.tokenString)")
-                onToken(accessToken)
-                delegates.forEach { $0.onAccessToken(accessToken) }
-            } else {
-                log.warn("Missing access token in session")
+        return Observable<AWSCognitoIdentityUserSessionToken>.create { (subscriber) -> Disposable in
+            user.getSession().continueWith(block: { (task) -> Any? in
+                if let error = task.error as NSError? {
+                    self.log.warn("Failed to get session with \(error)")
+                    subscriber.onError(AppError.tokenError(error))
+                } else {
+                    if let accessToken = task.result?.accessToken {
+                        //                log.info("Got token \(accessToken.tokenString)")
+                        self.delegates.forEach { $0.onAccessToken(accessToken) }
+                        subscriber.onNext(accessToken)
+                        subscriber.onCompleted()
+                    } else {
+                        self.log.warn("Missing access token in session")
+                        subscriber.onError(AppError.simple("Missing access token in session"))
+                    }
+                }
+                return nil
+            }, cancellationToken: cancellationToken?.token)
+            return Disposables.create {
+                cancellationToken?.cancel()
             }
         }
     }

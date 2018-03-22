@@ -8,6 +8,8 @@ target 'pics-ios' do
     pod 'AWSCognito'
     pod 'AWSCognitoIdentityProvider'
     pod 'AppCenter', '1.2.0'
+    pod 'RxSwift', '4.1.1'
+    pod 'RxCocoa', '4.1.1'
 end
 
 target 'pics-iosTests' do
