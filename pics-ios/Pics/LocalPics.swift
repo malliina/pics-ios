@@ -17,6 +17,8 @@ class LocalPics {
     let dir: URL
     let small: URL
     
+    let localPrefix = "pic-"
+    
     init() {
         let dirString = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] + "/pics"
         dir = URL(fileURLWithPath: dirString, isDirectory: true)
@@ -25,6 +27,40 @@ class LocalPics {
         LocalPics.createDirectory(at: small)
         let smallFiles = try! FileManager.default.contentsOfDirectory(at: small, includingPropertiesForKeys: nil)
         log.info("Local small files: \(smallFiles.count)")
+        let removed = maintenance(keys: [])
+        if removed.count > 0 {
+            let removedString = removed.map { $0.path }.mkString(", ")
+            log.info("Maintenance complete. Removed \(removed.count) files: \(removedString).")
+        }
+    }
+    
+    func maintenance(keys: [String]) -> [URL] {
+        let fileManager = FileManager.default
+        let files = (try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
+        let locallyTaken = files.flatMapOpt { (url) -> URL? in
+            if !fileManager.isDirectory(url: url) && url.lastPathComponent.startsWith(localPrefix) {
+                guard let _ = try? fileManager.removeItem(at: url) else { return nil }
+                return url
+            } else {
+                return nil
+            }
+        }
+        let smaller = remove(keys: keys)
+        return locallyTaken + smaller
+        
+    }
+    
+    func remove(keys: [String]) -> [URL] {
+        return keys.flatMapOpt { (key) -> URL? in
+            let smallUrl = fileFor(key: key, dir: small)
+            let exists = (try? smallUrl.checkResourceIsReachable()) ?? false
+            if exists {
+                guard let _ = try? FileManager.default.removeItem(at: smallUrl) else { return nil }
+                return smallUrl
+            } else {
+                return nil
+            }
+        }
     }
     
     func readSmall(key: String) -> Data? {
@@ -63,7 +99,7 @@ class LocalPics {
     
     func saveAsJpg(data: Data) throws -> URL {
         let millis = Int(Date().timeIntervalSince1970 * 1000)
-        let name = "pic-\(millis).jpg"
+        let name = "\(localPrefix)\(millis).jpg"
         let dest = urlFor(name: name)
         try data.write(to: dest)
         log.info("Saved \(name) to \(dest)")
@@ -72,5 +108,13 @@ class LocalPics {
     
     func urlFor(name: String) -> URL {
         return dir.appendingPathComponent(name)
+    }
+}
+
+extension FileManager {
+    func isDirectory(url: URL) -> Bool {
+        var isDirectory: ObjCBool = ObjCBool(false)
+        self.fileExists(atPath: url.path, isDirectory: &isDirectory)
+        return isDirectory.boolValue
     }
 }

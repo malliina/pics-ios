@@ -57,6 +57,7 @@ class PicVC: BaseVC {
             imageView.image = pic.small
             downloadLarge(pic: pic) { large in
                 self.onUiThread {
+                    self.pic.large = large
                     self.imageView.image = large
                 }
             }
@@ -82,9 +83,6 @@ extension UIViewController {
         if pic.large == nil {
             Downloader.shared.download(url: pic.meta.large) { data in
                 if let image = UIImage(data: data) {
-                    self.onUiThread {
-                        pic.large = image
-                    }
                     onImage(image)
                 }
             }
