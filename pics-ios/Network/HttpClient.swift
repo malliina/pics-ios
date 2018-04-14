@@ -70,7 +70,7 @@ class HttpClient {
         var req = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 3600)
         let useCsrfHeader = httpMethod != HttpClient.GET
         if useCsrfHeader {
-            req.addValue("nocheck", forHTTPHeaderField: "Csrf-Token")
+            req.addCsrf()
         }
         req.httpMethod = httpMethod
         for (key, value) in headers {
@@ -85,5 +85,11 @@ class HttpClient {
     func executeRequest(_ req: URLRequest, completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
         let task = session.dataTask(with: req, completionHandler: completionHandler)
         task.resume()
+    }
+}
+
+extension URLRequest {
+    mutating func addCsrf() {
+        self.addValue("nocheck", forHTTPHeaderField: "Csrf-Token")
     }
 }

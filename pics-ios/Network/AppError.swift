@@ -127,7 +127,7 @@ class HttpResponse {
     var errors: [SingleError] {
         get {
             if let json = json, let errors = json["errors"] as? [NSDictionary] {
-                return errors.flatMap({ (dict) -> SingleError? in
+                return errors.compactMap({ (dict) -> SingleError? in
                     if let key = dict["key"] as? String, let message = dict["message"] as? String {
                         return SingleError(key: key, message: message)
                     } else {

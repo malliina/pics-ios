@@ -27,6 +27,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             MSAnalytics.self,
             MSCrashes.self
         ])
+        // Cleans up old pics
+        let _ = LocalPics.shared
         let w = UIWindow(frame: UIScreen.main.bounds)
         window = w
         w.makeKeyAndVisible()

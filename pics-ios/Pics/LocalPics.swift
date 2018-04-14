@@ -25,34 +25,53 @@ class LocalPics {
         small = dir.appendingPathComponent("small", isDirectory: true)
         LocalPics.createDirectory(at: dir)
         LocalPics.createDirectory(at: small)
-        let smallFiles = try! FileManager.default.contentsOfDirectory(at: small, includingPropertiesForKeys: nil)
-        log.info("Local small files: \(smallFiles.count)")
-        let removed = maintenance(keys: [])
+        let smallFiles = try! FileManager.default.contentsOfDirectory(at: small, includingPropertiesForKeys: [URLResourceKey.creationDateKey, URLResourceKey.isRegularFileKey])
+        log.info("Local small files: \(smallFiles.count).")
+        let sorted = smallFiles.filter { $0.isFile }.sorted { (file1, file2) -> Bool in
+            file1.created > file2.created
+        }
+//        sorted.forEach { (url) in
+//            let values = try? url.resourceValues(forKeys: [URLResourceKey.fileSizeKey])
+//            if let values = values, let size = values.fileSize {
+//                log.info("Size: \(size)")
+////                log.info("Created: \(created.timeIntervalSince1970)")
+//            }
+//        }
+        let removed = maintenance(smallFiles: sorted.drop(1000))
         if removed.count > 0 {
             let removedString = removed.map { $0.path }.mkString(", ")
             log.info("Maintenance complete. Removed \(removed.count) files: \(removedString).")
         }
     }
     
-    func maintenance(keys: [String]) -> [URL] {
+    func createdFor(url: URL) -> Date {
+        if let values = try? url.resourceValues(forKeys: [URLResourceKey.creationDateKey]), let created = values.creationDate {
+            return created
+        } else {
+            return Date.distantPast
+        }
+    }
+    
+    func maintenance(smallFiles: [URL]) -> [URL] {
         let fileManager = FileManager.default
-        let files = (try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
+        let files = (try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: [URLResourceKey.creationDateKey, URLResourceKey.isRegularFileKey], options: .skipsHiddenFiles)) ?? []
+        log.info("Local original files: \(files.count).")
+        let oneMonthAgo = Date(timeIntervalSinceNow: -3600 * 24 * 30)
+        // Deletes over one month old original files - they should have been uploaded by now
         let locallyTaken = files.flatMapOpt { (url) -> URL? in
-            if !fileManager.isDirectory(url: url) && url.lastPathComponent.startsWith(localPrefix) {
+            if !fileManager.isDirectory(url: url) && url.lastPathComponent.startsWith(localPrefix) && url.created < oneMonthAgo {
                 guard let _ = try? fileManager.removeItem(at: url) else { return nil }
                 return url
             } else {
                 return nil
             }
         }
-        let smaller = remove(keys: keys)
+        let smaller = remove(smallFiles: smallFiles)
         return locallyTaken + smaller
-        
     }
     
-    func remove(keys: [String]) -> [URL] {
-        return keys.flatMapOpt { (key) -> URL? in
-            let smallUrl = fileFor(key: key, dir: small)
+    func remove(smallFiles: [URL]) -> [URL] {
+        return smallFiles.flatMapOpt { (smallUrl) -> URL? in
             let exists = (try? smallUrl.checkResourceIsReachable()) ?? false
             if exists {
                 guard let _ = try? FileManager.default.removeItem(at: smallUrl) else { return nil }
@@ -116,5 +135,23 @@ extension FileManager {
         var isDirectory: ObjCBool = ObjCBool(false)
         self.fileExists(atPath: url.path, isDirectory: &isDirectory)
         return isDirectory.boolValue
+    }
+}
+
+extension URL {
+    var created: Date {
+        if let values = try? self.resourceValues(forKeys: [URLResourceKey.creationDateKey]), let created = values.creationDate {
+            return created
+        } else {
+            return Date.distantPast
+        }
+    }
+    
+    var isFile: Bool {
+        if let values = try? self.resourceValues(forKeys: [URLResourceKey.isRegularFileKey]), let isRegularFile = values.isRegularFile {
+            return isRegularFile
+        } else {
+            return false
+        }
     }
 }

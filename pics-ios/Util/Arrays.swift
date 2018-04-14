@@ -72,6 +72,7 @@ extension Array {
     }
     
     func drop(_ n: Int) -> [Element] {
+        guard n <= self.count else { return [] }
         return Array(self[n..<self.count])
     }
     

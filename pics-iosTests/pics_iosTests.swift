@@ -49,4 +49,11 @@ class pics_iosTests: XCTestCase {
         }
     }
     
+    func testDrop() {
+        XCTAssert([1, 2].drop(0) == [1, 2])
+        XCTAssert([1, 2].drop(1) == [2])
+        XCTAssert([1, 2].drop(2).isEmpty)
+        XCTAssert([].drop(100).isEmpty)
+    }
+    
 }

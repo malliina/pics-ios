@@ -165,7 +165,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                         self.log.info("Replacing offline pics with fresh pics.")
                         self.isOnline = true
                         self.collectionView?.reloadData()
-                        self.displayNoItemsIfEmpty()
+                        self.renderNoItemsIfEmpty()
                     } else {
                         let indexPaths = rows.map { row in IndexPath(item: row, section: 0) }
                         self.displayItems(at: indexPaths)
@@ -186,8 +186,8 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             guard !event.isCompleted else { return }
             if let result = event.element {
                 self.mightHaveMore = result.count >= limit
-                self.networkActivity(visible: false)
                 self.onUiThread {
+                    self.renderNetworkActivity(visible: false)
                     let filtered = result.filter { pic in !self.isBlocked(pic: pic) }
                     f(filtered)
                 }
@@ -200,8 +200,12 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     func networkActivity(visible: Bool) {
         onUiThread {
-            UIApplication.shared.isNetworkActivityIndicatorVisible = visible
+            self.renderNetworkActivity(visible: visible)
         }
+    }
+    
+    func renderNetworkActivity(visible: Bool) {
+        UIApplication.shared.isNetworkActivityIndicatorVisible = visible
     }
     
     func isBlocked(pic: PicMeta) -> Bool {
@@ -210,11 +214,15 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     func displayNoItemsIfEmpty() {
         onUiThread {
-            if self.pics.isEmpty {
-                self.displayText(text: "You have no pictures yet.")
-            } else {
-                self.collectionView?.backgroundView = nil
-            }
+            self.renderNoItemsIfEmpty()
+        }
+    }
+    
+    func renderNoItemsIfEmpty() {
+        if self.pics.isEmpty {
+            self.displayText(text: "You have no pictures yet.")
+        } else {
+            self.collectionView?.backgroundView = nil
         }
     }
     
@@ -256,11 +264,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         self.collectionView?.reloadData()
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -346,7 +349,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func onLoadError(error: Error) {
         self.networkActivity(visible: false)
         if let error = error as? AppError {
-            let message = AppError.stringify(error)
+            let message = error.describe
             log.error(message)
             // app no longer supported
             if case .responseFailure(let err) = error, err.code == 406 {
@@ -404,7 +407,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         resetDisplay()
     }
     
-    func resetDisplay() {
+    private func resetDisplay() {
         self.pics = []
         collectionView?.reloadData()
     }
@@ -420,7 +423,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         displayNewPics(pics: newPics.filter { !isBlocked(pic: $0) }.map { p in Picture(meta: p) })
     }
     
-    func updateMeta(pic: PicMeta) {
+    private func updateMeta(pic: PicMeta) {
         if let clientKey = pic.clientKey, let idx = self.indexFor(clientKey) {
             self.pics[idx] = self.pics[idx].withMeta(meta: pic)
         } else {
@@ -428,13 +431,13 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         }
     }
     
-    func indexFor(_ clientKey: String) -> Int? {
+    private func indexFor(_ clientKey: String) -> Int? {
         return self.pics.index(where: { (p) -> Bool in
             p.meta.clientKey == clientKey
         })
     }
     
-    func contains(pic: PicMeta) -> Bool {
+    private func contains(pic: PicMeta) -> Bool {
         return self.pics.contains(where: { p -> Bool in (pic.clientKey != nil && p.meta.clientKey == pic.clientKey) || p.meta.key == pic.key })
     }
     
@@ -442,7 +445,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         removePicsLocally(keys: keys)
     }
     
-    func removePicsLocally(keys: [String]) {
+    private func removePicsLocally(keys: [String]) {
         onUiThread {
             let removables = self.pics.enumerated()
                 .filter { (offset, pic) -> Bool in keys.contains(pic.meta.key)}
@@ -498,7 +501,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                     coll.deleteItems(at: removes)
                 }, completion: nil)
             }
-            self.displayNoItemsIfEmpty()
+            self.renderNoItemsIfEmpty()
         }
     }
 }
@@ -594,9 +597,8 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         
         log.info("Saving pic to file, in total \(data.count) bytes...")
         let url = try LocalPics.shared.saveAsJpg(data: data)
-//        let clientKey = pic.meta.clientKey ?? ""
-        if let idx = indexFor(clientKey) {
-            onUiThread {
+        onUiThread {
+            if let idx = self.indexFor(clientKey) {
                 self.pics[idx] = self.pics[idx].withUrl(url: url)
             }
         }
