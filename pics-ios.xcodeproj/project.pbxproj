@@ -211,20 +211,20 @@
 		614230431FC1891E00CD4173 /* pics-ios */ = {
 			isa = PBXGroup;
 			children = (
-				61EB2D871FE5AE6E00A27F1A /* Pics */,
-				618623CF1FD71DF00009345E /* Auth */,
-				618623CD1FD71DB60009345E /* Credentials.plist */,
 				614230441FC1891E00CD4173 /* AppDelegate.swift */,
 				6142304B1FC1891E00CD4173 /* Assets.xcassets */,
+				618623CF1FD71DF00009345E /* Auth */,
 				61A702CC1FC5E52800814051 /* Backend */,
+				618623CD1FD71DB60009345E /* Credentials.plist */,
 				614230501FC1891E00CD4173 /* Info.plist */,
 				6142304D1FC1891E00CD4173 /* LaunchScreen.storyboard */,
 				61A702DB1FCAD8C600814051 /* Models */,
 				61A702CF1FCAC6A400814051 /* Network */,
+				61EB2D871FE5AE6E00A27F1A /* Pics */,
+				61D214BF1FD34E6D00781DC7 /* PicsColors.swift */,
 				61A702D01FCAC6B500814051 /* Util */,
 				61D214B41FD2AB9900781DC7 /* ViewControllers */,
 				61A702E01FCB219800814051 /* Views */,
-				61D214BF1FD34E6D00781DC7 /* PicsColors.swift */,
 			);
 			path = "pics-ios";
 			sourceTree = "<group>";
