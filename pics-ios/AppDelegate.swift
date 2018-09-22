@@ -22,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var transferCompletionHandlers: [String: () -> Void] = [:]
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         MSAppCenter.start("cf2aa399-806a-406e-b72d-f4d6e1978e02", withServices: [
             MSAnalytics.self,
             MSCrashes.self

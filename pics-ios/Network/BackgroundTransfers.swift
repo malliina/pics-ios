@@ -65,9 +65,9 @@ class DownloadProgressUpdate {
 }
 
 open class TransferInfo {
-    open let relativePath: RelativePath
-    open let destinationURL: DestinationURL
-    open let file: URL
+    let relativePath: RelativePath
+    let destinationURL: DestinationURL
+    let file: URL
     
     public init(relativePath: RelativePath, destinationURL: DestinationURL, file: URL) {
         self.relativePath = relativePath

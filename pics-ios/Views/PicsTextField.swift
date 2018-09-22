@@ -12,7 +12,7 @@ import UIKit
 class PicsTextField: UITextField, UITextFieldDelegate {
     var placeholderText: String? {
         get { return placeholder }
-        set(newPlaceholder) { attributedPlaceholder = NSAttributedString(string: newPlaceholder ?? "", attributes: [NSAttributedStringKey.foregroundColor: PicsColors.placeholder]) }
+        set(newPlaceholder) { attributedPlaceholder = NSAttributedString(string: newPlaceholder ?? "", attributes: [NSAttributedString.Key.foregroundColor: PicsColors.placeholder]) }
     }
     
     override init(frame: CGRect) {

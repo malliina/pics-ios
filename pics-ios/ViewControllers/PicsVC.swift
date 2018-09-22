@@ -564,7 +564,10 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         picker.dismiss(animated: true, completion: nil)
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+// Local variable inserted by Swift 4.2 migrator.
+let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
+
         picker.dismiss(animated: true) { () in
             self.onBackgroundThread {
                 do {
@@ -578,7 +581,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
     
     func handleMedia(info: [String: Any]) throws {
         log.info("Pic taken, processing...")
-        guard let originalImage = info[UIImagePickerControllerOriginalImage] as? UIImage else {
+        guard let originalImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage else {
             log.error("Original image is not an UIImage")
             return
         }
@@ -590,7 +593,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
 //        }
         let pic = Picture(image: originalImage, clientKey: clientKey)
         displayNewPics(pics: [pic])
-        guard let data = UIImageJPEGRepresentation(originalImage, 1) else {
+        guard let data = originalImage.jpegData(compressionQuality: 1) else {
             log.error("Taken image is not in JPEG format")
             return
         }
@@ -609,4 +612,14 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         let message = AppError.stringify(error)
         log.error("Unable to save pic: '\(message)'.")
     }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+	return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+	return input.rawValue
 }
