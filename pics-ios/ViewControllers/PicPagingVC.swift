@@ -38,7 +38,10 @@ class PicPagingVC: BaseVC {
     
     override func initUI() {
         navigationItem.title = "Pic"
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(actionsClicked(_:)))
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareClicked(_:))),
+            UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(actionsClicked(_:)))
+        ]
         navigationController?.setNavigationBarHidden(true, animated: true)
         let vc = PicVC(pic: pics[index], navHiddenInitially: true, isPrivate: isPrivate)
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
@@ -52,9 +55,20 @@ class PicPagingVC: BaseVC {
         }
     }
     
+    @objc func shareClicked(_ button: UIBarButtonItem) {
+        if index < pics.count, let image = pics[index].preferred {
+            let vc = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+            vc.popoverPresentationController?.barButtonItem = button
+            self.present(vc, animated: true, completion: nil)
+        } else {
+            self.log.warn("No image to share.")
+        }
+    }
+    
     @objc func actionsClicked(_ button: UIBarButtonItem) {
         if index < pics.count {
-            let meta = pics[index].meta
+            let pic = pics[index]
+            let meta = pic.meta
             let key = meta.key
             let content = UIAlertController(title: "Actions for this image", message: nil, preferredStyle: .actionSheet)
             content.popoverPresentationController?.barButtonItem = button

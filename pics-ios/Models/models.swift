@@ -275,6 +275,8 @@ class Picture {
         self.meta = meta
     }
     
+    var preferred: UIImage? { return url ?? large ?? medium ?? small }
+    
     static func nowMillis() -> Timestamp {
         return Timestamp(Date().timeIntervalSince1970 * 1000)
     }
