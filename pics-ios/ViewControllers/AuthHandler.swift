@@ -67,8 +67,8 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
             navCtrl.navigationBar.barStyle = .black
             navCtrl.navigationBar.prefersLargeTitles = true
 //            self.log.info("Presenting \(navCtrl) from \(from)")
-            self.window.rootViewController?.present(navCtrl, animated: true, completion: nil)
-//            from.present(navCtrl, animated: true, completion: nil)
+//            self.window.rootViewController?.present(navCtrl, animated: true, completion: nil)
+            from.present(navCtrl, animated: true, completion: nil)
         }
     }
     

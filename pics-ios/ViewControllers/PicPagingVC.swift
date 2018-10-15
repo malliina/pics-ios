@@ -47,8 +47,8 @@ class PicPagingVC: BaseVC {
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
-        addChild(pager)
-        pager.didMove(toParent: self)
+        addChildViewController(pager)
+        pager.didMove(toParentViewController: self)
         view.addSubview(pager.view)
         pager.view.snp.makeConstraints { (make) in
             make.top.bottom.leading.trailing.equalToSuperview()
@@ -83,7 +83,7 @@ class PicPagingVC: BaseVC {
             })
             content.addAction(UIAlertAction(title: "Open in Safari", style: .default) { action in
                 if !meta.url.isFileURL {
-                    UIApplication.shared.open(meta.url, options: convertToUIApplicationOpenExternalURLOptionsKeyDictionary([:]), completionHandler: nil)
+                    UIApplication.shared.open(meta.url, options: [:], completionHandler: nil)
                 } else {
                     self.log.warn("Refusing to open a file URL in browser.")
                 }
@@ -183,6 +183,6 @@ extension PicPagingVC: UIPageViewControllerDataSource {
 }
 
 // Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertToUIApplicationOpenExternalURLOptionsKeyDictionary(_ input: [String: Any]) -> [UIApplication.OpenExternalURLOptionsKey: Any] {
-	return Dictionary(uniqueKeysWithValues: input.map { key, value in (UIApplication.OpenExternalURLOptionsKey(rawValue: key), value)})
-}
+//fileprivate func convertToUIApplicationOpenExternalURLOptionsKeyDictionary(_ input: [String: Any]) -> [UIApplication.OpenExternalURLOptionsKey: Any] {
+//    return Dictionary(uniqueKeysWithValues: input.map { key, value in (UIApplication.OpenExternalURLOptionsKey(rawValue: key), value)})
+//}

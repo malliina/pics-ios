@@ -1,10 +1,12 @@
 source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '10.3'
+ENV['COCOAPODS_DISABLE_STATS'] = "true"
 use_frameworks!
+inhibit_all_warnings!
 
 target 'pics-ios' do
     pod 'SocketRocket', '0.5.1'
-    pod 'SnapKit', '4.0.0'
+    pod 'SnapKit', '4.0.1'
     pod 'AWSCognito'
     pod 'AWSCognitoIdentityProvider'
     pod 'AppCenter', '1.2.0'

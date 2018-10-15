@@ -58,6 +58,7 @@
 		61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */; };
 		61EB2D8D1FF1849800A27F1A /* SocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8C1FF1849800A27F1A /* SocketClient.swift */; };
 		61EB2D8F1FF1855500A27F1A /* PicsSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */; };
+		D46CBBC4DA871447AEF17CC7 /* Pods_pics_iosTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61E9FBE42016670000FA4F42 /* Pods_pics_iosTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -160,6 +161,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				54BE435F482AF3E2ADBB7C86 /* Pods_pics_iosTests.framework in Frameworks */,
+				D46CBBC4DA871447AEF17CC7 /* Pods_pics_iosTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -369,7 +371,6 @@
 				6142303E1FC1891E00CD4173 /* Frameworks */,
 				6142303F1FC1891E00CD4173 /* Resources */,
 				528A15193F279FB5F9577A3F /* [CP] Embed Pods Frameworks */,
-				AE3722912C7A3DF724190C36 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -389,7 +390,6 @@
 				614230521FC1891E00CD4173 /* Frameworks */,
 				614230531FC1891E00CD4173 /* Resources */,
 				D6D7FABDB34E52BFCA0C6D53 /* [CP] Embed Pods Frameworks */,
-				34A2B05C48E68C0E9B631DA4 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -496,21 +496,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		34A2B05C48E68C0E9B631DA4 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-pics-iosTests/Pods-pics-iosTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		528A15193F279FB5F9577A3F /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -539,21 +524,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		AE3722912C7A3DF724190C36 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		BC30B6C41226FB2160A00B81 /* [CP] Check Pods Manifest.lock */ = {
@@ -835,7 +805,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -853,7 +823,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -998,7 +968,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = CI;
