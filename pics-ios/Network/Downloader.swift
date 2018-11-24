@@ -39,6 +39,7 @@ class Downloader {
                 }
             } else {
                 if let data = data {
+//                    log.info("Downloaded \(url.absoluteString)")
                     onData(data)
                 } else {
                     log.warn("No data returned in download of \(url.absoluteString), but also no error reported")

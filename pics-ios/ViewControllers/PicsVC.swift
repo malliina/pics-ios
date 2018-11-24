@@ -19,6 +19,21 @@ protocol PicDelegate {
     func block(key: String)
 }
 
+extension PicsVC: UICollectionViewDataSourcePrefetching {
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        for indexPath in indexPaths {
+            let row = indexPath.row
+            if pics.count > row {
+                let pic = pics[indexPath.row]
+                if pic.small == nil {
+//                    log.info("Prefetching \(pic.meta.key)")
+                    self.download(indexPath, pic: pic)
+                }
+            }
+        }
+    }
+}
+
 class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate, PicsRenderer {
     static let preferredItemSize: Double = Devices.isIpad ? 200 : 130
     static let itemsPerLoad = 100
@@ -67,6 +82,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         guard let coll = collectionView else { return }
         coll.register(PicsCell.self, forCellWithReuseIdentifier: PicCellIdentifier)
         coll.delegate = self
+        coll.prefetchDataSource = self
         self.initNav(title: "Pics", large: false)
         initStyle()
         self.navigationItem.leftBarButtonItems = [
@@ -278,6 +294,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             cell.imageView.image = thumb
         } else {
             cell.imageView.image = nil
+//            log.info("Fetching \(pic.meta.key)")
             self.download(indexPath, pic: pic)
         }
         return cell
