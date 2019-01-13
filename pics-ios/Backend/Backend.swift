@@ -21,8 +21,8 @@ class Backend {
     }
     
     func updateToken(new token: AWSCognitoIdentityUserSessionToken?) {
-        self.library.http.updateToken(token: token)
-        self.socket.updateAuthHeaderValue(newValue: authValue(token: token))
+        library.http.updateToken(token: token)
+        socket.updateAuthHeaderValue(newValue: authValue(token: token))
     }
     
     private func authValue(token: AWSCognitoIdentityUserSessionToken?) -> String? {

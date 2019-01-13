@@ -31,10 +31,19 @@ class PicsLibrary {
         return http.picsDelete("/pics/\(key)")
     }
     
-    func saveURL(picture: URL, clientKey: ClientKey) {
+    func syncOffline(for user: String) {
+        let dir = LocalPics.shared.directory(for: user)
+        let files = LocalPics.listFiles(at: dir)
+        log.info("Syncing \(files.count) files for '\(user)'...")
+        files.forEach { (url) in
+            uploadPic(picture: url, clientKey: Picture.randomKey(), deleteOnComplete: true)
+        }
+    }
+    
+    func uploadPic(picture: URL, clientKey: ClientKey, deleteOnComplete: Bool = false) {
         let url = http.urlFor(resource: "/pics")
         let headers = http.headersFor(clientKey: clientKey)
-        BackgroundTransfers.picsUploader.upload(url, headers: headers, file: picture)
+        BackgroundTransfers.picsUploader.upload(url, headers: headers, file: picture, deleteOnComplete: deleteOnComplete)
     }
     
     func handle<T>(result: TransferResult, parse: (Data) throws -> T) -> Observable<T> {
@@ -67,13 +76,13 @@ class PicsLibrary {
     }
     
     static func parsePics(obj: AnyObject) throws -> [PicMeta] {
-        let dict = try readObject(obj)
+        let dict = try Json.readObject(obj)
         let pics: [NSDictionary] = try Json.readOrFail(dict, PicMeta.Pics)
         return try pics.map(PicMeta.parse)
     }
     
     static func parseKeys(obj: AnyObject) throws -> [String] {
-        let dict = try readObject(obj)
+        let dict = try Json.readObject(obj)
         let keys: [String] = try Json.readOrFail(dict, "keys")
         return keys
     }
@@ -84,15 +93,8 @@ class PicsLibrary {
     }
     
     static func parsePic(obj: AnyObject) throws -> PicMeta {
-        let dict = try readObject(obj)
+        let dict = try Json.readObject(obj)
         let pics: NSDictionary = try Json.readOrFail(dict, PicMeta.Pic)
         return try PicMeta.parse(pics)
-    }
-    
-    static func readObject(_ obj: AnyObject) throws -> NSDictionary {
-        if let obj = obj as? NSDictionary {
-            return obj
-        }
-        throw JsonError.invalid("object", obj)
     }
 }

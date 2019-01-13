@@ -26,7 +26,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
         let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
         let flow = UICollectionViewFlowLayout()
         flow.itemSize = CGSize(width: PicsVC.preferredItemSize, height: PicsVC.preferredItemSize)
-        let pics = PicsVC(collectionViewLayout: flow)
+        let pics = PicsVC()
         picsVc = UINavigationController(rootViewController: pics)
 //        picsVc = PicsVC.build()
         authVc = AuthVC(root: pics)

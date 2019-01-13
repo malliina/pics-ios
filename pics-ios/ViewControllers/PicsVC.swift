@@ -73,8 +73,18 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     var isSignedIn: Bool { return currentUser?.isSignedIn ?? false }
     var backgroundColor: UIColor { return isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var cellBackgroundColor: UIColor { return isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
-    var barStyle: UIBarStyle { return isPrivate ? UIBarStyle.black : UIBarStyle.default }
+    var barStyle: UIBarStyle { return isPrivate ? .black : .default }
     var textColor: UIColor { return isPrivate ? .lightText : .darkText }
+    
+    init() {
+        let flow = UICollectionViewFlowLayout()
+        flow.itemSize = CGSize(width: PicsVC.preferredItemSize, height: PicsVC.preferredItemSize)
+        super.init(collectionViewLayout: flow)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -142,6 +152,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                 guard !event.isCompleted else { return }
                 if let token = event.element {
                     self.load(with: token)
+                    if let user = self.currentUser?.username {
+                        self.library.syncOffline(for: user)
+                    }
                 }
                 if let error = event.error {
                     self.onLoadError(error: error)
@@ -402,10 +415,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     @objc func changeUserClicked(_ sender: UIBarButtonItem) {
-        signOutAndReload()
+        signOutOrReloadUser()
     }
     
-    func signOutAndReload() {
+    func signOutOrReloadUser() {
         let wasSignedIn = isSignedIn
         pool.currentUser()?.signOut()
         pool.clearLastKnownUser()
@@ -564,7 +577,7 @@ extension PicsVC: ProfileDelegate {
     }
     
     func onLogout() {
-        signOutAndReload()
+        signOutOrReloadUser()
     }
 }
 
@@ -603,11 +616,6 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
             return
         }
         let clientKey = Picture.randomKey()
-//        let small = originalImage.toPixels(CGSize(width: 400, height: 300))
-//        if let smallData = UIImageJPEGRepresentation(small, 0.7) {
-//            log.info("Small is \(smallData) bytes")
-//            library.save(picture: smallData, clientKey: clientKey)
-//        }
         let pic = Picture(image: originalImage, clientKey: clientKey)
         displayNewPics(pics: [pic])
         guard let data = UIImageJPEGRepresentation(originalImage, 1) else {
@@ -622,7 +630,33 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
                 self.pics[idx] = self.pics[idx].withUrl(url: url)
             }
         }
-        library.saveURL(picture: url, clientKey: clientKey)
+        if isPrivate {
+            // This should return the last logged in user, even if we're currently offline
+            if let user = currentUser?.username {
+                // Copy file to folder
+                // On new token, check folder
+                // Upload oldest first from folder using token
+                let _ = try LocalPics.shared.saveUserPic(data: data, owner: user)
+                let _ = Tokens.shared.retrieve(cancellationToken: nil).subscribe { (event) in
+                    guard !event.isCompleted else { return }
+                    if let token = event.element {
+                        Backend.shared.updateToken(new: token)
+                        if let user = self.currentUser?.username {
+                            self.library.syncOffline(for: user)
+                        }
+                    }
+                    if let error = event.error {
+                        self.log.error("Unable to sync pic. No network? \(error)")
+                    }
+                }
+            } else {
+                // I think this is an error
+                log.warn("Unknown username of private user. Uploading with best effort.")
+                library.uploadPic(picture: url, clientKey: clientKey)
+            }
+        } else {
+            library.uploadPic(picture: url, clientKey: clientKey)
+        }
     }
     
     func onSaveError(error: AppError) {
@@ -631,12 +665,20 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
     }
 }
 
-// Helper function inserted by Swift 4.2 migrator.
-//fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
-//    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
-//}
-//
-//// Helper function inserted by Swift 4.2 migrator.
-//fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
-//    return input.rawValue
-//}
+extension Data {
+    struct HexEncodingOptions: OptionSet {
+        let rawValue: Int
+        static let upperCase = HexEncodingOptions(rawValue: 1 << 0)
+    }
+    
+    func hexEncodedString(options: HexEncodingOptions = []) -> String {
+        let hexDigits = Array((options.contains(.upperCase) ? "0123456789ABCDEF" : "0123456789abcdef").utf16)
+        var chars: [unichar] = []
+        chars.reserveCapacity(2 * count)
+        for byte in self {
+            chars.append(hexDigits[Int(byte / 16)])
+            chars.append(hexDigits[Int(byte % 16)])
+        }
+        return String(utf16CodeUnits: chars, count: chars.count)
+    }
+}

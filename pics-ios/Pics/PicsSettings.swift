@@ -13,6 +13,7 @@ class PicsSettings {
     
     let IsPublic = "is_private"
     static let PicsKey = "pics"
+    static let Uploads = "uploads"
     let EulaAccepted = "eula_accepted"
     static let BlockedImageKeys = "blocked_keys"
     
@@ -45,6 +46,11 @@ class PicsSettings {
         }
     }
     
+    var uploads: [UploadTask] {
+        get { return loadUploads() }
+        set (newValue) { saveUploads(tasks: newValue) }
+    }
+    
     func block(key: String) {
         let blockedList = blockedImageKeys + [key]
         blockedImageKeys = blockedList
@@ -60,6 +66,22 @@ class PicsSettings {
     
     func clearPics() {
         localPics = []
+    }
+    
+    private func saveUploads(tasks: [UploadTask]) {
+        let jsons = tasks.map { UploadTask.write(task: $0) } as AnyObject
+        let json = [ UploadTask.Tasks: jsons ]
+        prefs.set(Json.stringifyObject(json), forKey: PicsSettings.Uploads)
+    }
+    
+    private func loadUploads() -> [UploadTask] {
+        guard let stringified = prefs.string(forKey: PicsSettings.Uploads) else { return [] }
+        guard let json = Json.asJson(stringified) else { return [] }
+        do {
+            return try UploadTask.parseList(obj: json)
+        } catch {
+            return []
+        }
     }
     
     private func savePics(pics: [Picture]) {

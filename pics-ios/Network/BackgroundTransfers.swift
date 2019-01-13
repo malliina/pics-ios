@@ -64,15 +64,52 @@ class DownloadProgressUpdate {
     }
 }
 
+struct UploadTask {
+    let id: Int
+    let folder: String
+    let filename: String
+    
+    static let Tasks = "tasks"
+    static let Id = "id"
+    static let Folder = "folder"
+    static let Filename = "filename"
+    
+    static func write(task: UploadTask) -> [String: AnyObject] {
+        return [
+            Id: task.id as AnyObject,
+            Folder: task.folder as AnyObject,
+            Filename: task.filename as AnyObject
+        ]
+    }
+    
+    static func parseList(obj: AnyObject) throws -> [UploadTask] {
+        let dict = try Json.readObject(obj)
+        let tasks: [NSDictionary] = try Json.readOrFail(dict, UploadTask.Tasks)
+        return try tasks.map(UploadTask.parse)
+    }
+    
+    static func parse(_ obj: AnyObject) throws -> UploadTask {
+        if let dict = obj as? NSDictionary {
+            let id = try Json.readInt(dict, Id)
+            let folder = try Json.readString(dict, Folder)
+            let filename = try Json.readString(dict, Filename)
+            return UploadTask(id: id, folder: folder, filename: filename)
+        }
+        throw JsonError.invalid("task", obj)
+    }
+}
+
 open class TransferInfo {
     let relativePath: RelativePath
     let destinationURL: DestinationURL
     let file: URL
+    let deleteOnComplete: Bool
     
-    public init(relativePath: RelativePath, destinationURL: DestinationURL, file: URL) {
+    public init(relativePath: RelativePath, destinationURL: DestinationURL, file: URL, deleteOnComplete: Bool) {
         self.relativePath = relativePath
         self.destinationURL = destinationURL
         self.file = file
+        self.deleteOnComplete = deleteOnComplete
     }
 }
 
@@ -89,6 +126,8 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
     
     fileprivate let sessionID: SessionID
     fileprivate var tasks: [TaskID: TransferInfo] = [:]
+    // Upload tasks whose files must be deleted on completion
+    private var uploads: [UploadTask] = PicsSettings.shared.uploads
     let lockQueue: DispatchQueue
     
     lazy var session: Foundation.URLSession = self.setupSession()
@@ -116,7 +155,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
     
     fileprivate func setupSession() -> Foundation.URLSession {
         let conf = URLSessionConfiguration.background(withIdentifier: sessionID)
-        conf.sessionSendsLaunchEvents = true
+        conf.sessionSendsLaunchEvents = false
         conf.isDiscretionary = false
         let session = Foundation.URLSession(configuration: conf, delegate: self, delegateQueue: nil)
         session.getTasksWithCompletionHandler { (datas, uploads, downloads) -> Void in
@@ -156,7 +195,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         })
     }
     
-    func upload(_ dest: URL, headers: [String: String], file: URL) {
+    func upload(_ dest: URL, headers: [String: String], file: URL, deleteOnComplete: Bool) {
         var req = URLRequest(url: dest)
         req.addCsrf()
         req.httpMethod = HttpClient.POST
@@ -164,7 +203,10 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
             req.addValue(value, forHTTPHeaderField: key)
         }
         let task = session.uploadTask(with: req, fromFile: file)
-        saveTask(task.taskIdentifier, di: TransferInfo(relativePath: file.lastPathComponent, destinationURL: dest, file: file))
+        saveTask(task.taskIdentifier, di: TransferInfo(relativePath: file.lastPathComponent, destinationURL: dest, file: file, deleteOnComplete: deleteOnComplete))
+        if deleteOnComplete {
+            saveUpload(task: UploadTask(id: task.taskIdentifier, folder: file.deletingLastPathComponent().lastPathComponent, filename: file.lastPathComponent))
+        }
         task.resume()
     }
     
@@ -175,16 +217,41 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         }
     }
     
+    func saveUpload(task: UploadTask) {
+        synchronized {
+            self.uploads.append(task)
+            PicsSettings.shared.uploads = self.uploads
+        }
+    }
+    
     func removeTask(_ taskID: Int) {
         synchronized {
-            self.tasks.removeValue(forKey: taskID)
+            if let task = self.tasks.removeValue(forKey: taskID) {
+                if task.deleteOnComplete {
+                    self.removeUploaded(id: taskID)
+                }
+            }
             self.persistTasks()
+        }
+    }
+    
+    private func removeUploaded(id: Int) {
+        if let index = uploads.indexOf({ $0.id == id }), let task = uploads.find({ $0.id == id }) {
+            uploads.remove(at: index)
+            let file = LocalPics.shared.computeUrl(folder: task.folder, filename: task.filename)
+            do {
+                try fileManager.removeItem(at: file)
+                log.info("Removed \(file) of task \(id).")
+            } catch {
+                log.error("Failed to remove \(file) of task \(id).")
+            }
+            PicsSettings.shared.uploads = uploads
         }
     }
     
     func persistTasks() {
         //        info("Saving \(tasks)")
-        //        PimpSettings.sharedInstance.saveTasks(self.sessionID, tasks: self.tasks)
+//        PicsSettings.sharedInstance.saveTasks(self.sessionID, tasks: self.tasks)
     }
     
     func prepareDestination(_ relativePath: RelativePath) -> String? {
@@ -212,7 +279,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         let taskID = downloadTask.taskIdentifier
         if let downloadInfo = tasks[taskID] {
             let destURL = downloadInfo.destinationURL
-            // Attempt to remove any previous file
+            // Attempts to remove any previous file
             do {
                 try fileManager.removeItem(at: destURL)
                 log.info("Removed previous version of \(destURL).")
@@ -223,8 +290,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
                 try fileManager.moveItem(at: location, to: destURL)
                 log.info("Completed download of \(relPath).")
             } catch let err {
-                log.error("Copy failed \(err)")
-                log.info("File copy of \(relPath) failed to \(destURL).")
+                log.error("File copy of \(relPath) failed to \(destURL). \(err)")
             }
         }
     }

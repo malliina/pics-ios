@@ -1,11 +1,3 @@
-//
-//  LocalPics.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 16/12/2017.
-//  Copyright © 2017 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 
 class LocalPics {
@@ -25,7 +17,7 @@ class LocalPics {
         small = dir.appendingPathComponent("small", isDirectory: true)
         LocalPics.createDirectory(at: dir)
         LocalPics.createDirectory(at: small)
-        let smallFiles = try! FileManager.default.contentsOfDirectory(at: small, includingPropertiesForKeys: [URLResourceKey.creationDateKey, URLResourceKey.isRegularFileKey])
+        let smallFiles = LocalPics.listFiles(at: small)
         log.info("Local small files: \(smallFiles.count).")
         let sorted = smallFiles.filter { $0.isFile }.sorted { (file1, file2) -> Bool in
             file1.created > file2.created
@@ -44,6 +36,22 @@ class LocalPics {
         }
     }
     
+    func computeUrl(folder: String, filename: String) -> URL {
+        return dir.appendingPathComponent(folder, isDirectory: true).appendingPathComponent(filename)
+    }
+    
+    func saveUserPic(data: Data, owner: String) throws -> URL {
+        let userDirectory = directory(for: owner)
+        return try saveAsJpgBase(data: data, base: userDirectory)
+    }
+    
+    func directory(for owner: String) -> URL {
+        let folder = Data(owner.utf8).hexEncodedString()
+        let userDirectory = dir.appendingPathComponent(folder, isDirectory: true)
+        LocalPics.createDirectory(at: userDirectory)
+        return userDirectory
+    }
+    
     func createdFor(url: URL) -> Date {
         if let values = try? url.resourceValues(forKeys: [URLResourceKey.creationDateKey]), let created = values.creationDate {
             return created
@@ -54,7 +62,7 @@ class LocalPics {
     
     func maintenance(smallFiles: [URL]) -> [URL] {
         let fileManager = FileManager.default
-        let files = (try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: [URLResourceKey.creationDateKey, URLResourceKey.isRegularFileKey], options: .skipsHiddenFiles)) ?? []
+        let files = LocalPics.listFiles(at: dir)
         log.info("Local original files: \(files.count).")
         let oneMonthAgo = Date(timeIntervalSinceNow: -3600 * 24 * 30)
         // Deletes over one month old original files - they should have been uploaded by now
@@ -68,6 +76,10 @@ class LocalPics {
         }
         let smaller = remove(smallFiles: smallFiles)
         return locallyTaken + smaller
+    }
+    
+    static func listFiles(at: URL) -> [URL] {
+        return (try? FileManager.default.contentsOfDirectory(at: at, includingPropertiesForKeys: [URLResourceKey.creationDateKey, URLResourceKey.isRegularFileKey], options: .skipsHiddenFiles)) ?? []
     }
     
     func remove(smallFiles: [URL]) -> [URL] {
@@ -112,17 +124,28 @@ class LocalPics {
     }
     
     static func createDirectory(at dir: URL) {
-        try! FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true, attributes: nil)
-        logger.info("Created \(dir)")
+        let alreadyExists = FileManager.default.isDirectory(url: dir)
+        if !alreadyExists {
+            try! FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true, attributes: nil)
+            logger.info("Created \(dir)")
+        }
     }
     
     func saveAsJpg(data: Data) throws -> URL {
-        let millis = Int(Date().timeIntervalSince1970 * 1000)
-        let name = "\(localPrefix)\(millis).jpg"
-        let dest = urlFor(name: name)
+        return try saveAsJpgBase(data: data, base: dir)
+    }
+    
+    func saveAsJpgBase(data: Data, base: URL) throws -> URL {
+        let name = generateName()
+        let dest = base.appendingPathComponent(name)
         try data.write(to: dest)
         log.info("Saved \(name) to \(dest)")
         return dest
+    }
+    
+    func generateName() -> String {
+        let millis = Int(Date().timeIntervalSince1970 * 1000)
+        return "\(localPrefix)\(millis).jpg"
     }
     
     func urlFor(name: String) -> URL {
