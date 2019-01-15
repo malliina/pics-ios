@@ -650,9 +650,8 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
                     }
                 }
             } else {
-                // I think this is an error
-                log.warn("Unknown username of private user. Uploading with best effort.")
-                library.uploadPic(picture: url, clientKey: clientKey)
+                log.warn("Unknown username of private user. Cannot save picture.")
+                presentAlert(title: "Error", message: "Failed to save picture. Try again later.", buttonText: "OK")
             }
         } else {
             library.uploadPic(picture: url, clientKey: clientKey)

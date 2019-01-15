@@ -33,7 +33,9 @@ class PicsLibrary {
     
     func syncOffline(for user: String) {
         let dir = LocalPics.shared.directory(for: user)
-        let files = LocalPics.listFiles(at: dir)
+        let files = LocalPics.listFiles(at: dir).sorted { (file1, file2) -> Bool in
+            file1.created < file2.created
+        }
         log.info("Syncing \(files.count) files for '\(user)'...")
         files.forEach { (url) in
             uploadPic(picture: url, clientKey: Picture.randomKey(), deleteOnComplete: true)
@@ -43,7 +45,7 @@ class PicsLibrary {
     func uploadPic(picture: URL, clientKey: ClientKey, deleteOnComplete: Bool = false) {
         let url = http.urlFor(resource: "/pics")
         let headers = http.headersFor(clientKey: clientKey)
-        BackgroundTransfers.picsUploader.upload(url, headers: headers, file: picture, deleteOnComplete: deleteOnComplete)
+        BackgroundTransfers.uploader.upload(url, headers: headers, file: picture, deleteOnComplete: deleteOnComplete)
     }
     
     func handle<T>(result: TransferResult, parse: (Data) throws -> T) -> Observable<T> {
@@ -87,10 +89,10 @@ class PicsLibrary {
         return keys
     }
     
-    static func parsePicData(data: Data) throws -> PicMeta {
-        guard let obj = Json.asJson(data) else { throw JsonError.notJson(data) }
-        return try parsePic(obj: obj)
-    }
+//    static func parsePicData(data: Data) throws -> PicMeta {
+//        guard let obj = Json.asJson(data) else { throw JsonError.notJson(data) }
+//        return try parsePic(obj: obj)
+//    }
     
     static func parsePic(obj: AnyObject) throws -> PicMeta {
         let dict = try Json.readObject(obj)
