@@ -13,14 +13,14 @@ class PicsSettings {
     
     let IsPublic = "is_private"
     static let PicsKey = "pics"
-    static let Uploads = "uploads"
+    static let Uploads = "pic_uploads"
     let EulaAccepted = "eula_accepted"
-    static let BlockedImageKeys = "blocked_keys"
+    private static let BlockedImageKeys = "blocked_keys"
     
     let prefs = UserDefaults.standard
     
     private var cachedPictures: [Picture] = PicsSettings.loadPics()
-    private var blockedKeys: [String] = PicsSettings.loadBlocked()
+    private var blockedKeys: [ClientKey] = PicsSettings.loadBlocked()
     
     var isPrivate: Bool {
         get { return prefs.bool(forKey: IsPublic) }
@@ -38,20 +38,41 @@ class PicsSettings {
         set (newValue) { prefs.set(newValue, forKey: EulaAccepted) }
     }
     
-    var blockedImageKeys: [String] {
+    var blockedImageKeys: [ClientKey] {
         get { return blockedKeys }
         set (newValue) {
             blockedKeys = newValue
-            prefs.set(newValue, forKey: PicsSettings.BlockedImageKeys)
+            prefs.set(newValue.map { $0.key }, forKey: PicsSettings.BlockedImageKeys)
         }
     }
     
+    // Upload tasks whose files must be deleted on completion
     var uploads: [UploadTask] {
         get { return loadUploads() }
         set (newValue) { saveUploads(tasks: newValue) }
     }
     
-    func block(key: String) {
+    func saveUpload(task: UploadTask) {
+        var ups = uploads
+        ups.removeAll { (t) -> Bool in
+            t.id == task.id
+        }
+        ups.append(task)
+        uploads = ups
+    }
+    
+    func removeUpload(id: Int) -> UploadTask? {
+        var ups = uploads
+        if let index = uploads.indexOf({ $0.id == id }), let task = uploads.find({ $0.id == id }) {
+            ups.remove(at: index)
+            uploads = ups
+            return task
+        } else {
+            return nil
+        }
+    }
+    
+    func block(key: ClientKey) {
         let blockedList = blockedImageKeys + [key]
         blockedImageKeys = blockedList
     }
@@ -101,7 +122,7 @@ class PicsSettings {
         }
     }
     
-    static func loadBlocked() -> [String] {
-        return UserDefaults.standard.stringArray(forKey: BlockedImageKeys) ?? []
+    static func loadBlocked() -> [ClientKey] {
+        return (UserDefaults.standard.stringArray(forKey: BlockedImageKeys) ?? []).map { s in ClientKey(key: s) }
     }
 }

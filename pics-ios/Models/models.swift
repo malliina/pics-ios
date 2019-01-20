@@ -156,6 +156,24 @@ class ProfileInfo {
     }
 }
 
+struct ClientKey: Equatable, Hashable, CustomStringConvertible {
+    let key: String
+    var description: String { return key }
+    
+    static func == (lhs: ClientKey, rhs: ClientKey) -> Bool { return lhs.key == rhs.key }
+    
+    static func random() -> ClientKey {
+        return ClientKey(key: Picture.randomKey())
+    }
+}
+
+struct AccessToken: Equatable, Hashable, CustomStringConvertible {
+    let token: String
+    var description: String { return token }
+    
+    static func == (lhs: AccessToken, rhs: AccessToken) -> Bool { return lhs.token == rhs.token }
+}
+
 class PicMeta {
     static let Pic = "pic"
     static let Pics = "pics"
@@ -165,21 +183,21 @@ class PicMeta {
     static let Medium = "medium"
     static let Large = "large"
     static let Added = "added"
-    static let ClientKey = "clientKey"
+    static let ClientKeyKey = "clientKey"
     
-    let key: String
+    let key: ClientKey
     let url: URL
     let small: URL
     let medium: URL
     let large: URL
     let added: Timestamp
-    let clientKey: String?
+    let clientKey: ClientKey?
     
-    convenience init(key: String, url: URL, added: Timestamp, clientKey: String?) {
+    convenience init(key: ClientKey, url: URL, added: Timestamp, clientKey: ClientKey?) {
         self.init(key: key, url: url, small: url, medium: url, large: url, added: added, clientKey: clientKey)
     }
     
-    init(key: String, url: URL, small: URL, medium: URL, large: URL, added: Timestamp, clientKey: String?) {
+    init(key: ClientKey, url: URL, small: URL, medium: URL, large: URL, added: Timestamp, clientKey: ClientKey?) {
         self.key = key
         self.url = url
         self.small = small
@@ -194,7 +212,7 @@ class PicMeta {
     }
     
     static func random() -> PicMeta {
-        return PicMeta(key: Picture.randomKey(), url: Picture.TempFakeUrl, added: Picture.nowMillis(), clientKey: nil)
+        return PicMeta(key: ClientKey.random(), url: Picture.TempFakeUrl, added: Picture.nowMillis(), clientKey: nil)
     }
     
     static func randoms() -> [PicMeta] {
@@ -207,13 +225,13 @@ class PicMeta {
     
     static func write(pic: PicMeta) -> [String: AnyObject] {
         return [
-            Key: pic.key as AnyObject,
+            Key: pic.key.key as AnyObject,
             Url: pic.url.absoluteString as AnyObject,
             Small: pic.small.absoluteString as AnyObject,
             Medium: pic.medium.absoluteString as AnyObject,
             Large: pic.large.absoluteString as AnyObject,
             Added: pic.added as AnyObject,
-            ClientKey: pic.clientKey as AnyObject
+            ClientKeyKey: pic.clientKey?.key as AnyObject
         ]
     }
     
@@ -231,14 +249,14 @@ class PicMeta {
     
     static func parse(_ obj: AnyObject) throws -> PicMeta {
         if let dict = obj as? NSDictionary {
-            let key = try Json.readString(dict, PicMeta.Key)
+            let key = ClientKey(key: try Json.readString(dict, PicMeta.Key))
             let url = try readUrl(key: PicMeta.Url, dict: dict)
             let small = try readUrl(key: Small, dict: dict)
             let medium = try readUrl(key: Medium, dict: dict)
             let large = try readUrl(key: Large, dict: dict)
             let added: Timestamp = try Json.readOrFail(dict, Added)
-            let clientKey = try? Json.readString(dict, ClientKey)
-            return PicMeta(key: key, url: url, small: small, medium: medium, large: large, added: added, clientKey: clientKey)
+            let clientKey = try? Json.readString(dict, ClientKeyKey)
+            return PicMeta(key: key, url: url, small: small, medium: medium, large: large, added: added, clientKey: clientKey.map { ClientKey(key: $0) })
         }
         throw JsonError.invalid("meta", obj)
     }
@@ -260,7 +278,7 @@ class Picture {
     }
     
     convenience init(image: UIImage, added: Timestamp) {
-        self.init(url: Picture.TempFakeUrl, image: image, clientKey: Picture.randomKey(), added: added)
+        self.init(url: Picture.TempFakeUrl, image: image, clientKey: ClientKey.random(), added: added)
     }
     
     convenience init(url: URL, image: UIImage, clientKey: ClientKey, added: Timestamp) {

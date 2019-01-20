@@ -51,50 +51,50 @@ class PicsHttpClient: HttpClient {
         return "Bearer \(forToken.tokenString)"
     }
     
-    func pingAuth() -> Observable<Version> {
+    func pingAuth() -> Single<Version> {
         return picsGetParsed("/ping", parse: Version.parse)
     }
     
-    func picsGetParsed<T>(_ resource: String, parse: @escaping (AnyObject) throws -> T) -> Observable<T> {
-        return picsGet(resource).flatMap { (response) -> Observable<T> in
+    func picsGetParsed<T>(_ resource: String, parse: @escaping (AnyObject) throws -> T) -> Single<T> {
+        return picsGet(resource).flatMap { (response) -> Single<T> in
             return self.parseAs(response: response, parse: parse)
         }
     }
     
-    func picsPostParsed<T>(_ resource: String, data: Data, clientKey: ClientKey, parse: @escaping (AnyObject) throws -> T) -> Observable<T> {
-        return picsPost(resource, payload: data, clientKey: clientKey).flatMap { (response) -> Observable<T> in
+    func picsPostParsed<T>(_ resource: String, data: Data, clientKey: ClientKey, parse: @escaping (AnyObject) throws -> T) -> Single<T> {
+        return picsPost(resource, payload: data, clientKey: clientKey).flatMap { (response) -> Single<T> in
             return self.parseAs(response: response, parse: parse)
         }
     }
     
-    private func parseAs<T>(response: HttpResponse, parse: @escaping (AnyObject) throws -> T) -> Observable<T> {
+    private func parseAs<T>(response: HttpResponse, parse: @escaping (AnyObject) throws -> T) -> Single<T> {
         if let obj: AnyObject = Json.asJson(response.data) {
             do {
                 let parsed = try parse(obj)
-                return Observable.just(parsed)
+                return Single.just(parsed)
             } catch let error as JsonError {
                 self.log.error("Parse error.")
-                return Observable.error(AppError.parseError(error))
+                return Single.error(AppError.parseError(error))
             } catch _ {
-                return Observable.error(AppError.simple("Unknown parse error."))
+                return Single.error(AppError.simple("Unknown parse error."))
             }
         } else {
             self.log.error("Not JSON: \(response.data)")
-            return Observable.error(AppError.parseError(JsonError.notJson(response.data)))
+            return Single.error(AppError.parseError(JsonError.notJson(response.data)))
         }
     }
     
-    func picsGet(_ resource: String) -> Observable<HttpResponse> {
+    func picsGet(_ resource: String) -> Single<HttpResponse> {
         let url = urlFor(resource: resource)
         return statusChecked(resource, response: self.get(url, headers: defaultHeaders))
     }
     
-    func picsPost(_ resource: String, payload: Data, clientKey: ClientKey) -> Observable<HttpResponse> {
+    func picsPost(_ resource: String, payload: Data, clientKey: ClientKey) -> Single<HttpResponse> {
         let url = urlFor(resource: resource)
         return statusChecked(resource, response: self.postData(url, headers: headersFor(clientKey: clientKey), payload: payload))
     }
     
-    func picsDelete(_ resource: String) -> Observable<HttpResponse> {
+    func picsDelete(_ resource: String) -> Single<HttpResponse> {
         let url = URL(string: resource, relativeTo: baseURL)!
         return statusChecked(resource, response: self.delete(url, headers: defaultHeaders))
     }
@@ -104,36 +104,36 @@ class PicsHttpClient: HttpClient {
     }
     
     func headersFor(clientKey: ClientKey) -> [String: String] {
-        return postHeaders.merging([PicsHttpClient.ClientPicHeader: clientKey]) { (current, _) in current }
+        return postHeaders.merging([PicsHttpClient.ClientPicHeader: clientKey.key]) { (current, _) in current }
     }
     
-    func statusChecked(_ resource: String, response: Observable<HttpResponse>) -> Observable<HttpResponse> {
-        return response.flatMap { (response) -> Observable<HttpResponse> in
+    func statusChecked(_ resource: String, response: Single<HttpResponse>) -> Single<HttpResponse> {
+        return response.flatMap { (response) -> Single<HttpResponse> in
             if response.isStatusOK {
-                return Observable.just(response)
+                return Single.just(response)
             } else {
                 self.log.error("Request to '\(resource)' failed with status '\(response.statusCode)'.")
                 var errorMessage: String? = nil
                 if let json = Json.asJson(response.data) as? NSDictionary {
                     errorMessage = json[JsonError.Key] as? String
                 }
-                return Observable.error(AppError.responseFailure(ResponseDetails(resource: resource, code: response.statusCode, message: errorMessage)))
+                return Single.error(AppError.responseFailure(ResponseDetails(resource: resource, code: response.statusCode, message: errorMessage)))
             }
         }
     }
     
-    override func executeHttp(_ req: URLRequest, retryCount: Int = 0) -> Observable<HttpResponse> {
+    override func executeHttp(_ req: URLRequest, retryCount: Int = 0) -> Single<HttpResponse> {
         var r = req
         r.addValue("\(retryCount)", forHTTPHeaderField: "X-Retry")
-        return super.executeHttp(r).flatMap { (response) -> Observable<HttpResponse> in
+        return super.executeHttp(r).flatMap { (response) -> Single<HttpResponse> in
             if retryCount == 0 && response.statusCode == 401 && response.isTokenExpired {
-                return Tokens.shared.retrieve(cancellationToken: nil).flatMap { (token) -> Observable<HttpResponse> in
+                return Tokens.shared.retrieve(cancellationToken: nil).flatMap { (token) -> Single<HttpResponse> in
                     self.updateToken(token: token)
                     r.setValue(PicsHttpClient.authValueFor(forToken: token), forHTTPHeaderField: HttpClient.AUTHORIZATION)
                     return self.executeHttp(r, retryCount: retryCount + 1)
                 }
             } else {
-                return Observable.just(response)
+                return Single.just(response)
             }
         }
     }

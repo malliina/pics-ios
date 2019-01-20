@@ -13,21 +13,28 @@ typealias SessionID = String
 public typealias RelativePath = String
 public typealias DestinationURL = URL
 
+// The sequence of events when a background task is updated is:
+//
+// 1. This AppDelegate function is called:
+// func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void)
+//
+// 2. This callback is called (perhaps multiple times, if multiple tasks are running):
+// func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?)
+//
+// 3. Finally, this callback is called. The completionHandler provided in the AppDelegate (step 1) should be invoked on the main thread here.
+// func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession)
+//
 class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskDelegate, URLSessionDelegate {
     let log = LoggerFactory.shared.network(BackgroundTransfers.self)
     typealias TaskID = Int
     
-    static let uploader = BackgroundTransfers(basePath: "pics-transfers", sessionID: "com.malliina.pics.pics", oldTasks: [:])
-    
-    // let events = Event<DownloadProgressUpdate>()
+    static let uploader = BackgroundTransfers(basePath: "pics-transfers", sessionID: "com.malliina.pics.transfers", oldTasks: [:])
     
     private let fileManager = FileManager.default
     let basePath: String
     
     private let sessionID: SessionID
     private var downloads: [TaskID: TransferInfo] = [:]
-    // Upload tasks whose files must be deleted on completion
-    private var uploads: [UploadTask] = PicsSettings.shared.uploads
     let lockQueue: DispatchQueue
     
     lazy var session: Foundation.URLSession = self.setupSession()
@@ -128,7 +135,6 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         } else {
             log.info("Task \(taskID) complete.")
         }
-        
         removeTask(taskID)
     }
     
@@ -168,7 +174,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         }
         let task = session.uploadTask(with: req, fromFile: file)
         if deleteOnComplete {
-            saveUpload(task: UploadTask(id: task.taskIdentifier, folder: file.deletingLastPathComponent().lastPathComponent, filename: file.lastPathComponent))
+            saveUpload(task: UploadTask(id: task.taskIdentifier, folder: file.deletingLastPathComponent().deletingLastPathComponent().lastPathComponent, filename: file.lastPathComponent))
         }
         task.resume()
     }
@@ -180,33 +186,36 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
     }
     
     func saveUpload(task: UploadTask) {
+        log.info("Saving upload task \(task.id)")
         synchronized {
-            self.uploads.append(task)
-            PicsSettings.shared.uploads = self.uploads
+            PicsSettings.shared.saveUpload(task: task)
         }
     }
     
     func removeTask(_ taskID: Int) {
         synchronized {
-            if let task = self.downloads.removeValue(forKey: taskID) {
-                if task.deleteOnComplete {
-                    self.removeUploaded(id: taskID)
-                }
-            }
+            self.downloads.removeValue(forKey: taskID)
+            self.removeUploadedAndUploadNext(id: taskID)
         }
     }
     
-    private func removeUploaded(id: Int) {
-        if let index = uploads.indexOf({ $0.id == id }), let task = uploads.find({ $0.id == id }) {
-            uploads.remove(at: index)
-            let file = LocalPics.shared.computeUrl(folder: task.folder, filename: task.filename)
+    private func removeUploadedAndUploadNext(id: Int) {
+        if let removed = PicsSettings.shared.removeUpload(id: id) {
+            let file = LocalPics.shared.computeUrl(folder: removed.folder, filename: removed.filename)
             do {
                 try fileManager.removeItem(at: file)
                 log.info("Removed \(file) of task \(id).")
-            } catch {
-                log.error("Failed to remove \(file) of task \(id).")
+                Backend.shared.library.syncPicsForLatestUser()
+            } catch let err {
+                if file.isFile {
+                    log.error("Failed to remove \(file) of task \(id). \(err)")
+                } else {
+                    log.error("Failed to remove \(file) of task \(id). The file does not exist.")
+                    Backend.shared.library.syncPicsForLatestUser()
+                }
             }
-            PicsSettings.shared.uploads = uploads
+        } else {
+            log.error("Unable to find upload task with ID \(id). Searched \(PicsSettings.shared.uploads.count) tasks.")
         }
     }
     

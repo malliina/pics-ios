@@ -15,8 +15,8 @@ protocol PicsRenderer {
 }
 
 protocol PicDelegate {
-    func remove(key: String)
-    func block(key: String)
+    func remove(key: ClientKey)
+    func block(key: ClientKey)
 }
 
 extension PicsVC: UICollectionViewDataSourcePrefetching {
@@ -149,14 +149,13 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         if needsToken {
             authCancellation = AWSCancellationTokenSource()
             let _ = Tokens.shared.retrieve(cancellationToken: authCancellation).subscribe { (event) in
-                guard !event.isCompleted else { return }
-                if let token = event.element {
+                switch event {
+                case .success(let token):
                     self.load(with: token)
                     if let user = self.currentUser?.username {
                         self.library.syncOffline(for: user)
                     }
-                }
-                if let error = event.error {
+                case .error(let error):
                     self.onLoadError(error: error)
                 }
             }
@@ -212,16 +211,15 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     private func withLoading(from: Int, limit: Int, f: @escaping ([PicMeta]) -> Void) {
         networkActivity(visible: true)
         let _ = library.load(from: from, limit: limit).subscribe { (event) in
-            guard !event.isCompleted else { return }
-            if let result = event.element {
+            switch event {
+            case .success(let result):
                 self.mightHaveMore = result.count >= limit
                 self.onUiThread {
                     self.renderNetworkActivity(visible: false)
                     let filtered = result.filter { pic in !self.isBlocked(pic: pic) }
                     f(filtered)
                 }
-            }
-            if let error = event.error {
+            case .error(let error):
                 self.onLoadError(error: error)
             }
         }
@@ -313,12 +311,12 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         return cell
     }
     
-    func cached(key: String) -> UIImage? {
+    func cached(key: ClientKey) -> UIImage? {
         guard let data = LocalPics.shared.readSmall(key: key) else { return nil }
         return UIImage(data: data)
     }
     
-    func loadCached(key: String, onData: @escaping (Data?) -> Void) {
+    func loadCached(key: ClientKey, onData: @escaping (Data?) -> Void) {
         onBackgroundThread {
             let file = LocalPics.shared.readSmall(key: key)
             onData(file)
@@ -360,7 +358,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         }
     }
     
-    private func onDownloaded(key: String, data: Data, indexPath: IndexPath, pic: Picture) {
+    private func onDownloaded(key: ClientKey, data: Data, indexPath: IndexPath, pic: Picture) {
         let _ = LocalPics.shared.saveSmall(data: data, key: key)
         updateSmall(data: data, indexPath: indexPath, pic: pic)
     }
@@ -461,7 +459,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         }
     }
     
-    private func indexFor(_ clientKey: String) -> Int? {
+    private func indexFor(_ clientKey: ClientKey) -> Int? {
         return self.pics.index(where: { (p) -> Bool in
             p.meta.clientKey == clientKey
         })
@@ -471,11 +469,11 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         return self.pics.contains(where: { p -> Bool in (pic.clientKey != nil && p.meta.clientKey == pic.clientKey) || p.meta.key == pic.key })
     }
     
-    func onPicsRemoved(keys: [String]) {
+    func onPicsRemoved(keys: [ClientKey]) {
         removePicsLocally(keys: keys)
     }
     
-    private func removePicsLocally(keys: [String]) {
+    private func removePicsLocally(keys: [ClientKey]) {
         onUiThread {
             let removables = self.pics.enumerated()
                 .filter { (offset, pic) -> Bool in keys.contains(pic.meta.key)}
@@ -537,25 +535,23 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
 }
 
 extension PicsVC: PicDelegate {
-    func remove(key: String) {
+    func remove(key: ClientKey) {
         removePicsLocally(keys: [key])
         let _ = library.delete(key: key).subscribe { (event) in
-            guard !event.isCompleted else { return }
-            if let response = event.element {
+            switch event {
+            case .success(let response):
                 self.log.info("Deletion completed with status \(response.statusCode).")
-            } else if let error = event.error {
+            case .error(let error):
                 if let error = error as? AppError {
                     self.onRemoveError(error)
                 } else {
                     self.log.error("Delete error. \(error)")
                 }
-            } else {
-                // completed
             }
         }
     }
     
-    func block(key: String) {
+    func block(key: ClientKey) {
         PicsSettings.shared.block(key: key)
         removePicsLocally(keys: [key])
     }
@@ -615,7 +611,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
             log.error("Original image is not an UIImage")
             return
         }
-        let clientKey = Picture.randomKey()
+        let clientKey = ClientKey.random()
         let pic = Picture(image: originalImage, clientKey: clientKey)
         displayNewPics(pics: [pic])
         guard let data = UIImageJPEGRepresentation(originalImage, 1) else {
@@ -624,7 +620,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         }
         
         log.info("Saving pic to file, in total \(data.count) bytes...")
-        let url = try LocalPics.shared.saveAsJpg(data: data)
+        let url = try LocalPics.shared.saveAsJpg(data: data, key: clientKey)
         onUiThread {
             if let idx = self.indexFor(clientKey) {
                 self.pics[idx] = self.pics[idx].withUrl(url: url)
@@ -633,22 +629,10 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         if isPrivate {
             // This should return the last logged in user, even if we're currently offline
             if let user = currentUser?.username {
-                // Copy file to folder
-                // On new token, check folder
-                // Upload oldest first from folder using token
-                let _ = try LocalPics.shared.saveUserPic(data: data, owner: user)
-                let _ = Tokens.shared.retrieve(cancellationToken: nil).subscribe { (event) in
-                    guard !event.isCompleted else { return }
-                    if let token = event.element {
-                        Backend.shared.updateToken(new: token)
-                        if let user = self.currentUser?.username {
-                            self.library.syncOffline(for: user)
-                        }
-                    }
-                    if let error = event.error {
-                        self.log.error("Unable to sync pic. No network? \(error)")
-                    }
-                }
+                // Copies the picture to a staging folder
+                let _ = try LocalPics.shared.saveUserPic(data: data, owner: user, key: clientKey)
+                // Attempts to obtain a token and upload the pic
+                let _ = Backend.shared.library.syncPicsForLatestUser()
             } else {
                 log.warn("Unknown username of private user. Cannot save picture.")
                 presentAlert(title: "Error", message: "Failed to save picture. Try again later.", buttonText: "OK")

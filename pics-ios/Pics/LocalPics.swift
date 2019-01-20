@@ -10,6 +10,9 @@ class LocalPics {
     let small: URL
     
     let localPrefix = "pic-"
+    let jpgExt = ".jpg"
+    let uploadingSubFolder = "uploading"
+    let stagingSubFolder = "staging"
     
     init() {
         let dirString = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] + "/pics"
@@ -37,19 +40,31 @@ class LocalPics {
     }
     
     func computeUrl(folder: String, filename: String) -> URL {
-        return dir.appendingPathComponent(folder, isDirectory: true).appendingPathComponent(filename)
+        return baseDirectory(folder: folder, sub: uploadingSubFolder).appendingPathComponent(filename)
     }
     
-    func saveUserPic(data: Data, owner: String) throws -> URL {
-        let userDirectory = directory(for: owner)
-        return try saveAsJpgBase(data: data, base: userDirectory)
+    func saveUserPic(data: Data, owner: String, key: ClientKey) throws -> URL {
+        let userDirectory = stagingDirectory(for: owner)
+        return try saveAsJpgBase(data: data, base: userDirectory, key: key)
     }
     
-    func directory(for owner: String) -> URL {
+    func stagingDirectory(for owner: String) -> URL {
+        return directory(for: owner, sub: stagingSubFolder)
+    }
+    
+    func uploadingDirectory(for owner: String) -> URL {
+        return directory(for: owner, sub: uploadingSubFolder)
+    }
+    
+    func directory(for owner: String, sub: String) -> URL {
         let folder = Data(owner.utf8).hexEncodedString()
-        let userDirectory = dir.appendingPathComponent(folder, isDirectory: true)
+        let userDirectory = baseDirectory(folder: folder, sub: sub)
         LocalPics.createDirectory(at: userDirectory)
         return userDirectory
+    }
+    
+    func baseDirectory(folder: String, sub: String) -> URL {
+        return dir.appendingPathComponent(folder, isDirectory: true).appendingPathComponent(sub, isDirectory: true)
     }
     
     func createdFor(url: URL) -> Date {
@@ -94,13 +109,13 @@ class LocalPics {
         }
     }
     
-    func readSmall(key: String) -> Data? {
+    func readSmall(key: ClientKey) -> Data? {
         let src = fileFor(key: key, dir: small)
         guard let exists = try? src.checkResourceIsReachable() else { return nil }
         return exists ? try? Data(contentsOf: src) : nil
     }
     
-    func saveSmall(data: Data, key: String) -> URL? {
+    func saveSmall(data: Data, key: ClientKey) -> URL? {
         let dest = fileFor(key: key, dir: small)
         let exists = (try? dest.checkResourceIsReachable()) ?? false
         if !exists {
@@ -119,8 +134,8 @@ class LocalPics {
         }
     }
     
-    func fileFor(key: String, dir: URL) -> URL {
-        return dir.appendingPathComponent(key, isDirectory: false)
+    func fileFor(key: ClientKey, dir: URL) -> URL {
+        return dir.appendingPathComponent(key.key, isDirectory: false)
     }
     
     static func createDirectory(at dir: URL) {
@@ -131,21 +146,29 @@ class LocalPics {
         }
     }
     
-    func saveAsJpg(data: Data) throws -> URL {
-        return try saveAsJpgBase(data: data, base: dir)
+    func saveAsJpg(data: Data, key: ClientKey) throws -> URL {
+        return try saveAsJpgBase(data: data, base: dir, key: key)
     }
     
-    func saveAsJpgBase(data: Data, base: URL) throws -> URL {
-        let name = generateName()
+    func saveAsJpgBase(data: Data, base: URL, key: ClientKey) throws -> URL {
+        let name = generateName(key: key)
         let dest = base.appendingPathComponent(name)
         try data.write(to: dest)
         log.info("Saved \(name) to \(dest)")
         return dest
     }
     
-    func generateName() -> String {
-        let millis = Int(Date().timeIntervalSince1970 * 1000)
-        return "\(localPrefix)\(millis).jpg"
+    func generateName(key: ClientKey) -> String {
+//        let millis = Int(Date().timeIntervalSince1970 * 1000)
+        return "\(localPrefix)\(key)\(jpgExt)"
+    }
+    
+    func extractKey(name: String) -> ClientKey? {
+        if name.startsWith(localPrefix) && name.endsWith(jpgExt) && name.count > (localPrefix.count + jpgExt.count) {
+            return ClientKey(key: String(String(name.dropFirst(localPrefix.count)).dropLast(jpgExt.count)))
+        } else {
+            return nil
+        }
     }
     
     func urlFor(name: String) -> URL {

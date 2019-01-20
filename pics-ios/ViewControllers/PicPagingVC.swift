@@ -116,7 +116,7 @@ class PicPagingVC: BaseVC {
 }
 
 extension PicPagingVC: MFMailComposeViewControllerDelegate {
-    func openReportAbuse(key: String) {
+    func openReportAbuse(key: ClientKey) {
         if MFMailComposeViewController.canSendMail() {
             let composeVC = MFMailComposeViewController()
             composeVC.mailComposeDelegate = self
@@ -124,7 +124,7 @@ extension PicPagingVC: MFMailComposeViewControllerDelegate {
             // Configure the fields of the interface.
             composeVC.setToRecipients([abuseEmail])
             composeVC.setSubject("Objectionable content report")
-            composeVC.setMessageBody("Objectionable content. Content ID: \(key)", isHTML: false)
+            composeVC.setMessageBody("Objectionable content. Content ID: \(key.key)", isHTML: false)
             
             // Present the view controller modally.
             self.present(composeVC, animated: true, completion: nil)
@@ -133,8 +133,8 @@ extension PicPagingVC: MFMailComposeViewControllerDelegate {
         }
     }
     
-    func showReportAbuseInstructions(key: String) {
-        let a = UIAlertController(title: "Reporting Objectionable Content", message: "Report objectionable content to \(abuseEmail). For reference, the image ID is: \(key).", preferredStyle: .alert)
+    func showReportAbuseInstructions(key: ClientKey) {
+        let a = UIAlertController(title: "Reporting Objectionable Content", message: "Report objectionable content to \(abuseEmail). For reference, the image ID is: \(key.key).", preferredStyle: .alert)
         a.addAction(UIAlertAction(title: "OK", style: .default) { action in a.dismiss(animated: true, completion: nil) } )
         present(a, animated: true, completion: nil)
     }

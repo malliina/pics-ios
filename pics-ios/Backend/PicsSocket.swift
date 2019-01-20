@@ -12,7 +12,7 @@ import AWSCognitoIdentityProvider
 
 protocol PicsDelegate {
     func onPics(pics: [PicMeta])
-    func onPicsRemoved(keys: [String])
+    func onPicsRemoved(keys: [ClientKey])
     func onProfile(info: ProfileInfo)
 }
 
