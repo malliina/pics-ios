@@ -168,7 +168,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
     func upload(_ dest: URL, headers: [String: String], file: URL, deleteOnComplete: Bool) {
         var req = URLRequest(url: dest)
         req.addCsrf()
-        req.httpMethod = HttpClient.POST
+        req.httpMethod = HttpClient.post
         for (key, value) in headers {
             req.addValue(value, forHTTPHeaderField: key)
         }

@@ -165,7 +165,7 @@ class LocalPics {
     
     func extractKey(name: String) -> ClientKey? {
         if name.startsWith(localPrefix) && name.endsWith(jpgExt) && name.count > (localPrefix.count + jpgExt.count) {
-            return ClientKey(key: String(String(name.dropFirst(localPrefix.count)).dropLast(jpgExt.count)))
+            return ClientKey(String(String(name.dropFirst(localPrefix.count)).dropLast(jpgExt.count)))
         } else {
             return nil
         }

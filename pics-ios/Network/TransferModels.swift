@@ -8,7 +8,7 @@
 
 import Foundation
 
-class TransferResult {
+struct TransferResult {
     let url: URL
     let data: Data?
     let response: URLResponse?
@@ -24,15 +24,9 @@ class TransferResult {
             }
         }
     }
-    
-    init(url: URL, data: Data?, response: URLResponse?, error: Error?) {
-        self.url = url
-        self.data = data
-        self.response = response
-        self.error = error
-    }
 }
-class DownloadProgressUpdate {
+
+struct DownloadProgressUpdate: Codable {
     let info: TransferInfo
     let writtenDelta: StorageSize
     let written: StorageSize
@@ -43,13 +37,6 @@ class DownloadProgressUpdate {
     
     var isComplete: Bool? { get { return written == totalExpected } }
     
-    init(info: TransferInfo, writtenDelta: StorageSize, written: StorageSize, totalExpected: StorageSize?) {
-        self.info = info
-        self.writtenDelta = writtenDelta
-        self.written = written
-        self.totalExpected = totalExpected
-    }
-    
     func copy(_ newTotalExpected: StorageSize) -> DownloadProgressUpdate {
         return DownloadProgressUpdate(info: info, writtenDelta: writtenDelta, written: written, totalExpected: newTotalExpected)
     }
@@ -59,51 +46,19 @@ class DownloadProgressUpdate {
     }
 }
 
-struct UploadTask {
+struct UploadTasks: Codable {
+    let tasks: [UploadTask]
+}
+
+struct UploadTask: Codable {
     let id: Int
     let folder: String
     let filename: String
-    
-    static let Tasks = "tasks"
-    static let Id = "id"
-    static let Folder = "folder"
-    static let Filename = "filename"
-    
-    static func write(task: UploadTask) -> [String: AnyObject] {
-        return [
-            Id: task.id as AnyObject,
-            Folder: task.folder as AnyObject,
-            Filename: task.filename as AnyObject
-        ]
-    }
-    
-    static func parseList(obj: AnyObject) throws -> [UploadTask] {
-        let dict = try Json.readObject(obj)
-        let tasks: [NSDictionary] = try Json.readOrFail(dict, UploadTask.Tasks)
-        return try tasks.map(UploadTask.parse)
-    }
-    
-    static func parse(_ obj: AnyObject) throws -> UploadTask {
-        if let dict = obj as? NSDictionary {
-            let id = try Json.readInt(dict, Id)
-            let folder = try Json.readString(dict, Folder)
-            let filename = try Json.readString(dict, Filename)
-            return UploadTask(id: id, folder: folder, filename: filename)
-        }
-        throw JsonError.invalid("task", obj)
-    }
 }
 
-open class TransferInfo {
+struct TransferInfo: Codable {
     let relativePath: RelativePath
     let destinationURL: DestinationURL
     let file: URL
     let deleteOnComplete: Bool
-    
-    public init(relativePath: RelativePath, destinationURL: DestinationURL, file: URL, deleteOnComplete: Bool) {
-        self.relativePath = relativePath
-        self.destinationURL = destinationURL
-        self.file = file
-        self.deleteOnComplete = deleteOnComplete
-    }
 }

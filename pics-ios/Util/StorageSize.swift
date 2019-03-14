@@ -8,26 +8,49 @@
 
 import Foundation
 
-open class StorageSize: CustomStringConvertible, Comparable {
+protocol LargeIntCodable: Codable {
+    init(_ value: Int64)
+    var value: Int64 { get }
+}
+
+extension LargeIntCodable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(Int64.self)
+        self.init(raw)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
+    }
+}
+
+struct StorageSize: CustomStringConvertible, Comparable, LargeIntCodable {
     static let Zero = StorageSize(bytes: 0)
     static let k: Int = 1024
     static let k64 = Int64(StorageSize.k)
     
     let bytes: Int64
+    var value: Int64 { return bytes }
     
     init(bytes: Int64) {
         self.bytes = bytes
     }
     
-    convenience init(kilos: Int) {
+    init(_ value: Int64) {
+        self.bytes = value
+    }
+    
+    init(kilos: Int) {
         self.init(bytes: Int64(kilos) * StorageSize.k64)
     }
     
-    convenience init(megs: Int) {
+    init(megs: Int) {
         self.init(bytes: Int64(megs) * StorageSize.k64 * StorageSize.k64)
     }
     
-    convenience init(gigs: Int) {
+    init(gigs: Int) {
         self.init(bytes: Int64(gigs) * StorageSize.k64 * StorageSize.k64 * StorageSize.k64)
     }
     
@@ -37,9 +60,7 @@ open class StorageSize: CustomStringConvertible, Comparable {
     var toGigs: Int64 { return toMegs / StorageSize.k64 }
     var toTeras: Int64 { return toGigs / StorageSize.k64 }
     
-    open var description: String {
-        return shortDescription
-    }
+    var description: String { return shortDescription }
     
     var longDescription: String {
         return describe("bytes", kilos: "kilobytes", megas: "megabytes", gigas: "gigabytes", teras: "terabytes")
@@ -76,41 +97,42 @@ open class StorageSize: CustomStringConvertible, Comparable {
     static func fromGigas(_ gigs: Int) -> StorageSize? {
         return gigs >= 0 ? StorageSize(gigs: Int(gigs)) : nil
     }
+    
+    public static func ==(lhs: StorageSize, rhs: StorageSize) -> Bool {
+        return lhs.bytes == rhs.bytes
+    }
+    
+    public static func <=(lhs: StorageSize, rhs: StorageSize) -> Bool {
+        return lhs.bytes <= rhs.bytes
+    }
+    
+    public static func <(lhs: StorageSize, rhs: StorageSize) -> Bool {
+        return lhs.bytes < rhs.bytes
+    }
+    
+    public static func >(lhs: StorageSize, rhs: StorageSize) -> Bool {
+        return lhs.bytes > rhs.bytes
+    }
+    
+    public static func >=(lhs: StorageSize, rhs: StorageSize) -> Bool {
+        return lhs.bytes >= rhs.bytes
+    }
+    
+    public static func +(lhs: StorageSize, rhs: StorageSize) -> StorageSize {
+        return StorageSize(bytes: lhs.bytes + rhs.bytes)
+    }
+    
+    public static func -(lhs: StorageSize, rhs: StorageSize) -> StorageSize {
+        return StorageSize(bytes: lhs.bytes - rhs.bytes)
+    }
 }
 
-public func ==(lhs: StorageSize, rhs: StorageSize) -> Bool {
-    return lhs.bytes == rhs.bytes
-}
-
-public func <=(lhs: StorageSize, rhs: StorageSize) -> Bool {
-    return lhs.bytes <= rhs.bytes
-}
-
-public func <(lhs: StorageSize, rhs: StorageSize) -> Bool {
-    return lhs.bytes < rhs.bytes
-}
-
-public func >(lhs: StorageSize, rhs: StorageSize) -> Bool {
-    return lhs.bytes > rhs.bytes
-}
-
-public func >=(lhs: StorageSize, rhs: StorageSize) -> Bool {
-    return lhs.bytes >= rhs.bytes
-}
-
-func +(lhs: StorageSize, rhs: StorageSize) -> StorageSize {
-    return StorageSize(bytes: lhs.bytes + rhs.bytes)
-}
-
-func -(lhs: StorageSize, rhs: StorageSize) -> StorageSize {
-    return StorageSize(bytes: lhs.bytes - rhs.bytes)
-}
-
-public extension Int {
+extension Int {
     var bytes: StorageSize? { get { return StorageSize.fromBytes(self) } }
     var kilos: StorageSize? { get { return StorageSize.fromKilos(self) } }
     var megs: StorageSize? { get { return StorageSize.fromMegs(self) } }
 }
+
 extension UInt64 {
     var bytes: StorageSize { get { return StorageSize(bytes: Int64(self)) } }
     var kilos: StorageSize { get { return StorageSize(bytes: Int64(Int64(self) * StorageSize.k64)) } }

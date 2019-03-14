@@ -22,7 +22,7 @@ enum AppError: Error {
     }
     
     static func simple(_ message: String) -> AppError {
-        return AppError.simpleError(ErrorMessage(message: message))
+        return AppError.simpleError(ErrorMessage(message))
     }
 }
 
@@ -75,46 +75,34 @@ class AppErrorUtil {
     }
 }
 
-class ResponseDetails {
+struct ResponseDetails {
     let resource: String
     let code: Int
     let message: String?
-    
-    init(resource: String, code: Int, message: String?) {
-        self.resource = resource
-        self.code = code
-        self.message = message
-    }
 }
 
-class RequestFailure {
+struct RequestFailure {
     let url: URL
     let code: Int
     let data: Data?
-    
-    init(url: URL, code: Int, data: Data?) {
-        self.url = url
-        self.code = code
-        self.data = data
-    }
 }
 
-class ErrorMessage {
+struct ErrorMessage: Codable {
     let message: String
     
-    init(message: String) {
+    init(_ message: String) {
         self.message = message
     }
 }
 
-class SingleError {
+struct Errors: Codable {
+    static let empty = Errors(errors: [])
+    let errors: [SingleError]
+}
+
+struct SingleError: Codable {
     let key: String
     let message: String
-    
-    init(key: String, message: String) {
-        self.key = key
-        self.message = message
-    }
 }
 
 class HttpResponse {
@@ -123,22 +111,14 @@ class HttpResponse {
     
     var statusCode: Int { return http.statusCode }
     var isStatusOK: Bool { return statusCode >= 200 && statusCode < 300 }
-    var json: NSDictionary? { return Json.asJson(data) as? NSDictionary }
+
     var errors: [SingleError] {
         get {
-            if let json = json, let errors = json["errors"] as? [NSDictionary] {
-                return errors.compactMap({ (dict) -> SingleError? in
-                    if let key = dict["key"] as? String, let message = dict["message"] as? String {
-                        return SingleError(key: key, message: message)
-                    } else {
-                        return nil
-                    }
-                })
-            } else {
-                return []
-            }
+            let decoder = JSONDecoder()
+            return ((try? decoder.decode(Errors.self, from: data)) ?? Errors.empty).errors
         }
     }
+    
     var isTokenExpired: Bool {
         return errors.contains { $0.key == "token_expired" }
     }

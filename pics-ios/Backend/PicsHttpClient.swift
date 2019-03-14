@@ -34,16 +34,16 @@ class PicsHttpClient: HttpClient {
         self.baseURL = baseURL
         if let authValue = authValue {
             self.defaultHeaders = [
-                HttpClient.AUTHORIZATION: authValue,
-                HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
+                HttpClient.authorization: authValue,
+                HttpClient.accept: PicsHttpClient.PicsVersion10
             ]
         } else {
             self.defaultHeaders = [
-                HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
+                HttpClient.accept: PicsHttpClient.PicsVersion10
             ]
         }
         self.postSpecificHeaders = [
-            HttpClient.CONTENT_TYPE: HttpClient.JSON
+            HttpClient.contentType: HttpClient.json
         ]
     }
     
@@ -52,35 +52,27 @@ class PicsHttpClient: HttpClient {
     }
     
     func pingAuth() -> Single<Version> {
-        return picsGetParsed("/ping", parse: Version.parse)
+        return picsGetParsed("/ping", Version.self)
     }
     
-    func picsGetParsed<T>(_ resource: String, parse: @escaping (AnyObject) throws -> T) -> Single<T> {
+    func picsGetParsed<T: Decodable>(_ resource: String, _ to: T.Type) -> Single<T> {
         return picsGet(resource).flatMap { (response) -> Single<T> in
-            return self.parseAs(response: response, parse: parse)
+            return self.parseAs(response: response, to)
         }
     }
     
-    func picsPostParsed<T>(_ resource: String, data: Data, clientKey: ClientKey, parse: @escaping (AnyObject) throws -> T) -> Single<T> {
+    func picsPostParsed<T: Decodable>(_ resource: String, data: Data, clientKey: ClientKey, _ to: T.Type) -> Single<T> {
         return picsPost(resource, payload: data, clientKey: clientKey).flatMap { (response) -> Single<T> in
-            return self.parseAs(response: response, parse: parse)
+            return self.parseAs(response: response, to)
         }
     }
     
-    private func parseAs<T>(response: HttpResponse, parse: @escaping (AnyObject) throws -> T) -> Single<T> {
-        if let obj: AnyObject = Json.asJson(response.data) {
-            do {
-                let parsed = try parse(obj)
-                return Single.just(parsed)
-            } catch let error as JsonError {
-                self.log.error("Parse error.")
-                return Single.error(AppError.parseError(error))
-            } catch _ {
-                return Single.error(AppError.simple("Unknown parse error."))
-            }
-        } else {
-            self.log.error("Not JSON: \(response.data)")
-            return Single.error(AppError.parseError(JsonError.notJson(response.data)))
+    private func parseAs<T: Decodable>(response: HttpResponse, _ to: T.Type) -> Single<T> {
+        let decoder = JSONDecoder()
+        do {
+            return Single.just(try decoder.decode(to, from: response.data))
+        } catch let err {
+            return Single.error(err)
         }
     }
     
@@ -113,11 +105,8 @@ class PicsHttpClient: HttpClient {
                 return Single.just(response)
             } else {
                 self.log.error("Request to '\(resource)' failed with status '\(response.statusCode)'.")
-                var errorMessage: String? = nil
-                if let json = Json.asJson(response.data) as? NSDictionary {
-                    errorMessage = json[JsonError.Key] as? String
-                }
-                return Single.error(AppError.responseFailure(ResponseDetails(resource: resource, code: response.statusCode, message: errorMessage)))
+                let details = ResponseDetails(resource: resource, code: response.statusCode, message: response.errors.first?.message)
+                return Single.error(AppError.responseFailure(details))
             }
         }
     }
@@ -129,7 +118,7 @@ class PicsHttpClient: HttpClient {
             if retryCount == 0 && response.statusCode == 401 && response.isTokenExpired {
                 return Tokens.shared.retrieve(cancellationToken: nil).flatMap { (token) -> Single<HttpResponse> in
                     self.updateToken(token: token)
-                    r.setValue(PicsHttpClient.authValueFor(forToken: token), forHTTPHeaderField: HttpClient.AUTHORIZATION)
+                    r.setValue(PicsHttpClient.authValueFor(forToken: token), forHTTPHeaderField: HttpClient.authorization)
                     return self.executeHttp(r, retryCount: retryCount + 1)
                 }
             } else {
@@ -144,9 +133,9 @@ class PicsHttpClient: HttpClient {
     
     func updateToken(token: AWSCognitoIdentityUserSessionToken?) {
         if let token = token {
-            self.defaultHeaders.updateValue(PicsHttpClient.authValueFor(forToken: token), forKey: HttpClient.AUTHORIZATION)
+            self.defaultHeaders.updateValue(PicsHttpClient.authValueFor(forToken: token), forKey: HttpClient.authorization)
         } else {
-            self.defaultHeaders.removeValue(forKey: HttpClient.AUTHORIZATION)
+            self.defaultHeaders.removeValue(forKey: HttpClient.authorization)
         }
     }
     

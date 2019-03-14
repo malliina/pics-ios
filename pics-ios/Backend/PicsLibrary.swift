@@ -26,11 +26,11 @@ class PicsLibrary {
     }
     
     func load(from: Int, limit: Int) -> Single<[PicMeta]> {
-        return http.picsGetParsed("/pics?offset=\(from)&limit=\(limit)", parse: PicsLibrary.parsePics)
+        return http.picsGetParsed("/pics?offset=\(from)&limit=\(limit)", PicsResponse.self).map { $0.pics }
     }
     
     func save(picture: Data, clientKey: ClientKey) -> Single<PicMeta> {
-        return http.picsPostParsed("/pics", data: picture, clientKey: clientKey, parse: PicsLibrary.parsePic)
+        return http.picsPostParsed("/pics", data: picture, clientKey: clientKey, PicResponse.self).map { $0.pic }
     }
     
     func delete(key: ClientKey) -> Single<HttpResponse> {
@@ -79,50 +79,27 @@ class PicsLibrary {
         BackgroundTransfers.uploader.upload(url, headers: headers, file: picture, deleteOnComplete: deleteOnComplete)
     }
     
-    func handle<T>(result: TransferResult, parse: (Data) throws -> T) -> Single<T> {
+    func handle<T: Decodable>(result: TransferResult, to: T.Type) -> Single<T> {
         if let error = result.error {
             return Single.error(AppError.networkFailure(RequestFailure(url: result.url, code: error._code, data: result.data)))
         } else if let httpResponse = result.httpResponse {
+            let decoder = JSONDecoder()
             if httpResponse.isStatusOK {
                 do {
-                    let parsed = try parse(httpResponse.data)
-                    return Single.just(parsed)
-//                    onResult(parsed)
+                    return Single.just(try decoder.decode(to, from: httpResponse.data))
                 } catch let error as JsonError {
                     self.log.error("Parse error.")
                     return Single.error(AppError.parseError(error))
-                    
                 } catch _ {
                     return Single.error(AppError.simple("Unknown parse error."))
                 }
             } else {
                 log.error("Request to '\(result.url.absoluteString)' failed with status '\(httpResponse.statusCode)'.")
-                var errorMessage: String? = nil
-                if let json = Json.asJson(httpResponse.data) as? NSDictionary {
-                    errorMessage = json[JsonError.Key] as? String
-                }
-                return Single.error(AppError.responseFailure(ResponseDetails(resource: result.url.absoluteString, code: httpResponse.statusCode, message: errorMessage)))
+                let details = ResponseDetails(resource: result.url.absoluteString, code: httpResponse.statusCode, message: httpResponse.errors.first?.message)
+                return Single.error(AppError.responseFailure(details))
             }
         } else {
-            return Single.error(AppError.simpleError(ErrorMessage(message: "Unknown HTTP response.")))
+            return Single.error(AppError.simpleError(ErrorMessage("Unknown HTTP response.")))
         }
-    }
-    
-    static func parsePics(obj: AnyObject) throws -> [PicMeta] {
-        let dict = try Json.readObject(obj)
-        let pics: [NSDictionary] = try Json.readOrFail(dict, PicMeta.Pics)
-        return try pics.map(PicMeta.parse)
-    }
-    
-    static func parseKeys(obj: AnyObject) throws -> [ClientKey] {
-        let dict = try Json.readObject(obj)
-        let keys: [String] = try Json.readOrFail(dict, "keys")
-        return keys.map { s in ClientKey(key: s) }
-    }
-    
-    static func parsePic(obj: AnyObject) throws -> PicMeta {
-        let dict = try Json.readObject(obj)
-        let pics: NSDictionary = try Json.readOrFail(dict, PicMeta.Pic)
-        return try PicMeta.parse(pics)
     }
 }

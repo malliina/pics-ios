@@ -8,24 +8,75 @@
 
 import Foundation
 
+// Hack because Encodable can't encode a String
+struct Wrapped<T: Codable>: Codable {
+    let value: T
+}
+
+class PicsPrefs {
+    static let shared = PicsPrefs()
+    
+    let prefs = UserDefaults.standard
+    let encoder = JSONEncoder()
+    let decoder = JSONDecoder()
+    
+    func save<T: Encodable>(_ contents: T, key: String) -> ErrorMessage? {
+        do {
+            let encoded = try encoder.encode(contents)
+            guard let asString = String(data: encoded, encoding: .utf8) else {
+                return ErrorMessage("Unable to encode data for key '\(key)' to String.")
+            }
+            prefs.set(asString, forKey: key)
+            return nil
+        } catch let err {
+            return ErrorMessage("Unable to encode to key '\(key)'. \(err)")
+        }
+    }
+    
+    func load<T: Decodable>(_ key: String, _ t: T.Type) -> T? {
+        guard let asString = prefs.string(forKey: key), let data = asString.data(using: .utf8) else { return nil }
+        return try? decoder.decode(t, from: data)
+    }
+    
+    func bool(forKey key: String) -> Bool {
+        return load(key, Wrapped<Bool>.self)?.value ?? false
+    }
+    
+    func string(forKey key: String) -> String? {
+        return load(key, Wrapped<String>.self)?.value
+    }
+    
+    func saveString(_ contents: String, key: String) -> ErrorMessage? {
+        return save(Wrapped<String>(value: contents), key: key)
+    }
+    
+    func saveBool(_ contents: Bool, key: String) -> ErrorMessage? {
+        return save(Wrapped<Bool>(value: contents), key: key)
+    }
+}
+
 class PicsSettings {
     static let shared = PicsSettings()
     
-    let IsPublic = "is_private"
-    static let PicsKey = "pics"
-    static let Uploads = "pic_uploads"
-    let EulaAccepted = "eula_accepted"
-    private static let BlockedImageKeys = "blocked_keys"
+    let IsPublic = "v2-is_private"
+    let PicsKey = "pics"
+    let Uploads = "pic_uploads"
+    let EulaAccepted = "v2-eula_accepted"
+    private static let BlockedImageKeys = "v2-blocked_keys"
     
-    let prefs = UserDefaults.standard
+    let prefs = PicsPrefs.shared
     
-    private var cachedPictures: [Picture] = PicsSettings.loadPics()
+    private var cachedPictures: [Picture] = []
     private var blockedKeys: [ClientKey] = PicsSettings.loadBlocked()
+    
+    init() {
+        cachedPictures = prefs.load(PicsKey, PicsResponse.self)?.pics.map { meta in Picture(meta: meta) } ?? []
+    }
     
     var isPrivate: Bool {
         get { return prefs.bool(forKey: IsPublic) }
         set (newValue) {
-            prefs.set(newValue, forKey: IsPublic)
+            let _ = prefs.saveBool(newValue, key: IsPublic)
             // Clears any private pic cache when we switch to public mode
             if !newValue {
                 clearPics()
@@ -35,21 +86,21 @@ class PicsSettings {
     
     var isEulaAccepted: Bool {
         get { return prefs.bool(forKey: EulaAccepted) }
-        set (newValue) { prefs.set(newValue, forKey: EulaAccepted) }
+        set (newValue) { let _ = prefs.saveBool(newValue, key: EulaAccepted) }
     }
     
     var blockedImageKeys: [ClientKey] {
         get { return blockedKeys }
         set (newValue) {
             blockedKeys = newValue
-            prefs.set(newValue.map { $0.key }, forKey: PicsSettings.BlockedImageKeys)
+            let _ = prefs.save(newValue, key: PicsSettings.BlockedImageKeys)
         }
     }
     
     // Upload tasks whose files must be deleted on completion
     var uploads: [UploadTask] {
-        get { return loadUploads() }
-        set (newValue) { saveUploads(tasks: newValue) }
+        get { return prefs.load(Uploads, UploadTasks.self)?.tasks ?? [] }
+        set (newValue) { let _ = prefs.save(UploadTasks(tasks: newValue), key: Uploads) }
     }
     
     func saveUpload(task: UploadTask) {
@@ -81,7 +132,7 @@ class PicsSettings {
         get { return cachedPictures }
         set (newValue) {
             cachedPictures = newValue
-            savePics(pics: newValue)
+            let _ = prefs.save(PicsResponse(pics: newValue.map { $0.meta }), key: PicsKey)
         }
     }
     
@@ -89,40 +140,7 @@ class PicsSettings {
         localPics = []
     }
     
-    private func saveUploads(tasks: [UploadTask]) {
-        let jsons = tasks.map { UploadTask.write(task: $0) } as AnyObject
-        let json = [ UploadTask.Tasks: jsons ]
-        prefs.set(Json.stringifyObject(json), forKey: PicsSettings.Uploads)
-    }
-    
-    private func loadUploads() -> [UploadTask] {
-        guard let stringified = prefs.string(forKey: PicsSettings.Uploads) else { return [] }
-        guard let json = Json.asJson(stringified) else { return [] }
-        do {
-            return try UploadTask.parseList(obj: json)
-        } catch {
-            return []
-        }
-    }
-    
-    private func savePics(pics: [Picture]) {
-        let jsons = pics.map { PicMeta.write(pic: $0.meta) } as AnyObject
-        let json = [ PicMeta.Pics : jsons ]
-        let stringified = Json.stringifyObject(json)
-        prefs.set(stringified, forKey: PicsSettings.PicsKey)
-    }
-    
-    static func loadPics() -> [Picture] {
-        guard let stringified = UserDefaults.standard.string(forKey: PicsKey) else { return [] }
-        guard let asJson = Json.asJson(stringified) else { return [] }
-        do {
-            return try PicsLibrary.parsePics(obj: asJson).map({ (p) in Picture(meta: p) })
-        } catch {
-            return []
-        }
-    }
-    
     static func loadBlocked() -> [ClientKey] {
-        return (UserDefaults.standard.stringArray(forKey: BlockedImageKeys) ?? []).map { s in ClientKey(key: s) }
+        return (UserDefaults.standard.stringArray(forKey: BlockedImageKeys) ?? []).map { s in ClientKey(s) }
     }
 }

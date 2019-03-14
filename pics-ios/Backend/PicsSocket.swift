@@ -29,12 +29,12 @@ class PicsSocket: SocketClient, TokenDelegate {
         var headers: [String: String] = [:]
         if let authValue = authValue {
             headers = [
-                HttpClient.AUTHORIZATION: authValue,
-                HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
+                HttpClient.authorization: authValue,
+                HttpClient.accept: PicsHttpClient.PicsVersion10
             ]
         } else {
             headers = [
-                HttpClient.ACCEPT: PicsHttpClient.PicsVersion10
+                HttpClient.accept: PicsHttpClient.PicsVersion10
             ]
         }
         super.init(baseURL: baseURL, headers: headers)
@@ -45,14 +45,19 @@ class PicsSocket: SocketClient, TokenDelegate {
         updateAuthHeaderValue(newValue: PicsHttpClient.authValueFor(forToken: token))
     }
     
-    func send(_ dict: [String: AnyObject]) -> ErrorMessage? {
+    func send<T: Encodable>(_ json: T) -> ErrorMessage? {
         if let socket = socket {
-            if let payload = Json.stringifyObject(dict, prettyPrinted: false) {
-                socket.send(payload)
+            let encoder = JSONEncoder()
+            do {
+                let data = try encoder.encode(json)
+                guard let asString = String(data: data, encoding: .utf8) else {
+                    return ErrorMessage("JSON-to-String conversion failed.")
+                }
+                socket.send(asString)
                 //Log.info("Sent \(payload) to \(baseURL))")
                 return nil
-            } else {
-                return failWith("Unable to send payload, encountered non-JSON payload: \(dict)")
+            } catch let err {
+                return failWith("Unable to send payload, encountered non-JSON payload: '\(err)'.")
             }
         } else {
             return failWith("Unable to send payload, socket not available.")
@@ -61,33 +66,36 @@ class PicsSocket: SocketClient, TokenDelegate {
     
     func failWith(_ message: String) -> ErrorMessage {
         log.error(message)
-        return ErrorMessage(message: message)
+        return ErrorMessage(message)
     }
     
     override func webSocket(_ webSocket: SRWebSocket!, didReceiveMessage message: Any!) {
         if let message = message as? String {
+            guard let data = message.data(using: String.Encoding.utf8, allowLossyConversion: false) else {
+                log.error("Cannot read message data from: '\(message)'.")
+                return
+            }
+            let decoder = JSONDecoder()
 //            log.info("Got message \(message)")
             do {
-                let dict = try Json.asJsonDict(message)
-                let event: String = try Json.readOrFail(dict, "event")
-                if event == "ping" {
+                let event = try decoder.decode(KeyedEvent.self, from: data)
+                switch event.event {
+                case "ping":
                     return
-                } else if event == "added" {
-                    let pics = try PicsLibrary.parsePics(obj: dict)
-                    delegate?.onPics(pics: pics)
-                } else if event == "removed" {
-                    let keys = try PicsLibrary.parseKeys(obj: dict)
-                    delegate?.onPicsRemoved(keys: keys)
-                } else if event == "welcome" {
-                    let profile = try ProfileInfo.parse(dict)
-                    delegate?.onProfile(info: profile)
-                } else {
+                case "added":
+                    delegate?.onPics(pics: try decoder.decode(PicsResponse.self, from: data).pics)
+                    break
+                case "removed":
+                    delegate?.onPicsRemoved(keys: try decoder.decode(ClientKeys.self, from: data).keys)
+                    break
+                case "welcome":
+                    delegate?.onProfile(info: try decoder.decode(ProfileInfo.self, from: data))
+                    break
+                default:
                     throw JsonError.invalid("Unknown event: '\(event)'.", message)
                 }
-            } catch let error as JsonError {
-                log.error("JSON parse error. \(error) for message: '\(message)'.")
-            } catch _ {
-                log.error("Unknown parse error for received message: '\(message)'.")
+            } catch let err {
+                log.error("Parse error for received message: '\(message)'. Error: '\(err)'.")
             }
         } else {
             log.error("Received a non-string JSON message.")

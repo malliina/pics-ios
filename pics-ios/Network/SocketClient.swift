@@ -31,7 +31,7 @@ class SocketClient: NSObject, SRWebSocketDelegate {
     }
     
     func updateAuthHeaderValue(newValue: String?) {
-        request.setValue(newValue, forHTTPHeaderField: HttpClient.AUTHORIZATION)
+        request.setValue(newValue, forHTTPHeaderField: HttpClient.authorization)
     }
     
     func openSilently() {

@@ -12,12 +12,12 @@ import RxCocoa
 
 class HttpClient {
     private let log = LoggerFactory.shared.network(HttpClient.self)
-    static let JSON = "application/json", CONTENT_TYPE = "Content-Type", ACCEPT = "Accept", DELETE = "DELETE", GET = "GET", POST = "POST", AUTHORIZATION = "Authorization", BASIC = "Basic"
+    static let json = "application/json", contentType = "Content-Type", accept = "Accept", delete = "DELETE", get = "GET", post = "POST", authorization = "Authorization", basic = "Basic"
     
     static func basicAuthValue(_ username: String, password: String) -> String {
         let encodable = "\(username):\(password)"
         let encoded = encodeBase64(encodable)
-        return "\(HttpClient.BASIC) \(encoded)"
+        return "\(HttpClient.basic) \(encoded)"
     }
     
     static func authHeader(_ word: String, unencoded: String) -> String {
@@ -36,26 +36,27 @@ class HttpClient {
     }
     
     func get(_ url: URL, headers: [String: String] = [:]) -> Single<HttpResponse> {
-        let req = buildRequest(url: url, httpMethod: HttpClient.GET, headers: headers, body: nil)
+        let req = buildRequest(url: url, httpMethod: HttpClient.get, headers: headers)
         return executeHttp(req)
     }
     
-    func postJSON(_ url: URL, headers: [String: String] = [:], payload: [String: AnyObject]) -> Single<HttpResponse> {
-        return postData(url, headers: headers, payload: try? JSONSerialization.data(withJSONObject: payload, options: []))
+    func postJSON<T: Encodable>(_ url: URL, headers: [String: String] = [:], payload: T) -> Single<HttpResponse> {
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(payload)
+            return postData(url, headers: headers, payload: data)
+        } catch let err {
+            return Single.error(err)
+        }
     }
     
-    func postData(_ url: URL, headers: [String: String] = [:], payload: Data?) -> Single<HttpResponse> {
-        let req = buildRequest(url: url, httpMethod: HttpClient.POST, headers: headers, body: payload)
+    func postData(_ url: URL, headers: [String: String] = [:], payload: Data) -> Single<HttpResponse> {
+        let req = buildRequestWithBody(url: url, httpMethod: HttpClient.post, headers: headers, body: payload)
         return executeHttp(req)
-    }
-    
-    func postGeneric(_ url: URL, headers: [String: String] = [:], payload: Data?, completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
-        let req = buildRequest(url: url, httpMethod: HttpClient.POST, headers: headers, body: payload)
-        executeRequest(req, completionHandler: completionHandler)
     }
     
     func delete(_ url: URL, headers: [String: String] = [:]) -> Single<HttpResponse> {
-        let req = buildRequest(url: url, httpMethod: HttpClient.DELETE, headers: headers, body: nil)
+        let req = buildRequest(url: url, httpMethod: HttpClient.delete, headers: headers)
         return executeHttp(req)
     }
     
@@ -66,9 +67,9 @@ class HttpClient {
         }
     }
     
-    func buildRequest(url: URL, httpMethod: String, headers: [String: String], body: Data?) -> URLRequest {
+    func buildRequest(url: URL, httpMethod: String, headers: [String: String]) -> URLRequest {
         var req = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 3600)
-        let useCsrfHeader = httpMethod != HttpClient.GET
+        let useCsrfHeader = httpMethod != HttpClient.get
         if useCsrfHeader {
             req.addCsrf()
         }
@@ -76,9 +77,12 @@ class HttpClient {
         for (key, value) in headers {
             req.addValue(value, forHTTPHeaderField: key)
         }
-        if let body = body {
-            req.httpBody = body
-        }
+        return req
+    }
+    
+    func buildRequestWithBody(url: URL, httpMethod: String, headers: [String: String], body: Data) -> URLRequest {
+        var req = buildRequest(url: url, httpMethod: httpMethod, headers: headers)
+        req.httpBody = body
         return req
     }
     

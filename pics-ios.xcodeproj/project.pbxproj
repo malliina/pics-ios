@@ -59,6 +59,7 @@
 		61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */; };
 		61EB2D8D1FF1849800A27F1A /* SocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8C1FF1849800A27F1A /* SocketClient.swift */; };
 		61EB2D8F1FF1855500A27F1A /* PicsSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */; };
+		61FD20B5223AE69400BAF31B /* codables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FD20B4223AE69400BAF31B /* codables.swift */; };
 		D46CBBC4DA871447AEF17CC7 /* Pods_pics_iosTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61E9FBE42016670000FA4F42 /* Pods_pics_iosTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -142,6 +143,7 @@
 		61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
 		61EB2D8C1FF1849800A27F1A /* SocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClient.swift; sourceTree = "<group>"; };
 		61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsSocket.swift; sourceTree = "<group>"; };
+		61FD20B4223AE69400BAF31B /* codables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = codables.swift; sourceTree = "<group>"; };
 		74DAFE60A1153E29379F07CA /* Pods_pics_iosTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pics_iosTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FF88EA2B44CF858EFE37A7B /* Pods_pics_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pics_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFA6D9C752FA56A8BC2D6BE3 /* Pods-pics-iosTests.ci.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pics-iosTests.ci.xcconfig"; path = "Pods/Target Support Files/Pods-pics-iosTests/Pods-pics-iosTests.ci.xcconfig"; sourceTree = "<group>"; };
@@ -303,6 +305,7 @@
 			isa = PBXGroup;
 			children = (
 				61A702DC1FCAD8D000814051 /* models.swift */,
+				61FD20B4223AE69400BAF31B /* codables.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -434,7 +437,7 @@
 				TargetAttributes = {
 					614230401FC1891E00CD4173 = {
 						CreatedOnToolsVersion = 9.1;
-						LastSwiftMigration = 1000;
+						LastSwiftMigration = 1010;
 						ProvisioningStyle = Automatic;
 					};
 					614230541FC1891E00CD4173 = {
@@ -616,6 +619,7 @@
 				61A9C4C42003EADA0085BA25 /* StorageSize.swift in Sources */,
 				61D214CA1FD499C200781DC7 /* PicsLabel.swift in Sources */,
 				615647F1201C9EEA000E3BBD /* ProfilePopover.swift in Sources */,
+				61FD20B5223AE69400BAF31B /* codables.swift in Sources */,
 				61D214BE1FD34D8900781DC7 /* PicsButton.swift in Sources */,
 				61A9C4C01FF271D30085BA25 /* PicPagingVC.swift in Sources */,
 				614230471FC1891E00CD4173 /* PicsVC.swift in Sources */,

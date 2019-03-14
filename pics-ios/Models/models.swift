@@ -81,25 +81,11 @@ enum SignupError {
     }
 }
 
-class Version {
-    static let Key = "version"
-    
+struct Version: Codable {
     let version: String
-    
-    init(version: String) {
-        self.version = version
-    }
-    
-    static func parse(_ obj: AnyObject) throws -> Version {
-        if let dict = obj as? NSDictionary {
-            let version = try Json.readString(dict, Version.Key)
-            return Version(version: version)
-        }
-        throw JsonError.missing(Version.Key)
-    }
 }
 
-class FullUrl {
+struct FullUrl: ValidatedValueCodable {
     static let Key = "url"
     
     let proto: String
@@ -107,11 +93,16 @@ class FullUrl {
     let uri: String
     
     var url: String { return "\(proto)://\(host)\(uri)" }
+    var value: String { return url }
     
     init(proto: String, host: String, uri: String) {
         self.proto = proto
         self.host = host
         self.uri = uri
+    }
+    
+    init(_ value: String) throws {
+        self = try FullUrl.parse(input: value)
     }
     
     static func parse(input: String) throws -> FullUrl {
@@ -136,34 +127,28 @@ class FullUrl {
     }
 }
 
-class ProfileInfo {
-    static let User = "user"
-    static let ReadOnly = "readOnly"
-    
+struct ProfileInfo: Codable {
     let user: String
     let readOnly: Bool
-    
-    init(user: String, readOnly: Bool) {
-        self.user = user
-        self.readOnly = readOnly
-    }
-    
-    static func parse(_ obj: AnyObject) throws -> ProfileInfo {
-        guard let dict = obj as? NSDictionary else { throw JsonError.invalid("object", obj) }
-        let user = try Json.readString(dict, User)
-        let readOnly: Bool = try Json.readOrFail(dict, ReadOnly)
-        return ProfileInfo(user: user, readOnly: readOnly)
-    }
 }
 
-struct ClientKey: Equatable, Hashable, CustomStringConvertible {
+struct ClientKeys: Codable {
+    let keys: [ClientKey]
+}
+
+struct ClientKey: Equatable, Hashable, CustomStringConvertible, ValueCodable {
     let key: String
+    var value: String { return key }
     var description: String { return key }
+    
+    init(_ value: String) {
+        self.key = value
+    }
     
     static func == (lhs: ClientKey, rhs: ClientKey) -> Bool { return lhs.key == rhs.key }
     
     static func random() -> ClientKey {
-        return ClientKey(key: Picture.randomKey())
+        return ClientKey(Picture.randomKey())
     }
 }
 
@@ -174,16 +159,17 @@ struct AccessToken: Equatable, Hashable, CustomStringConvertible {
     static func == (lhs: AccessToken, rhs: AccessToken) -> Bool { return lhs.token == rhs.token }
 }
 
-class PicMeta {
+struct PicResponse: Codable {
+    let pic: PicMeta
+}
+
+struct PicsResponse: Codable {
+    let pics: [PicMeta]
+}
+
+struct PicMeta: Codable {
     static let Pic = "pic"
     static let Pics = "pics"
-    static let Key = "key"
-    static let Url = "url"
-    static let Small = "small"
-    static let Medium = "medium"
-    static let Large = "large"
-    static let Added = "added"
-    static let ClientKeyKey = "clientKey"
     
     let key: ClientKey
     let url: URL
@@ -193,26 +179,16 @@ class PicMeta {
     let added: Timestamp
     let clientKey: ClientKey?
     
-    convenience init(key: ClientKey, url: URL, added: Timestamp, clientKey: ClientKey?) {
-        self.init(key: key, url: url, small: url, medium: url, large: url, added: added, clientKey: clientKey)
-    }
-    
-    init(key: ClientKey, url: URL, small: URL, medium: URL, large: URL, added: Timestamp, clientKey: ClientKey?) {
-        self.key = key
-        self.url = url
-        self.small = small
-        self.medium = medium
-        self.large = large
-        self.added = added
-        self.clientKey = clientKey
+    static func oneUrl(key: ClientKey, url: URL, added: Timestamp, clientKey: ClientKey?) -> PicMeta {
+        return PicMeta(key: key, url: url, small: url, medium: url, large: url, added: added, clientKey: clientKey)
     }
     
     func withUrl(url: URL) -> PicMeta {
-        return PicMeta(key: key, url: url, added: added, clientKey: clientKey)
+        return PicMeta.oneUrl(key: key, url: url, added: added, clientKey: clientKey)
     }
     
     static func random() -> PicMeta {
-        return PicMeta(key: ClientKey.random(), url: Picture.TempFakeUrl, added: Picture.nowMillis(), clientKey: nil)
+        return PicMeta.oneUrl(key: ClientKey.random(), url: Picture.TempFakeUrl, added: Picture.nowMillis(), clientKey: nil)
     }
     
     static func randoms() -> [PicMeta] {
@@ -223,43 +199,43 @@ class PicMeta {
         }
     }
     
-    static func write(pic: PicMeta) -> [String: AnyObject] {
-        return [
-            Key: pic.key.key as AnyObject,
-            Url: pic.url.absoluteString as AnyObject,
-            Small: pic.small.absoluteString as AnyObject,
-            Medium: pic.medium.absoluteString as AnyObject,
-            Large: pic.large.absoluteString as AnyObject,
-            Added: pic.added as AnyObject,
-            ClientKeyKey: pic.clientKey?.key as AnyObject
-        ]
-    }
+//    static func write(pic: PicMeta) -> [String: AnyObject] {
+//        return [
+//            Key: pic.key.key as AnyObject,
+//            Url: pic.url.absoluteString as AnyObject,
+//            Small: pic.small.absoluteString as AnyObject,
+//            Medium: pic.medium.absoluteString as AnyObject,
+//            Large: pic.large.absoluteString as AnyObject,
+//            Added: pic.added as AnyObject,
+//            ClientKeyKey: pic.clientKey?.key as AnyObject
+//        ]
+//    }
     
-    static func readUrl(key: String, dict: NSDictionary) throws -> URL {
-        let asString = try Json.readString(dict, key)
-        guard let url = URL(string: asString) else { throw JsonError.invalid(key, dict) }
-        if url.isFileURL {
-            // Absolute file URLs are specific to the app version and thus unsuitable for persistence,
-            // so we only take the last component here and reconstruct a valid file URL for this app version.
-            return LocalPics.shared.urlFor(name: url.lastPathComponent)
-        } else {
-            return url
-        }
-    }
+//    static func readUrl(key: String, dict: NSDictionary) throws -> URL {
+//        let asString = try Json.readString(dict, key)
+//        guard let url = URL(string: asString) else { throw JsonError.invalid(key, dict) }
+//        if url.isFileURL {
+//            // Absolute file URLs are specific to the app version and thus unsuitable for persistence,
+//            // so we only take the last component here and reconstruct a valid file URL for this app version.
+//            return LocalPics.shared.urlFor(name: url.lastPathComponent)
+//        } else {
+//            return url
+//        }
+//    }
     
-    static func parse(_ obj: AnyObject) throws -> PicMeta {
-        if let dict = obj as? NSDictionary {
-            let key = ClientKey(key: try Json.readString(dict, PicMeta.Key))
-            let url = try readUrl(key: PicMeta.Url, dict: dict)
-            let small = try readUrl(key: Small, dict: dict)
-            let medium = try readUrl(key: Medium, dict: dict)
-            let large = try readUrl(key: Large, dict: dict)
-            let added: Timestamp = try Json.readOrFail(dict, Added)
-            let clientKey = try? Json.readString(dict, ClientKeyKey)
-            return PicMeta(key: key, url: url, small: small, medium: medium, large: large, added: added, clientKey: clientKey.map { ClientKey(key: $0) })
-        }
-        throw JsonError.invalid("meta", obj)
-    }
+//    static func parse(_ obj: AnyObject) throws -> PicMeta {
+//        if let dict = obj as? NSDictionary {
+//            let key = ClientKey(key: try Json.readString(dict, PicMeta.Key))
+//            let url = try readUrl(key: PicMeta.Url, dict: dict)
+//            let small = try readUrl(key: Small, dict: dict)
+//            let medium = try readUrl(key: Medium, dict: dict)
+//            let large = try readUrl(key: Large, dict: dict)
+//            let added: Timestamp = try Json.readOrFail(dict, Added)
+//            let clientKey = try? Json.readString(dict, ClientKeyKey)
+//            return PicMeta(key: key, url: url, small: small, medium: medium, large: large, added: added, clientKey: clientKey.map { ClientKey(key: $0) })
+//        }
+//        throw JsonError.invalid("meta", obj)
+//    }
 }
 
 typealias Timestamp = UInt64
@@ -282,7 +258,7 @@ class Picture {
     }
     
     convenience init(url: URL, image: UIImage, clientKey: ClientKey, added: Timestamp) {
-        self.init(meta: PicMeta(key: clientKey, url: url, added: added, clientKey: clientKey))
+        self.init(meta: PicMeta.oneUrl(key: clientKey, url: url, added: added, clientKey: clientKey))
         self.url = image
         small = image
         medium = image
@@ -315,4 +291,8 @@ class Picture {
     func withUrl(url: URL) -> Picture {
         return withMeta(meta: meta.withUrl(url: url))
     }
+}
+
+struct KeyedEvent: Codable {
+    let event: String
 }
