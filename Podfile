@@ -5,9 +5,9 @@ use_frameworks!
 inhibit_all_warnings!
 
 target 'pics-ios' do
-    pod 'AppCenter', '1.7.2'
-    pod 'AWSCognito'
-    pod 'AWSCognitoIdentityProvider'
+    pod 'AppCenter', '1.7.1'
+    pod 'AWSCognito', '2.9.3'
+    pod 'AWSCognitoIdentityProvider', '2.9.3'
     pod 'RxCocoa', '4.4.2'
     pod 'RxSwift', '4.4.2'
     pod 'SnapKit', '4.2.0'
@@ -15,6 +15,6 @@ target 'pics-ios' do
 end
 
 target 'pics-iosTests' do
-    pod 'AWSCognito'
-    pod 'AWSCognitoIdentityProvider'
+    pod 'AWSCognito', '2.9.3'
+    pod 'AWSCognitoIdentityProvider', '2.9.3'
 end
