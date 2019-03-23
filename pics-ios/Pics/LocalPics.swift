@@ -43,22 +43,21 @@ class LocalPics {
         return baseDirectory(folder: folder, sub: uploadingSubFolder).appendingPathComponent(filename)
     }
     
-    func saveUserPic(data: Data, owner: String, key: ClientKey) throws -> URL {
+    func saveUserPic(data: Data, owner: Username, key: ClientKey) throws -> URL {
         let userDirectory = stagingDirectory(for: owner)
         return try saveAsJpgBase(data: data, base: userDirectory, key: key)
     }
     
-    func stagingDirectory(for owner: String) -> URL {
+    func stagingDirectory(for owner: Username) -> URL {
         return directory(for: owner, sub: stagingSubFolder)
     }
     
-    func uploadingDirectory(for owner: String) -> URL {
+    func uploadingDirectory(for owner: Username) -> URL {
         return directory(for: owner, sub: uploadingSubFolder)
     }
     
-    func directory(for owner: String, sub: String) -> URL {
-        let folder = Data(owner.utf8).hexEncodedString()
-        let userDirectory = baseDirectory(folder: folder, sub: sub)
+    func directory(for owner: Username, sub: String) -> URL {
+        let userDirectory = baseDirectory(folder: owner.encoded(), sub: sub)
         LocalPics.createDirectory(at: userDirectory)
         return userDirectory
     }

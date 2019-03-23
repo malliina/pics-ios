@@ -16,7 +16,7 @@ protocol TokenDelegate {
 }
 
 struct UserInfo {
-    let username: String
+    let username: Username
     let token: AWSCognitoIdentityUserSessionToken
 }
 
@@ -54,7 +54,7 @@ class Tokens {
                         //                log.info("Got token \(accessToken.tokenString)")
                         self.delegates.forEach { $0.onAccessToken(accessToken) }
                         if let username = user.username {
-                            single(.success(UserInfo(username: username, token: accessToken)))
+                            single(.success(UserInfo(username: Username(username), token: accessToken)))
                         } else {
                             single(.error(AppError.simple("Missing username.")))
                         }

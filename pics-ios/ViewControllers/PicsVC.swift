@@ -44,16 +44,13 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     private var mightHaveMore: Bool = true
     private var isOnline = false
-    private var offlinePics: [Picture] {
-        get { return PicsSettings.shared.localPics }
-        set (newPics) { PicsSettings.shared.localPics = newPics }
-    }
+    private var picsSettings: PicsSettings { return PicsSettings.shared }
     
     private var loadedPics: [Picture] = []
     private var pics: [Picture] {
-        get { return isOnline ? loadedPics : offlinePics }
+        get { return isOnline ? loadedPics : picsSettings.localPictures(for: currentUsername) }
         set (newPics) {
-            offlinePics = newPics
+            picsSettings.save(pics: newPics, for: currentUsername)
             if isOnline {
                 loadedPics = newPics
             }
@@ -66,11 +63,14 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     var authCancellation: AWSCancellationTokenSource? = nil
     
     var currentUser: AWSCognitoIdentityUser? { return Tokens.shared.pool.currentUser() }
+    var currentUsername: Username? { return isPrivate ? currentUser?.username.map { Username($0) } : nil }
+    var currentUsernameOrAnon: Username { return currentUsername ?? Username.anon }
+    var hasValidToken: Bool { return currentUser?.isSignedIn ?? false }
     var isPrivate: Bool {
-        get { return isSignedIn && PicsSettings.shared.isPrivate }
-        set(newValue) { PicsSettings.shared.isPrivate = newValue }
+        get { return picsSettings.isPrivate }
+        set(newValue) { picsSettings.isPrivate = newValue }
     }
-    var isSignedIn: Bool { return currentUser?.isSignedIn ?? false }
+    
     var backgroundColor: UIColor { return isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var cellBackgroundColor: UIColor { return isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
     var barStyle: UIBarStyle { return isPrivate ? .black : .default }
@@ -120,7 +120,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     @objc func profileClicked(_ button: UIBarButtonItem) {
-        let content = ProfilePopover(user: currentUser?.username, isPrivate: isPrivate, delegate: self)
+        let content = ProfilePopover(user: currentUsername, isPrivate: isPrivate, delegate: self)
         content.modalPresentationStyle = .popover
         if let popover = content.popoverPresentationController {
             popover.barButtonItem = button
@@ -136,23 +136,23 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     private func initAndLoad(forceSignIn: Bool) {
-        log.info("Initializing picture gallery with \(offlinePics.count) offline pics.")
-        updateUI(needsToken: isPrivate && (isSignedIn || forceSignIn))
+        log.info("Initializing picture gallery with \(pics.count) offline pics.")
+        updateUI(retrieveToken: isPrivate && (hasValidToken || forceSignIn))
     }
     
     func reconnectAndSync() {
-        updateUI(needsToken: isPrivate)
+        updateUI(retrieveToken: isPrivate)
     }
     
-    private func updateUI(needsToken: Bool) {
+    private func updateUI(retrieveToken: Bool) {
         mightHaveMore = true
-        if needsToken {
+        if retrieveToken {
             authCancellation = AWSCancellationTokenSource()
             let _ = Tokens.shared.retrieve(cancellationToken: authCancellation).subscribe { (event) in
                 switch event {
                 case .success(let token):
                     self.load(with: token)
-                    if let user = self.currentUser?.username {
+                    if let user = self.currentUsername {
                         self.library.syncOffline(for: user)
                     }
                 case .error(let error):
@@ -193,7 +193,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                         self.log.info("Replacing offline pics with fresh pics.")
                         self.isOnline = true
                         self.collectionView?.reloadData()
-                        self.renderNoItemsIfEmpty()
+                        self.renderMessageIfEmpty()
                     } else {
                         let indexPaths = rows.map { row in IndexPath(item: row, section: 0) }
                         self.displayItems(at: indexPaths)
@@ -241,13 +241,13 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     func displayNoItemsIfEmpty() {
         onUiThread {
-            self.renderNoItemsIfEmpty()
+            self.renderMessageIfEmpty()
         }
     }
     
-    func renderNoItemsIfEmpty() {
+    func renderMessageIfEmpty(message: String? = nil) {
         if self.pics.isEmpty {
-            self.displayText(text: "You have no pictures yet.")
+            self.displayText(text: message ?? "You have no pictures yet.")
         } else {
             self.collectionView?.backgroundView = nil
         }
@@ -394,7 +394,12 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                 }
             }
         } else {
-            log.error("Unknown error \(error)")
+            let errorMessage = error.localizedDescription
+            log.error("Error \(errorMessage)")
+            let message = errorMessage == "The Internet connection appears to be offline." ? "No pictures to show. The Internet connection appears to be offline." : "An error occurred. Try again later."
+            onUiThread {
+                self.renderMessageIfEmpty(message: message)
+            }
         }
     }
     
@@ -417,7 +422,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func signOutOrReloadUser() {
-        let wasSignedIn = isSignedIn
+        let wasSignedIn = hasValidToken
         pool.currentUser()?.signOut()
         pool.clearLastKnownUser()
         self.collectionView?.backgroundView = nil
@@ -427,7 +432,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func resetData() {
-        offlinePics = []
+//        offlinePics = []
         loadedPics = []
         Tokens.shared.clearDelegates()
         socket.close()
@@ -529,7 +534,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                     coll.deleteItems(at: removes)
                 }, completion: nil)
             }
-            self.renderNoItemsIfEmpty()
+            self.renderMessageIfEmpty()
         }
     }
 }
@@ -564,12 +569,19 @@ extension PicsVC: PicDelegate {
 extension PicsVC: ProfileDelegate {
     func onPublic() {
         isPrivate = false
-        updateUI(needsToken: false)
+        onUiThread {
+            self.updateStyle()
+        }
+        updateUI(retrieveToken: false)
+        log.info("Current user is \(currentUsername ?? Username.anon)")
     }
     
     func onPrivate() {
         isPrivate = true
-        updateUI(needsToken: true)
+        onUiThread {
+            self.updateStyle()
+        }
+        updateUI(retrieveToken: true)
     }
     
     func onLogout() {
@@ -591,15 +603,12 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String: Any]) {
-        // Local variable inserted by Swift 4.2 migrator.
-//        let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
-
         picker.dismiss(animated: true) { () in
             self.onBackgroundThread {
                 do {
                     try self.handleMedia(info: info)
-                } catch {
-                    self.log.info("Failed to save picture")
+                } catch let err {
+                    self.log.info("Failed to save picture. \(err)")
                 }
             }
         }
@@ -628,7 +637,8 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         }
         if isPrivate {
             // This should return the last logged in user, even if we're currently offline
-            if let user = currentUser?.username {
+            if let user = currentUsername {
+                log.info("Staging then uploading image taken by \(user)...")
                 // Copies the picture to a staging folder
                 let _ = try LocalPics.shared.saveUserPic(data: data, owner: user, key: clientKey)
                 // Attempts to obtain a token and upload the pic

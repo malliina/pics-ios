@@ -49,11 +49,28 @@ class PicsLibrary {
         }
     }
     
-    func syncOffline(for user: String) {
-        // Runs synchronized so that only one thread moves files from staging to uploading at a time
+    func syncOffline(for user: Username) {
+        // Runs synchronized so that only one thread moves files between staging and uploading at a time
         synchronized {
-            let dir = LocalPics.shared.stagingDirectory(for: user)
-            let files = LocalPics.listFiles(at: dir).sorted { (file1, file2) -> Bool in
+            // Moves old files from the uploading directory back to staging
+            let uploadingDir = LocalPics.shared.uploadingDirectory(for: user)
+            let stagingDir = LocalPics.shared.stagingDirectory(for: user)
+            do {
+                let oneDay: TimeInterval = 3600 * 24
+                let now = Date()
+                LocalPics.listFiles(at: uploadingDir).filter { now.timeIntervalSince($0.created) > oneDay }.forEach { url in
+                    let dest = stagingDir.appendingPathComponent(url.lastPathComponent)
+                    do {
+                        try FileManager.default.moveItem(at: url, to: dest)
+                        self.log.info("Moved \(url) to \(dest) because it had not been uploaded in a reasonable amount of time.")
+                    } catch let err {
+                        self.log.info("Unable to move \(url) to \(dest). \(err)")
+                    }
+                }
+            }
+            // Moves the oldest file to the uploading dir, then attempts uploads it
+            // This is an attempt to upload images in the order they are taken
+            let files = LocalPics.listFiles(at: stagingDir).sorted { (file1, file2) -> Bool in
                 file1.created < file2.created
             }
             if files.isEmpty {
@@ -61,7 +78,7 @@ class PicsLibrary {
             }
             files.headOption().map { file in
                 do {
-                    let uploadingUrl = LocalPics.shared.uploadingDirectory(for: user).appendingPathComponent(file.lastPathComponent)
+                    let uploadingUrl = uploadingDir.appendingPathComponent(file.lastPathComponent)
                     try FileManager.default.moveItem(at: file, to: uploadingUrl)
                     self.log.info("Moved \(file) to \(uploadingUrl)")
                     self.log.info("Syncing \(uploadingUrl) for '\(user)' taken at '\(file.created)'. In total \(files.count) files awaiting upload.")

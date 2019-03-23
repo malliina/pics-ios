@@ -174,6 +174,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         }
         let task = session.uploadTask(with: req, fromFile: file)
         if deleteOnComplete {
+            // folder impl wtf?
             saveUpload(task: UploadTask(id: task.taskIdentifier, folder: file.deletingLastPathComponent().deletingLastPathComponent().lastPathComponent, filename: file.lastPathComponent))
         }
         task.resume()

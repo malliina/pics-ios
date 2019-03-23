@@ -66,21 +66,23 @@ class PicsSettings {
     
     let prefs = PicsPrefs.shared
     
-    private var cachedPictures: [Picture] = []
+//    private var cachedPictures: [Picture] = []
     private var blockedKeys: [ClientKey] = PicsSettings.loadBlocked()
     
     init() {
-        cachedPictures = prefs.load(PicsKey, PicsResponse.self)?.pics.map { meta in Picture(meta: meta) } ?? []
+//        cachedPictures = prefs.load(PicsKey, PicsResponse.self)?.pics.map { meta in Picture(meta: meta) } ?? []
     }
+    
+    func key(for user: Username) -> String { return "pics-\(user.encoded())" }
     
     var isPrivate: Bool {
         get { return prefs.bool(forKey: IsPublic) }
         set (newValue) {
             let _ = prefs.saveBool(newValue, key: IsPublic)
             // Clears any private pic cache when we switch to public mode
-            if !newValue {
-                clearPics()
-            }
+//            if !newValue {
+//                clearPics()
+//            }
         }
     }
     
@@ -128,17 +130,25 @@ class PicsSettings {
         blockedImageKeys = blockedList
     }
     
-    var localPics: [Picture] {
-        get { return cachedPictures }
-        set (newValue) {
-            cachedPictures = newValue
-            let _ = prefs.save(PicsResponse(pics: newValue.map { $0.meta }), key: PicsKey)
-        }
+//    var localPics: [Picture] {
+//        get { return cachedPictures }
+//        set (newValue) {
+//            cachedPictures = newValue
+//            let _ = prefs.save(PicsResponse(pics: newValue.map { $0.meta }), key: PicsKey)
+//        }
+//    }
+    
+    func save(pics: [Picture], for user: Username?) {
+        let _ = prefs.save(PicsResponse(pics: pics.map { $0.meta }), key: key(for: user ?? Username.anon))
     }
     
-    func clearPics() {
-        localPics = []
+    func localPictures(for user: Username?) -> [Picture] {
+        return prefs.load(key(for: user ?? Username.anon), PicsResponse.self)?.pics.map { meta in Picture(meta: meta) } ?? []
     }
+    
+//    func clearPics() {
+//        localPics = []
+//    }
     
     static func loadBlocked() -> [ClientKey] {
         return (UserDefaults.standard.stringArray(forKey: BlockedImageKeys) ?? []).map { s in ClientKey(s) }

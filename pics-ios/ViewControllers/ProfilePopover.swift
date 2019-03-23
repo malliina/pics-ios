@@ -18,11 +18,11 @@ protocol ProfileDelegate {
 class ProfilePopover: UITableViewController, UIPopoverPresentationControllerDelegate {
     let popoverCellIdentifier = "PopoverCell"
     
-    let user: String?
+    let user: Username?
     let isPrivate: Bool
     let delegate: ProfileDelegate
     
-    init(user: String?, isPrivate: Bool, delegate: ProfileDelegate) {
+    init(user: Username?, isPrivate: Bool, delegate: ProfileDelegate) {
         self.user = user
         self.isPrivate = isPrivate
         self.delegate = delegate
@@ -61,7 +61,7 @@ class ProfilePopover: UITableViewController, UIPopoverPresentationControllerDele
             cell.accessoryType = isPrivate ? .none : .checkmark
             break
         case 1:
-            cell.textLabel?.text = user ?? "Log in"
+            cell.textLabel?.text = user?.user ?? "Log in"
             cell.accessoryType = isPrivate ? .checkmark : .none
             if user == nil {
                 cell.textLabel?.textColor = PicsColors.blueish

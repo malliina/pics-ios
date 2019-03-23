@@ -127,8 +127,20 @@ struct FullUrl: ValidatedValueCodable {
     }
 }
 
-struct ProfileInfo: Codable {
+struct Username: Equatable, Hashable, ValueCodable {
+    static let anon = Username("anon")
     let user: String
+    var value: String { return user }
+    
+    init(_ value: String) {
+        self.user = value
+    }
+    
+    func encoded() -> String { return Data(user.utf8).hexEncodedString() }
+}
+
+struct ProfileInfo: Codable {
+    let user: Username
     let readOnly: Bool
 }
 
@@ -139,7 +151,6 @@ struct ClientKeys: Codable {
 struct ClientKey: Equatable, Hashable, CustomStringConvertible, ValueCodable {
     let key: String
     var value: String { return key }
-    var description: String { return key }
     
     init(_ value: String) {
         self.key = value
@@ -198,44 +209,6 @@ struct PicMeta: Codable {
             PicMeta.random()
         }
     }
-    
-//    static func write(pic: PicMeta) -> [String: AnyObject] {
-//        return [
-//            Key: pic.key.key as AnyObject,
-//            Url: pic.url.absoluteString as AnyObject,
-//            Small: pic.small.absoluteString as AnyObject,
-//            Medium: pic.medium.absoluteString as AnyObject,
-//            Large: pic.large.absoluteString as AnyObject,
-//            Added: pic.added as AnyObject,
-//            ClientKeyKey: pic.clientKey?.key as AnyObject
-//        ]
-//    }
-    
-//    static func readUrl(key: String, dict: NSDictionary) throws -> URL {
-//        let asString = try Json.readString(dict, key)
-//        guard let url = URL(string: asString) else { throw JsonError.invalid(key, dict) }
-//        if url.isFileURL {
-//            // Absolute file URLs are specific to the app version and thus unsuitable for persistence,
-//            // so we only take the last component here and reconstruct a valid file URL for this app version.
-//            return LocalPics.shared.urlFor(name: url.lastPathComponent)
-//        } else {
-//            return url
-//        }
-//    }
-    
-//    static func parse(_ obj: AnyObject) throws -> PicMeta {
-//        if let dict = obj as? NSDictionary {
-//            let key = ClientKey(key: try Json.readString(dict, PicMeta.Key))
-//            let url = try readUrl(key: PicMeta.Url, dict: dict)
-//            let small = try readUrl(key: Small, dict: dict)
-//            let medium = try readUrl(key: Medium, dict: dict)
-//            let large = try readUrl(key: Large, dict: dict)
-//            let added: Timestamp = try Json.readOrFail(dict, Added)
-//            let clientKey = try? Json.readString(dict, ClientKeyKey)
-//            return PicMeta(key: key, url: url, small: small, medium: medium, large: large, added: added, clientKey: clientKey.map { ClientKey(key: $0) })
-//        }
-//        throw JsonError.invalid("meta", obj)
-//    }
 }
 
 typealias Timestamp = UInt64
