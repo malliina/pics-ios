@@ -77,13 +77,19 @@ class LocalPics {
     func maintenance(smallFiles: [URL]) -> [URL] {
         let fileManager = FileManager.default
         let files = LocalPics.listFiles(at: dir)
-        log.info("Local original files: \(files.count).")
+        log.info("Local original files: \(files.count): \(files.mkString(", "))")
         let oneMonthAgo = Date(timeIntervalSinceNow: -3600 * 24 * 30)
         // Deletes over one month old original files - they should have been uploaded by now
-        let locallyTaken = files.flatMapOpt { (url) -> URL? in
+        let locallyTaken = files.compactMap { (url) -> URL? in
             if !fileManager.isDirectory(url: url) && url.lastPathComponent.startsWith(localPrefix) && url.created < oneMonthAgo {
-                guard let _ = try? fileManager.removeItem(at: url) else { return nil }
-                return url
+                do {
+                    try fileManager.removeItem(at: url)
+                    self.log.info("Deleted \(url).")
+                    return url
+                } catch let err {
+                    self.log.warn("Unable to delete \(url). \(err.localizedDescription)")
+                    return nil
+                }
             } else {
                 return nil
             }
@@ -97,7 +103,7 @@ class LocalPics {
     }
     
     func remove(smallFiles: [URL]) -> [URL] {
-        return smallFiles.flatMapOpt { (smallUrl) -> URL? in
+        return smallFiles.compactMap { (smallUrl) -> URL? in
             if smallUrl.exists {
                 guard let _ = try? FileManager.default.removeItem(at: smallUrl) else { return nil }
                 return smallUrl
@@ -108,8 +114,7 @@ class LocalPics {
     }
     
     func readSmall(key: ClientKey) -> Data? {
-        let src = fileFor(key: key, dir: small)
-        return src.exists ? try? Data(contentsOf: src) : nil
+        return findSmallUrl(key: key).flatMap { try? Data(contentsOf: $0) }
     }
     
     func saveSmall(data: Data, key: ClientKey) -> URL? {
@@ -127,6 +132,16 @@ class LocalPics {
             log.info("Already exists: \(key)")
             return dest
         }
+    }
+    
+    func findSmallUrl(key: ClientKey) -> URL? {
+        let url = fileFor(key: key, dir: small)
+        return url.exists ? url : nil
+    }
+    
+    func findLocal(key: ClientKey) -> URL? {
+        let url = fileFor(key: key, dir: dir)
+        return url.exists ? url : nil
     }
     
     func fileFor(key: ClientKey, dir: URL) -> URL {
@@ -196,5 +211,5 @@ extension URL {
         }
     }
     
-    var exists: Bool { return (try? self.checkResourceIsReachable()) ?? false }
+    var exists: Bool { do { return try self.checkResourceIsReachable() } catch { return false } }
 }

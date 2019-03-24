@@ -170,6 +170,15 @@ struct AccessToken: Equatable, Hashable, CustomStringConvertible {
     static func == (lhs: AccessToken, rhs: AccessToken) -> Bool { return lhs.token == rhs.token }
 }
 
+struct PicRef: Codable {
+    let filename: String
+    let added: Timestamp
+}
+
+struct PicRefs: Codable {
+    let pics: [PicRef]
+}
+
 struct PicResponse: Codable {
     let pic: PicMeta
 }
@@ -189,6 +198,15 @@ struct PicMeta: Codable {
     let large: URL
     let added: Timestamp
     let clientKey: ClientKey?
+    
+    static func ref(_ ref: PicRef) -> PicMeta? {
+        let local = LocalPics.shared
+        let key = ClientKey(ref.filename)
+        let url = local.findLocal(key: key)
+        let smallUrl = local.findSmallUrl(key: key)
+        guard let large = url ?? smallUrl else { return nil }
+        return PicMeta(key: key, url: large, small: smallUrl ?? large, medium: large, large: large, added: ref.added, clientKey: key)
+    }
     
     static func oneUrl(key: ClientKey, url: URL, added: Timestamp, clientKey: ClientKey?) -> PicMeta {
         return PicMeta(key: key, url: url, small: url, medium: url, large: url, added: added, clientKey: clientKey)

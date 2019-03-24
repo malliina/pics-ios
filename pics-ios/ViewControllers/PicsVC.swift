@@ -53,6 +53,8 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             let _ = picsSettings.save(pics: newPics, for: currentUsername)
             if isOnline {
                 onlinePics = newPics
+            } else {
+                offlinePics = newPics
             }
         }
     }
@@ -272,9 +274,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         }
     }
     
-    func displayItems(at: [IndexPath]) {
-        self.collectionView?.insertItems(at: at)
-    }
+    func displayItems(at: [IndexPath]) { self.collectionView?.insertItems(at: at) }
     
     func updateStyle() {
         changeStyle(dark: isPrivate)
@@ -320,6 +320,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PicCellIdentifier, for: indexPath) as! PicsCell
         cell.backgroundColor = cellBackgroundColor
         let pic = pics[indexPath.row]
+//        if pic.meta.small.isFileURL {
+//            log.info("File \(pic.meta.small) exists \(pic.meta.small.exists)")
+//        }
         if let thumb = pic.small {
             cell.imageView.image = thumb
         } else {
@@ -459,7 +462,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             existingPics.forEach(self.updateMeta)
         }
         log.info("Got \(pics.count) pic(s), out of which \(newPics.count) are new.")
-        displayNewPics(pics: newPics.filter { !isBlocked(pic: $0) }.map { p in Picture(meta: p) })
+        display(newPics: newPics.filter { !isBlocked(pic: $0) }.map { p in Picture(meta: p) })
     }
     
     private func updateMeta(pic: PicMeta) {
@@ -499,11 +502,11 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         
     }
     
-    func displayNewPics(pics: [Picture]) {
+    func display(newPics: [Picture]) {
         onUiThread {
-            let ordered: [Picture] = pics.reversed()
-            self.pics = ordered + self.pics
-            let indexPaths = ordered.enumerated().map { (offset, pic) -> IndexPath in
+            let newPicsNewestFirst: [Picture] = newPics.reversed()
+            self.pics = newPicsNewestFirst + self.pics
+            let indexPaths = newPicsNewestFirst.enumerated().map { (offset, pic) -> IndexPath in
                 IndexPath(row: offset, section: 0)
             }
             self.displayItems(at: indexPaths)
@@ -631,7 +634,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         }
         let clientKey = ClientKey.random()
         let pic = Picture(image: originalImage, clientKey: clientKey)
-        displayNewPics(pics: [pic])
+        display(newPics: [pic])
         guard let data = UIImageJPEGRepresentation(originalImage, 1) else {
             log.error("Taken image is not in JPEG format")
             return

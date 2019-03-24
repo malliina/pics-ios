@@ -97,10 +97,6 @@ extension Array {
         return nil
     }
     
-    func flatMapOpt<U>(_ f: (Element) -> U?) -> [U] {
-        return self.map({ f($0) }).filter({ $0 != nil}).map({ $0! })
-    }
-    
     func partition(_ f: (Element) -> Bool) -> ([Element], [Element]) {
         var trues: [Element] = []
         var falses: [Element] = []

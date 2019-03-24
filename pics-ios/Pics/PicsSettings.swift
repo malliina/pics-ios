@@ -56,6 +56,8 @@ class PicsPrefs {
 }
 
 class PicsSettings {
+    let log = LoggerFactory.shared.system(PicsSettings.self)
+    
     static let shared = PicsSettings()
     
     let IsPublic = "v2-is_private"
@@ -71,7 +73,7 @@ class PicsSettings {
     init() {
     }
     
-    func key(for user: Username) -> String { return "pics-\(user.encoded())" }
+    func key(for user: Username) -> String { return "v2-pics-\(user.encoded())" }
     
     var isPrivate: Bool {
         get { return prefs.bool(forKey: IsPublic) }
@@ -125,11 +127,13 @@ class PicsSettings {
     }
     
     func save(pics: [Picture], for user: Username?) -> ErrorMessage? {
-        return prefs.save(PicsResponse(pics: pics.map { $0.meta }), key: key(for: user ?? Username.anon))
+        let refs = pics.map { pic in PicRef(filename: pic.meta.url.lastPathComponent, added: pic.meta.added) }
+        return prefs.save(PicRefs(pics: refs), key: key(for: user ?? Username.anon))
     }
     
     func localPictures(for user: Username?) -> [Picture] {
-        return prefs.load(key(for: user ?? Username.anon), PicsResponse.self)?.pics.map { meta in Picture(meta: meta) } ?? []
+        let metas = prefs.load(key(for: user ?? Username.anon), PicRefs.self)?.pics ?? []
+        return metas.compactMap { PicMeta.ref($0).map { meta in Picture(meta: meta) } }
     }
     
     static func loadBlocked() -> [ClientKey] {
