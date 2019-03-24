@@ -47,8 +47,9 @@ class Tokens {
         return Single<UserInfo>.create { (single) -> Disposable in
             user.getSession().continueWith(block: { (task) -> Any? in
                 if let error = task.error as NSError? {
+                    let appError = error.localizedDescription == AppError.noInternetMessage ? AppError.noInternet(error) : AppError.tokenError(error)
                     self.log.warn("Failed to get session with \(error)")
-                    single(.error(AppError.tokenError(error)))
+                    single(.error(appError))
                 } else {
                     if let accessToken = task.result?.accessToken {
                         //                log.info("Got token \(accessToken.tokenString)")

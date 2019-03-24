@@ -201,14 +201,6 @@ struct PicMeta: Codable {
     static func random() -> PicMeta {
         return PicMeta.oneUrl(key: ClientKey.random(), url: Picture.TempFakeUrl, added: Picture.nowMillis(), clientKey: nil)
     }
-    
-    static func randoms() -> [PicMeta] {
-        let size = Int(arc4random_uniform(10))
-        print(size)
-        return (0...size).map { (i) -> PicMeta in
-            PicMeta.random()
-        }
-    }
 }
 
 typealias Timestamp = UInt64

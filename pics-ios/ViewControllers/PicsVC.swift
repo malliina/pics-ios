@@ -26,7 +26,6 @@ extension PicsVC: UICollectionViewDataSourcePrefetching {
             if pics.count > row {
                 let pic = pics[indexPath.row]
                 if pic.small == nil {
-//                    log.info("Prefetching \(pic.meta.key)")
                     self.download(indexPath, pic: pic)
                 }
             }
@@ -46,13 +45,14 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     private var isOnline = false
     private var picsSettings: PicsSettings { return PicsSettings.shared }
     
-    private var loadedPics: [Picture] = []
+    private var offlinePics: [Picture] = []
+    private var onlinePics: [Picture] = []
     private var pics: [Picture] {
-        get { return isOnline ? loadedPics : picsSettings.localPictures(for: currentUsername) }
+        get { return isOnline ? onlinePics : offlinePics }
         set (newPics) {
-            picsSettings.save(pics: newPics, for: currentUsername)
+            let _ = picsSettings.save(pics: newPics, for: currentUsername)
             if isOnline {
-                loadedPics = newPics
+                onlinePics = newPics
             }
         }
     }
@@ -63,7 +63,8 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     var authCancellation: AWSCancellationTokenSource? = nil
     
     var currentUser: AWSCognitoIdentityUser? { return Tokens.shared.pool.currentUser() }
-    var currentUsername: Username? { return isPrivate ? currentUser?.username.map { Username($0) } : nil }
+    var lastLoggedInUser: Username? { return currentUser?.username.map { Username($0) } }
+    var currentUsername: Username? { return isPrivate ? lastLoggedInUser : nil }
     var currentUsernameOrAnon: Username { return currentUsername ?? Username.anon }
     var hasValidToken: Bool { return currentUser?.isSignedIn ?? false }
     var isPrivate: Bool {
@@ -80,6 +81,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         let flow = UICollectionViewFlowLayout()
         flow.itemSize = CGSize(width: PicsVC.preferredItemSize, height: PicsVC.preferredItemSize)
         super.init(collectionViewLayout: flow)
+        offlinePics = picsSettings.localPictures(for: currentUsername)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -120,7 +122,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     @objc func profileClicked(_ button: UIBarButtonItem) {
-        let content = ProfilePopover(user: currentUsername, isPrivate: isPrivate, delegate: self)
+        let content = ProfilePopover(user: lastLoggedInUser, isPrivate: isPrivate, delegate: self)
         content.modalPresentationStyle = .popover
         if let popover = content.popoverPresentationController {
             popover.barButtonItem = button
@@ -137,32 +139,49 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     private func initAndLoad(forceSignIn: Bool) {
         log.info("Initializing picture gallery with \(pics.count) offline pics.")
-        updateUI(retrieveToken: isPrivate && (hasValidToken || forceSignIn))
+        let loadPrivate = isPrivate && (hasValidToken || forceSignIn)
+        if loadPrivate {
+            loadPrivatePics()
+        } else {
+            loadAnonymousPics()
+        }
     }
     
     func reconnectAndSync() {
-        updateUI(retrieveToken: isPrivate)
+        if isPrivate {
+            loadPrivatePics()
+        } else {
+            loadAnonymousPics()
+        }
     }
     
-    private func updateUI(retrieveToken: Bool) {
-        mightHaveMore = true
-        if retrieveToken {
-            authCancellation = AWSCancellationTokenSource()
-            let _ = Tokens.shared.retrieve(cancellationToken: authCancellation).subscribe { (event) in
-                switch event {
-                case .success(let token):
-                    self.load(with: token)
-                    if let user = self.currentUsername {
-                        self.library.syncOffline(for: user)
-                    }
-                case .error(let error):
-                    self.onLoadError(error: error)
-                }
-            }
+    private func loadPics(for user: Username) {
+        if user == Username.anon {
+            loadAnonymousPics()
         } else {
-            // anonymous
-            load(with: nil)
+            loadPrivatePics()
         }
+    }
+    
+    private func loadPrivatePics() {
+        mightHaveMore = true
+        authCancellation = AWSCancellationTokenSource()
+        let _ = Tokens.shared.retrieve(cancellationToken: authCancellation).subscribe { (event) in
+            switch event {
+            case .success(let token):
+                self.load(with: token)
+                if let user = self.currentUsername {
+                    self.library.syncOffline(for: user)
+                }
+            case .error(let error):
+                self.onLoadError(error: error)
+            }
+        }
+    }
+    
+    private func loadAnonymousPics() {
+        mightHaveMore = true
+        load(with: nil)
     }
     
     private func load(with token: AWSCognitoIdentityUserSessionToken?) {
@@ -176,18 +195,18 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
 
     // Called on first load
     func syncPics() {
-        let syncLimit = max(loadedPics.count, PicsVC.itemsPerLoad)
+        let syncLimit = max(onlinePics.count, PicsVC.itemsPerLoad)
         withLoading(from: 0, limit: syncLimit, f: self.merge)
     }
     
     // Called when more pics are needed (while scrolling down)
     func appendPics(limit: Int) {
-        let beforeCount = loadedPics.count
+        let beforeCount = onlinePics.count
         let wasOffline = !isOnline
         withLoading(from: beforeCount, limit: limit) { (filtered) in
-            if self.loadedPics.count == beforeCount {
+            if self.onlinePics.count == beforeCount {
                 if !filtered.isEmpty {
-                    self.pics = self.loadedPics + filtered.map { p in Picture(meta: p) }
+                    self.pics = self.onlinePics + filtered.map { p in Picture(meta: p) }
                     let rows: [Int] = Array(beforeCount..<beforeCount+filtered.count)
                     if wasOffline {
                         self.log.info("Replacing offline pics with fresh pics.")
@@ -305,22 +324,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             cell.imageView.image = thumb
         } else {
             cell.imageView.image = nil
-//            log.info("Fetching \(pic.meta.key)")
             self.download(indexPath, pic: pic)
         }
         return cell
-    }
-    
-    func cached(key: ClientKey) -> UIImage? {
-        guard let data = LocalPics.shared.readSmall(key: key) else { return nil }
-        return UIImage(data: data)
-    }
-    
-    func loadCached(key: ClientKey, onData: @escaping (Data?) -> Void) {
-        onBackgroundThread {
-            let file = LocalPics.shared.readSmall(key: key)
-            onData(file)
-        }
     }
     
     override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
@@ -396,7 +402,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         } else {
             let errorMessage = error.localizedDescription
             log.error("Error \(errorMessage)")
-            let message = errorMessage == "The Internet connection appears to be offline." ? "No pictures to show. The Internet connection appears to be offline." : "An error occurred. Try again later."
+            let message = errorMessage == AppError.noInternetMessage ? "No pictures to show. \(AppError.noInternetMessage)" : "An error occurred. Try again later."
             onUiThread {
                 self.renderMessageIfEmpty(message: message)
             }
@@ -432,8 +438,8 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func resetData() {
-//        offlinePics = []
-        loadedPics = []
+        offlinePics = []
+        onlinePics = []
         Tokens.shared.clearDelegates()
         socket.close()
         isOnline = false
@@ -497,9 +503,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         onUiThread {
             let ordered: [Picture] = pics.reversed()
             self.pics = ordered + self.pics
-            let indexPaths = ordered.enumerated().map({ (offset, pic) -> IndexPath in
+            let indexPaths = ordered.enumerated().map { (offset, pic) -> IndexPath in
                 IndexPath(row: offset, section: 0)
-            })
+            }
             self.displayItems(at: indexPaths)
         }
     }
@@ -570,18 +576,21 @@ extension PicsVC: ProfileDelegate {
     func onPublic() {
         isPrivate = false
         onUiThread {
-            self.updateStyle()
+            self.offlinePics = self.picsSettings.localPictures(for: nil)
+            self.collectionView?.reloadData()
         }
-        updateUI(retrieveToken: false)
+        loadAnonymousPics()
         log.info("Current user is \(currentUsername ?? Username.anon)")
     }
     
     func onPrivate() {
         isPrivate = true
         onUiThread {
+            self.offlinePics = self.currentUsername.map { self.picsSettings.localPictures(for: $0) } ?? []
             self.updateStyle()
+            self.collectionView?.reloadData()
         }
-        updateUI(retrieveToken: true)
+        loadPrivatePics()
     }
     
     func onLogout() {

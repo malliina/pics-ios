@@ -98,8 +98,7 @@ class LocalPics {
     
     func remove(smallFiles: [URL]) -> [URL] {
         return smallFiles.flatMapOpt { (smallUrl) -> URL? in
-            let exists = (try? smallUrl.checkResourceIsReachable()) ?? false
-            if exists {
+            if smallUrl.exists {
                 guard let _ = try? FileManager.default.removeItem(at: smallUrl) else { return nil }
                 return smallUrl
             } else {
@@ -110,26 +109,23 @@ class LocalPics {
     
     func readSmall(key: ClientKey) -> Data? {
         let src = fileFor(key: key, dir: small)
-        guard let exists = try? src.checkResourceIsReachable() else { return nil }
-        return exists ? try? Data(contentsOf: src) : nil
+        return src.exists ? try? Data(contentsOf: src) : nil
     }
     
     func saveSmall(data: Data, key: ClientKey) -> URL? {
         let dest = fileFor(key: key, dir: small)
-        let exists = (try? dest.checkResourceIsReachable()) ?? false
-        if !exists {
-//            log.info("Saving \(key) to \(dest)")
-            let success = (try? data.write(to: dest)) != nil
-            if success {
+        if !dest.exists {
+            do {
+                try data.write(to: dest)
                 log.info("Saved \(key) locally to \(dest)")
                 return dest
-            } else {
-                log.info("Failed to write \(key) to \(dest)")
+            } catch let err {
+                log.info("Failed to write \(key) to \(dest). \(err)")
                 return nil
             }
         } else {
             log.info("Already exists: \(key)")
-            return nil
+            return dest
         }
     }
     
@@ -199,4 +195,6 @@ extension URL {
             return false
         }
     }
+    
+    var exists: Bool { return (try? self.checkResourceIsReachable()) ?? false }
 }

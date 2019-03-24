@@ -14,6 +14,7 @@ enum AppError: Error {
     case networkFailure(RequestFailure)
     case simpleError(ErrorMessage)
     case tokenError(Error)
+    case noInternet(Error)
     
     var describe: String { return AppError.stringify(self) }
     
@@ -24,6 +25,8 @@ enum AppError: Error {
     static func simple(_ message: String) -> AppError {
         return AppError.simpleError(ErrorMessage(message))
     }
+    
+    static let noInternetMessage = "The Internet connection appears to be offline."
 }
 
 class AppErrorUtil {
@@ -56,13 +59,16 @@ class AppErrorUtil {
                     return "Error code: \(code)."
                 }
             }
-        case .networkFailure( _):
+        case .networkFailure(_):
             return "A network error occurred."
         case .tokenError(_):
             return "A network error occurred."
         case .simpleError(let message):
             return message.message
+        case .noInternet(_):
+            return AppError.noInternetMessage
         }
+        
     }
     
     static func stringifyDetailed(_ error: AppError) -> String {
