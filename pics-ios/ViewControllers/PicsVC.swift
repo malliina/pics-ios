@@ -43,14 +43,14 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     private var mightHaveMore: Bool = true
     private var isOnline = false
-    private var picsSettings: PicsSettings { return PicsSettings.shared }
+    private var picsSettings: PicsSettings { PicsSettings.shared }
     
     private var offlinePics: [Picture] = []
     private var onlinePics: [Picture] = []
     private var pics: [Picture] {
-        get { return isOnline ? onlinePics : offlinePics }
+        get { isOnline ? onlinePics : offlinePics }
         set (newPics) {
-            let _ = picsSettings.save(pics: newPics, for: currentUsername)
+            let _ = picsSettings.save(pics: newPics, for: currentUsernameOrAnon)
             if isOnline {
                 onlinePics = newPics
             } else {
@@ -59,31 +59,31 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         }
     }
     
-    var library: PicsLibrary { return Backend.shared.library }
-    var socket: PicsSocket { return Backend.shared.socket }
+    var library: PicsLibrary { Backend.shared.library }
+    var socket: PicsSocket { Backend.shared.socket }
     let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
     var authCancellation: AWSCancellationTokenSource? = nil
     
-    var currentUser: AWSCognitoIdentityUser? { return Tokens.shared.pool.currentUser() }
-    var lastLoggedInUser: Username? { return currentUser?.username.map { Username($0) } }
-    var currentUsername: Username? { return isPrivate ? lastLoggedInUser : nil }
-    var currentUsernameOrAnon: Username { return currentUsername ?? Username.anon }
-    var hasValidToken: Bool { return currentUser?.isSignedIn ?? false }
-    var isPrivate: Bool {
-        get { return picsSettings.isPrivate }
-        set(newValue) { picsSettings.isPrivate = newValue }
-    }
-    
-    var backgroundColor: UIColor { return isPrivate ? PicsColors.background : PicsColors.lightBackground }
-    var cellBackgroundColor: UIColor { return isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
-    var barStyle: UIBarStyle { return isPrivate ? .black : .default }
-    var textColor: UIColor { return isPrivate ? .lightText : .darkText }
+    var currentUser: AWSCognitoIdentityUser? { Tokens.shared.pool.currentUser() }
+//    var lastLoggedInUser: Username? { currentUser?.username.map { Username($0) } }
+    // the last logged in user, even if we're currently offline
+//    var currentUsername: Username? { isPrivate ? lastLoggedInUser : nil }
+
+//    var hasValidToken: Bool { currentUser?.isSignedIn ?? false }
+    var activeUser: Username? { picsSettings.activeUser }
+    var isPrivate: Bool { picsSettings.activeUser != nil }
+    var currentUsernameOrAnon: Username { activeUser ?? Username.anon }
+
+    var backgroundColor: UIColor { isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    var cellBackgroundColor: UIColor { isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
+    var barStyle: UIBarStyle { isPrivate ? .black : .default }
+    var textColor: UIColor { isPrivate ? .lightText : .darkText }
     
     init() {
         let flow = UICollectionViewFlowLayout()
         flow.itemSize = CGSize(width: PicsVC.preferredItemSize, height: PicsVC.preferredItemSize)
         super.init(collectionViewLayout: flow)
-        offlinePics = picsSettings.localPictures(for: currentUsername)
+        offlinePics = picsSettings.localPictures(for: currentUsernameOrAnon)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -111,7 +111,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         }
         self.socket.delegate = self
         LifeCycle.shared.renderer = self
-        initAndLoad(forceSignIn: false)
+        loadPics(for: activeUser)
     }
     
     @objc func helpClicked(_ button: UIBarButtonItem) {
@@ -124,7 +124,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     @objc func profileClicked(_ button: UIBarButtonItem) {
-        let content = ProfilePopover(user: lastLoggedInUser, isPrivate: isPrivate, delegate: self)
+        let content = ProfilePopover(user: activeUser, delegate: self)
         content.modalPresentationStyle = .popover
         if let popover = content.popoverPresentationController {
             popover.barButtonItem = button
@@ -136,45 +136,33 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func reInit() {
         authCancellation?.cancel()
         authCancellation?.dispose()
-        initAndLoad(forceSignIn: isPrivate)
-    }
-    
-    private func initAndLoad(forceSignIn: Bool) {
-        log.info("Initializing picture gallery with \(pics.count) offline pics.")
-        let loadPrivate = isPrivate && (hasValidToken || forceSignIn)
-        if loadPrivate {
-            loadPrivatePics()
-        } else {
-            loadAnonymousPics()
-        }
+        loadPics(for: activeUser)
     }
     
     func reconnectAndSync() {
-        if isPrivate {
-            loadPrivatePics()
+        if let user = activeUser {
+            loadPrivatePics(for: user)
         } else {
             loadAnonymousPics()
         }
     }
     
-    private func loadPics(for user: Username) {
-        if user == Username.anon {
-            loadAnonymousPics()
+    private func loadPics(for user: Username?) {
+        if let user = user {
+            loadPrivatePics(for: user)
         } else {
-            loadPrivatePics()
+            loadAnonymousPics()
         }
     }
     
-    private func loadPrivatePics() {
+    private func loadPrivatePics(for user: Username) {
         mightHaveMore = true
         authCancellation = AWSCancellationTokenSource()
-        let _ = Tokens.shared.retrieve(cancellationToken: authCancellation).subscribe { (event) in
+        let _ = Tokens.shared.retrieveUserInfo(cancellationToken: authCancellation).subscribe { event in
             switch event {
-            case .success(let token):
-                self.load(with: token)
-                if let user = self.currentUsername {
-                    self.library.syncOffline(for: user)
-                }
+            case .success(let userInfo):
+                self.load(with: userInfo.token)
+                self.library.syncOffline(for: userInfo.username)
             case .error(let error):
                 self.onLoadError(error: error)
             }
@@ -426,18 +414,14 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         showCamera()
     }
     
-    @objc func changeUserClicked(_ sender: UIBarButtonItem) {
-        signOutOrReloadUser()
-    }
-    
-    func signOutOrReloadUser() {
-        let wasSignedIn = hasValidToken
+    func signOut() {
         pool.currentUser()?.signOut()
         pool.clearLastKnownUser()
+        picsSettings.activeUser = nil
         self.collectionView?.backgroundView = nil
         self.navigationController?.navigationBar.isHidden = true
         resetData()
-        initAndLoad(forceSignIn: !wasSignedIn)
+        loadPics(for: activeUser)
     }
     
     func resetData() {
@@ -474,13 +458,13 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     private func indexFor(_ clientKey: ClientKey) -> Int? {
-        return self.pics.index(where: { (p) -> Bool in
+        self.pics.index(where: { (p) -> Bool in
             p.meta.clientKey == clientKey
         })
     }
     
     private func contains(pic: PicMeta) -> Bool {
-        return self.pics.contains(where: { p -> Bool in (pic.clientKey != nil && p.meta.clientKey == pic.clientKey) || p.meta.key == pic.key })
+        self.pics.contains(where: { p -> Bool in (pic.clientKey != nil && p.meta.clientKey == pic.clientKey) || p.meta.key == pic.key })
     }
     
     func onPicsRemoved(keys: [ClientKey]) {
@@ -577,27 +561,27 @@ extension PicsVC: PicDelegate {
 
 extension PicsVC: ProfileDelegate {
     func onPublic() {
-        isPrivate = false
+        picsSettings.activeUser = nil
         onUiThread {
-            self.offlinePics = self.picsSettings.localPictures(for: nil)
+            self.offlinePics = self.picsSettings.localPictures(for: Username.anon)
             self.collectionView?.reloadData()
         }
         loadAnonymousPics()
-        log.info("Current user is \(currentUsername ?? Username.anon)")
+        log.info("Current user is \(currentUsernameOrAnon)")
     }
     
-    func onPrivate() {
-        isPrivate = true
+    func onPrivate(user: Username) {
+        picsSettings.activeUser = user
         onUiThread {
-            self.offlinePics = self.currentUsername.map { self.picsSettings.localPictures(for: $0) } ?? []
+            self.offlinePics = self.picsSettings.localPictures(for: user)
             self.updateStyle()
             self.collectionView?.reloadData()
         }
-        loadPrivatePics()
+        loadPrivatePics(for: user)
     }
     
     func onLogout() {
-        signOutOrReloadUser()
+        signOut()
     }
 }
 
@@ -634,34 +618,23 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         }
         let clientKey = ClientKey.random()
         let pic = Picture(image: originalImage, clientKey: clientKey)
-        display(newPics: [pic])
         guard let data = UIImageJPEGRepresentation(originalImage, 1) else {
             log.error("Taken image is not in JPEG format")
             return
         }
-        
         log.info("Saving pic to file, in total \(data.count) bytes...")
-        let url = try LocalPics.shared.saveAsJpg(data: data, key: clientKey)
-        onUiThread {
-            if let idx = self.indexFor(clientKey) {
-                self.pics[idx] = self.pics[idx].withUrl(url: url)
-            }
-        }
-        if isPrivate {
-            // This should return the last logged in user, even if we're currently offline
-            if let user = currentUsername {
-                log.info("Staging then uploading image taken by \(user)...")
-                // Copies the picture to a staging folder
-                let _ = try LocalPics.shared.saveUserPic(data: data, owner: user, key: clientKey)
-                // Attempts to obtain a token and upload the pic
-                let _ = Backend.shared.library.syncPicsForLatestUser()
-            } else {
-                log.warn("Unknown username of private user. Cannot save picture.")
-                presentAlert(title: "Error", message: "Failed to save picture. Try again later.", buttonText: "OK")
-            }
+        if let user = activeUser {
+            log.info("Staging then uploading image taken by \(user)...")
+            // Copies the picture to a staging folder
+            let _ = try LocalPics.shared.saveUserPic(data: data, owner: user, key: clientKey)
+            // Attempts to obtain a token and upload the pic
+            let _ = Backend.shared.library.syncPicsForLatestUser()
         } else {
+            // Anonymous upload
+            let url = try LocalPics.shared.saveAsJpg(data: data, key: clientKey)
             library.uploadPic(picture: url, clientKey: clientKey)
         }
+        display(newPics: [pic])
     }
     
     func onSaveError(error: AppError) {

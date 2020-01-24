@@ -26,15 +26,15 @@ class PicsLibrary {
     }
     
     func load(from: Int, limit: Int) -> Single<[PicMeta]> {
-        return http.picsGetParsed("/pics?offset=\(from)&limit=\(limit)", PicsResponse.self).map { $0.pics }
+        http.picsGetParsed("/pics?offset=\(from)&limit=\(limit)", PicsResponse.self).map { $0.pics }
     }
     
     func save(picture: Data, clientKey: ClientKey) -> Single<PicMeta> {
-        return http.picsPostParsed("/pics", data: picture, clientKey: clientKey, PicResponse.self).map { $0.pic }
+        http.picsPostParsed("/pics", data: picture, clientKey: clientKey, PicResponse.self).map { $0.pic }
     }
     
     func delete(key: ClientKey) -> Single<HttpResponse> {
-        return http.picsDelete("/pics/\(key)")
+        http.picsDelete("/pics/\(key)")
     }
     
     func syncPicsForLatestUser() {

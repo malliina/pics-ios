@@ -48,16 +48,16 @@ class PicsHttpClient: HttpClient {
     }
     
     static func authValueFor(forToken: AWSCognitoIdentityUserSessionToken) -> String {
-        return "Bearer \(forToken.tokenString)"
+        "Bearer \(forToken.tokenString)"
     }
     
     func pingAuth() -> Single<Version> {
-        return picsGetParsed("/ping", Version.self)
+        picsGetParsed("/ping", Version.self)
     }
     
     func picsGetParsed<T: Decodable>(_ resource: String, _ to: T.Type) -> Single<T> {
-        return picsGet(resource).flatMap { (response) -> Single<T> in
-            return self.parseAs(response: response, to)
+        picsGet(resource).flatMap { (response) -> Single<T> in
+            self.parseAs(response: response, to)
         }
     }
     
@@ -92,15 +92,15 @@ class PicsHttpClient: HttpClient {
     }
     
     func urlFor(resource: String) -> URL {
-        return URL(string: resource, relativeTo: baseURL)!
+        URL(string: resource, relativeTo: baseURL)!
     }
     
     func headersFor(clientKey: ClientKey) -> [String: String] {
-        return postHeaders.merging([PicsHttpClient.ClientPicHeader: clientKey.key]) { (current, _) in current }
+        postHeaders.merging([PicsHttpClient.ClientPicHeader: clientKey.key]) { (current, _) in current }
     }
     
     func statusChecked(_ resource: String, response: Single<HttpResponse>) -> Single<HttpResponse> {
-        return response.flatMap { (response) -> Single<HttpResponse> in
+        response.flatMap { (response) -> Single<HttpResponse> in
             if response.isStatusOK {
                 return Single.just(response)
             } else {
@@ -116,9 +116,9 @@ class PicsHttpClient: HttpClient {
         r.addValue("\(retryCount)", forHTTPHeaderField: "X-Retry")
         return super.executeHttp(r).flatMap { (response) -> Single<HttpResponse> in
             if retryCount == 0 && response.statusCode == 401 && response.isTokenExpired {
-                return Tokens.shared.retrieve(cancellationToken: nil).flatMap { (token) -> Single<HttpResponse> in
-                    self.updateToken(token: token)
-                    r.setValue(PicsHttpClient.authValueFor(forToken: token), forHTTPHeaderField: HttpClient.authorization)
+                return Tokens.shared.retrieveUserInfo().flatMap { (userInfo) -> Single<HttpResponse> in
+                    self.updateToken(token: userInfo.token)
+                    r.setValue(PicsHttpClient.authValueFor(forToken: userInfo.token), forHTTPHeaderField: HttpClient.authorization)
                     return self.executeHttp(r, retryCount: retryCount + 1)
                 }
             } else {

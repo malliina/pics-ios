@@ -11,20 +11,20 @@ import UIKit
 
 protocol ProfileDelegate {
     func onPublic()
-    func onPrivate()
+    func onPrivate(user: Username)
     func onLogout()
 }
 
 class ProfilePopover: UITableViewController, UIPopoverPresentationControllerDelegate {
+    let log = LoggerFactory.shared.vc(ProfilePopover.self)
     let popoverCellIdentifier = "PopoverCell"
     
     let user: Username?
-    let isPrivate: Bool
+    var isPrivate: Bool { user != nil}
     let delegate: ProfileDelegate
     
-    init(user: Username?, isPrivate: Bool, delegate: ProfileDelegate) {
+    init(user: Username?, delegate: ProfileDelegate) {
         self.user = user
-        self.isPrivate = isPrivate
         self.delegate = delegate
         super.init(style: .plain)
     }
@@ -81,7 +81,14 @@ class ProfilePopover: UITableViewController, UIPopoverPresentationControllerDele
             delegate.onPublic()
             break
         case 1:
-            delegate.onPrivate()
+            let _ = Tokens.shared.retrieveUserInfo().subscribe { event in
+                switch event {
+                case .success(let userInfo):
+                    self.delegate.onPrivate(user: userInfo.username)
+                case .error(let error):
+                    self.log.error("Failed to retrieve user info. No network? \(error)")
+                }
+            }
             break
         default:
             delegate.onLogout()
@@ -89,14 +96,14 @@ class ProfilePopover: UITableViewController, UIPopoverPresentationControllerDele
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return user == nil ? 2 : 3
+        user == nil ? 2 : 3
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        1
     }
     
     func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
-        return .none
+        .none
     }
 }

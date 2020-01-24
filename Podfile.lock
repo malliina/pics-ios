@@ -32,7 +32,7 @@ DEPENDENCIES:
   - SocketRocket (= 0.5.1)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - AppCenter
     - AWSCognito
     - AWSCognitoIdentityProvider
@@ -58,4 +58,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: bf4e7ddb6e6f530985ce13fdc1dbb50154a4fe0e
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.9.0.beta.2

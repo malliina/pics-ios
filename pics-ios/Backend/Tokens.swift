@@ -37,9 +37,9 @@ class Tokens {
     
     let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
     
-    func retrieve(cancellationToken: AWSCancellationTokenSource?) -> Single<AWSCognitoIdentityUserSessionToken> {
-        return retrieveUserInfo(cancellationToken: cancellationToken).map { ui in ui.token }
-    }
+//    func retrieve(cancellationToken: AWSCancellationTokenSource?) -> Single<AWSCognitoIdentityUserSessionToken> {
+//        retrieveUserInfo(cancellationToken: cancellationToken)
+//    }
     
     func retrieveUserInfo(cancellationToken: AWSCancellationTokenSource? = nil) -> Single<UserInfo> {
         log.info("Retrieving token...")

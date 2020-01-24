@@ -505,7 +505,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-pics-ios/Pods-pics-ios-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/AWSCognito/AWSCognito.framework",
 				"${BUILT_PRODUCTS_DIR}/AWSCognitoIdentityProvider/AWSCognitoIdentityProvider.framework",
 				"${BUILT_PRODUCTS_DIR}/AWSCognitoIdentityProviderASF/AWSCognitoIdentityProviderASF.framework",
@@ -530,7 +530,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-pics-ios/Pods-pics-ios-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-pics-ios/Pods-pics-ios-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		BC30B6C41226FB2160A00B81 /* [CP] Check Pods Manifest.lock */ = {
@@ -557,7 +557,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-pics-iosTests/Pods-pics-iosTests-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-pics-iosTests/Pods-pics-iosTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/AWSCognito/AWSCognito.framework",
 				"${BUILT_PRODUCTS_DIR}/AWSCognitoIdentityProvider/AWSCognitoIdentityProvider.framework",
 				"${BUILT_PRODUCTS_DIR}/AWSCognitoIdentityProviderASF/AWSCognitoIdentityProviderASF.framework",
@@ -572,7 +572,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-pics-iosTests/Pods-pics-iosTests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-pics-iosTests/Pods-pics-iosTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E7FF4AFC427131074755EE35 /* [CP] Check Pods Manifest.lock */ = {

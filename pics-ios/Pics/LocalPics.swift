@@ -2,7 +2,9 @@ import Foundation
 
 class LocalPics {
     private static let logger = LoggerFactory.shared.pics(LocalPics.self)
-    private var log: Logger { return LocalPics.logger }
+    private var log: Logger {
+        LocalPics.logger
+    }
     
     static let shared = LocalPics()
     
@@ -40,7 +42,7 @@ class LocalPics {
     }
     
     func computeUrl(folder: String, filename: String) -> URL {
-        return baseDirectory(folder: folder, sub: uploadingSubFolder).appendingPathComponent(filename)
+        baseDirectory(folder: folder, sub: uploadingSubFolder).appendingPathComponent(filename)
     }
     
     func saveUserPic(data: Data, owner: Username, key: ClientKey) throws -> URL {
@@ -49,11 +51,11 @@ class LocalPics {
     }
     
     func stagingDirectory(for owner: Username) -> URL {
-        return directory(for: owner, sub: stagingSubFolder)
+        directory(for: owner, sub: stagingSubFolder)
     }
     
     func uploadingDirectory(for owner: Username) -> URL {
-        return directory(for: owner, sub: uploadingSubFolder)
+        directory(for: owner, sub: uploadingSubFolder)
     }
     
     func directory(for owner: Username, sub: String) -> URL {
@@ -63,7 +65,7 @@ class LocalPics {
     }
     
     func baseDirectory(folder: String, sub: String) -> URL {
-        return dir.appendingPathComponent(folder, isDirectory: true).appendingPathComponent(sub, isDirectory: true)
+        dir.appendingPathComponent(folder, isDirectory: true).appendingPathComponent(sub, isDirectory: true)
     }
     
     func createdFor(url: URL) -> Date {
@@ -99,11 +101,11 @@ class LocalPics {
     }
     
     static func listFiles(at: URL) -> [URL] {
-        return (try? FileManager.default.contentsOfDirectory(at: at, includingPropertiesForKeys: [URLResourceKey.creationDateKey, URLResourceKey.isRegularFileKey], options: .skipsHiddenFiles)) ?? []
+        (try? FileManager.default.contentsOfDirectory(at: at, includingPropertiesForKeys: [URLResourceKey.creationDateKey, URLResourceKey.isRegularFileKey], options: .skipsHiddenFiles)) ?? []
     }
     
     func remove(smallFiles: [URL]) -> [URL] {
-        return smallFiles.compactMap { (smallUrl) -> URL? in
+        smallFiles.compactMap { (smallUrl) -> URL? in
             if smallUrl.exists {
                 guard let _ = try? FileManager.default.removeItem(at: smallUrl) else { return nil }
                 return smallUrl
@@ -114,7 +116,7 @@ class LocalPics {
     }
     
     func readSmall(key: ClientKey) -> Data? {
-        return findSmallUrl(key: key).flatMap { try? Data(contentsOf: $0) }
+        findSmallUrl(key: key).flatMap { try? Data(contentsOf: $0) }
     }
     
     func saveSmall(data: Data, key: ClientKey) -> URL? {
@@ -145,7 +147,7 @@ class LocalPics {
     }
     
     func fileFor(key: ClientKey, dir: URL) -> URL {
-        return dir.appendingPathComponent(key.key, isDirectory: false)
+        dir.appendingPathComponent(key.key, isDirectory: false)
     }
     
     static func createDirectory(at dir: URL) {
@@ -157,7 +159,7 @@ class LocalPics {
     }
     
     func saveAsJpg(data: Data, key: ClientKey) throws -> URL {
-        return try saveAsJpgBase(data: data, base: dir, key: key)
+        try saveAsJpgBase(data: data, base: dir, key: key)
     }
     
     func saveAsJpgBase(data: Data, base: URL, key: ClientKey) throws -> URL {
@@ -182,7 +184,7 @@ class LocalPics {
     }
     
     func urlFor(name: String) -> URL {
-        return dir.appendingPathComponent(name)
+        dir.appendingPathComponent(name)
     }
 }
 
