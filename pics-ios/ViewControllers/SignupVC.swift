@@ -24,7 +24,7 @@ class SignupVC: BaseVC {
     let marginSmall = 8
     let marginLarge = 24
     
-    let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
+    var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     var passwordAuthenticationCompletion: AWSTaskCompletionSource<AWSCognitoIdentityPasswordAuthenticationDetails>?
     
     init(passwordTask: AWSTaskCompletionSource<AWSCognitoIdentityPasswordAuthenticationDetails>?) {

@@ -10,6 +10,8 @@ import Foundation
 import UIKit
 
 class HelpVC: BaseVC {
+    private static let log = LoggerFactory.shared.vc(HelpVC.self)
+    
     let developedByLabel = PicsLabel.build(text: "Developed by Michael Skogberg.", alignment: .center, numberOfLines: 0)
     let contactLabel = PicsLabel.build(text: "You can reach me at info@skogberglabs.com. To report objectionable images or copyright violations: Tap the image, then tap it again to open the navigation bar and select an appropriate action from the action button. Abusive images will be removed within 24 hours.", alignment: .center, numberOfLines: 0)
     
@@ -44,6 +46,18 @@ class HelpVC: BaseVC {
             make.top.equalTo(developedByLabel.snp.bottom).offset(16)
             make.centerX.equalToSuperview()
             make.leadingMargin.trailingMargin.equalToSuperview()
+        }
+        let bundleMeta = Bundle.main.infoDictionary
+        if let appVersion = bundleMeta?["CFBundleShortVersionString"] as? String, let buildId = bundleMeta?["CFBundleVersion"] as? String {
+            let versionLabel = PicsLabel.build(text: "Version \(appVersion) build \(buildId)", alignment: .center, numberOfLines: 0)
+            view.addSubview(versionLabel)
+            versionLabel.textColor = textColor
+            versionLabel.font = UIFont.systemFont(ofSize: 14)
+            versionLabel.snp.makeConstraints { (make) in
+                make.top.greaterThanOrEqualTo(contactLabel.snp.bottom).offset(16)
+                make.leadingMargin.trailingMargin.centerX.equalToSuperview()
+                make.bottom.equalToSuperview().offset(-20)
+            }
         }
     }
     

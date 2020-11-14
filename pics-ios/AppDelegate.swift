@@ -23,9 +23,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var transferCompletionHandlers: [String: () -> Void] = [:]
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        MSAppCenter.start("cf2aa399-806a-406e-b72d-f4d6e1978e02", withServices: [
-            MSAnalytics.self,
-            MSCrashes.self
+        AppCenter.start(withAppSecret: "cf2aa399-806a-406e-b72d-f4d6e1978e02", services: [
+            Analytics.self,
+            Crashes.self
         ])
         // Cleans up old pics
         let _ = LocalPics.shared

@@ -35,11 +35,7 @@ class Tokens {
         delegates = []
     }
     
-    let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
-    
-//    func retrieve(cancellationToken: AWSCancellationTokenSource?) -> Single<AWSCognitoIdentityUserSessionToken> {
-//        retrieveUserInfo(cancellationToken: cancellationToken)
-//    }
+    let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)!
     
     func retrieveUserInfo(cancellationToken: AWSCancellationTokenSource? = nil) -> Single<UserInfo> {
         log.info("Retrieving token...")

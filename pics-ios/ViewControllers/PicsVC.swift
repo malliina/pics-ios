@@ -61,15 +61,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     var library: PicsLibrary { Backend.shared.library }
     var socket: PicsSocket { Backend.shared.socket }
-    let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
+    var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     var authCancellation: AWSCancellationTokenSource? = nil
     
     var currentUser: AWSCognitoIdentityUser? { Tokens.shared.pool.currentUser() }
-//    var lastLoggedInUser: Username? { currentUser?.username.map { Username($0) } }
-    // the last logged in user, even if we're currently offline
-//    var currentUsername: Username? { isPrivate ? lastLoggedInUser : nil }
-
-//    var hasValidToken: Bool { currentUser?.isSignedIn ?? false }
     var activeUser: Username? { picsSettings.activeUser }
     var isPrivate: Bool { picsSettings.activeUser != nil }
     var currentUsernameOrAnon: Username { activeUser ?? Username.anon }
@@ -77,6 +72,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     var backgroundColor: UIColor { isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var cellBackgroundColor: UIColor { isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
     var barStyle: UIBarStyle { isPrivate ? .black : .default }
+    var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     var textColor: UIColor { isPrivate ? .lightText : .darkText }
     
     init() {
@@ -276,9 +272,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func initStyle() {
-        self.view.backgroundColor = backgroundColor
-        self.collectionView?.backgroundColor = backgroundColor
-        self.navigationController?.navigationBar.barStyle = barStyle
+        view.backgroundColor = backgroundColor
+        collectionView?.backgroundColor = backgroundColor
+        navigationController?.navigationBar.barStyle = barStyle
+        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: titleTextColor]
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {

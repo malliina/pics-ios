@@ -20,7 +20,7 @@ class ConfirmVC: BaseVC {
     let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .white)
     
     let resendButton = PicsButton.secondary(title: "Resend Code")
-    let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
+    var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     var onSuccess: (() -> Void)? = nil
     
     let maxWidth = 500

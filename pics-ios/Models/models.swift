@@ -20,7 +20,7 @@ class PasswordCredentials {
     }
     
     func toCognito() -> AWSCognitoIdentityPasswordAuthenticationDetails? {
-        return AWSCognitoIdentityPasswordAuthenticationDetails(username: self.username, password: self.password)
+        AWSCognitoIdentityPasswordAuthenticationDetails(username: self.username, password: self.password)
     }
 }
 
@@ -92,8 +92,8 @@ struct FullUrl: ValidatedValueCodable {
     let host: String
     let uri: String
     
-    var url: String { return "\(proto)://\(host)\(uri)" }
-    var value: String { return url }
+    var url: String { "\(proto)://\(host)\(uri)" }
+    var value: String { url }
     
     init(proto: String, host: String, uri: String) {
         self.proto = proto
@@ -159,15 +159,15 @@ struct ClientKey: Equatable, Hashable, CustomStringConvertible, ValueCodable {
     static func == (lhs: ClientKey, rhs: ClientKey) -> Bool { return lhs.key == rhs.key }
     
     static func random() -> ClientKey {
-        return ClientKey(Picture.randomKey())
+        ClientKey(Picture.randomKey())
     }
 }
 
 struct AccessToken: Equatable, Hashable, CustomStringConvertible {
     let token: String
-    var description: String { return token }
+    var description: String { token }
     
-    static func == (lhs: AccessToken, rhs: AccessToken) -> Bool { return lhs.token == rhs.token }
+    static func == (lhs: AccessToken, rhs: AccessToken) -> Bool { lhs.token == rhs.token }
 }
 
 struct PicRef: Codable {
@@ -209,15 +209,15 @@ struct PicMeta: Codable {
     }
     
     static func oneUrl(key: ClientKey, url: URL, added: Timestamp, clientKey: ClientKey?) -> PicMeta {
-        return PicMeta(key: key, url: url, small: url, medium: url, large: url, added: added, clientKey: clientKey)
+        PicMeta(key: key, url: url, small: url, medium: url, large: url, added: added, clientKey: clientKey)
     }
     
     func withUrl(url: URL) -> PicMeta {
-        return PicMeta.oneUrl(key: key, url: url, added: added, clientKey: clientKey)
+        PicMeta.oneUrl(key: key, url: url, added: added, clientKey: clientKey)
     }
     
     static func random() -> PicMeta {
-        return PicMeta.oneUrl(key: ClientKey.random(), url: Picture.TempFakeUrl, added: Picture.nowMillis(), clientKey: nil)
+        PicMeta.oneUrl(key: ClientKey.random(), url: Picture.TempFakeUrl, added: Picture.nowMillis(), clientKey: nil)
     }
 }
 
@@ -252,14 +252,14 @@ class Picture {
         self.meta = meta
     }
     
-    var preferred: UIImage? { return url ?? large ?? medium ?? small }
+    var preferred: UIImage? { url ?? large ?? medium ?? small }
     
     static func nowMillis() -> Timestamp {
-        return Timestamp(Date().timeIntervalSince1970 * 1000)
+        Timestamp(Date().timeIntervalSince1970 * 1000)
     }
     
     static func randomKey() -> String {
-        return String(UUID().uuidString.prefix(7)).lowercased()
+        String(UUID().uuidString.prefix(7)).lowercased()
     }
     
     func withMeta(meta: PicMeta) -> Picture {
@@ -272,7 +272,7 @@ class Picture {
     }
     
     func withUrl(url: URL) -> Picture {
-        return withMeta(meta: meta.withUrl(url: url))
+        withMeta(meta: meta.withUrl(url: url))
     }
 }
 

@@ -40,7 +40,6 @@ class AuthVC: BaseVC {
     
     override func initUI() {
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(AuthVC.cancelClicked(_:)))
-        // self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(AuthVC.demo(_:)))
         initNav(title: "Welcome")
         
         view.addSubview(welcomeText)

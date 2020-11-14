@@ -2,9 +2,7 @@ import Foundation
 
 class LocalPics {
     private static let logger = LoggerFactory.shared.pics(LocalPics.self)
-    private var log: Logger {
-        LocalPics.logger
-    }
+    private var log: Logger { LocalPics.logger }
     
     static let shared = LocalPics()
     

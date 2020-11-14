@@ -17,7 +17,7 @@ class NewPassVC: BaseVC {
     let password = PicsTextField.with(placeholder: "Password", keyboardAppearance: .dark, isPassword: true)
     let saveButton = PicsButton.create(title: "Save")
     
-    let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
+    var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     var newPassCompletion: AWSTaskCompletionSource<AWSCognitoIdentityNewPasswordRequiredDetails>?
     
     var root: PicsVC? = nil
