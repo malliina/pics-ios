@@ -5,11 +5,11 @@ use_frameworks!
 inhibit_all_warnings!
 	
 target 'pics-ios' do
-    pod 'AppCenter', '4.0.0'
+    pod 'AppCenter', '4.1.0'
     pod 'AWSCognito', '2.19.1'
     pod 'AWSCognitoIdentityProvider', '2.19.1'
-    pod 'RxCocoa', '5.1.1'
-    pod 'RxSwift', '5.1.1'
+    pod 'RxCocoa', '6.0.0'
+    pod 'RxSwift', '6.0.0'
     pod 'SnapKit', '5.0.1'
     pod 'SocketRocket', '0.5.1'
 end

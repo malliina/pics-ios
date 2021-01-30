@@ -85,7 +85,7 @@ class ProfilePopover: UITableViewController, UIPopoverPresentationControllerDele
                 switch event {
                 case .success(let userInfo):
                     self.delegate.onPrivate(user: userInfo.username)
-                case .error(let error):
+                case .failure(let error):
                     self.log.error("Failed to retrieve user info. No network? \(error)")
                 }
             }

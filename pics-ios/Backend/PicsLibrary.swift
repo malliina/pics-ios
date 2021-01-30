@@ -43,7 +43,7 @@ class PicsLibrary {
             case .success(let userInfo):
                 Backend.shared.updateToken(new: userInfo.token)
                 self.syncOffline(for: userInfo.username)
-            case .error(let error):
+            case .failure(let error):
                 self.log.error("Failed to obtain user info. No network? \(error)")
             }
         }

@@ -45,7 +45,7 @@ class Tokens {
                 if let error = task.error as NSError? {
                     let appError = error.localizedDescription == AppError.noInternetMessage ? AppError.noInternet(error) : AppError.tokenError(error)
                     self.log.warn("Failed to get session with \(error)")
-                    single(.error(appError))
+                    single(.failure(appError))
                 } else {
                     if let accessToken = task.result?.accessToken {
                         //                log.info("Got token \(accessToken.tokenString)")
@@ -53,11 +53,11 @@ class Tokens {
                         if let username = user.username {
                             single(.success(UserInfo(username: Username(username), token: accessToken)))
                         } else {
-                            single(.error(AppError.simple("Missing username.")))
+                            single(.failure(AppError.simple("Missing username.")))
                         }
                     } else {
                         self.log.warn("Missing access token in session")
-                        single(.error(AppError.simple("Missing access token in session")))
+                        single(.failure(AppError.simple("Missing access token in session")))
                     }
                 }
                 return nil

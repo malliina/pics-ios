@@ -76,7 +76,7 @@ class PicsSocket: SocketClient, TokenDelegate {
                 return
             }
             let decoder = JSONDecoder()
-//            log.info("Got message \(message)")
+            log.info("Got message \(message)")
             do {
                 let event = try decoder.decode(KeyedEvent.self, from: data)
                 switch event.event {

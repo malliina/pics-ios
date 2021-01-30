@@ -159,7 +159,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             case .success(let userInfo):
                 self.load(with: userInfo.token)
                 self.library.syncOffline(for: userInfo.username)
-            case .error(let error):
+            case .failure(let error):
                 self.onLoadError(error: error)
             }
         }
@@ -224,7 +224,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                     let filtered = result.filter { pic in !self.isBlocked(pic: pic) }
                     f(filtered)
                 }
-            case .error(let error):
+            case .failure(let error):
                 self.onLoadError(error: error)
             }
         }
@@ -536,7 +536,7 @@ extension PicsVC: PicDelegate {
             switch event {
             case .success(let response):
                 self.log.info("Deletion completed with status \(response.statusCode).")
-            case .error(let error):
+            case .failure(let error):
                 if let error = error as? AppError {
                     self.onRemoveError(error)
                 } else {
