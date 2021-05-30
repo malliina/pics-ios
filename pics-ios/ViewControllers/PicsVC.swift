@@ -480,7 +480,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func onProfile(info: ProfileInfo) {
-        
+
     }
     
     func display(newPics: [Picture]) {
@@ -620,6 +620,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
             return
         }
         log.info("Saving pic to file, in total \(data.count) bytes...")
+        UIImageWriteToSavedPhotosAlbum(originalImage, nil, nil, nil)
         if let user = activeUser {
             log.info("Staging then uploading image taken by \(user)...")
             // Copies the picture to a staging folder
