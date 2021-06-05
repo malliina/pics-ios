@@ -15,6 +15,6 @@ target 'pics-ios' do
 end
 
 target 'pics-iosTests' do
-    pod 'AWSCognito', '2.24.1'
-    pod 'AWSCognitoIdentityProvider', '2.24.1'
+    pod 'AWSCognito', '2.19.1'
+    pod 'AWSCognitoIdentityProvider', '2.19.1'
 end
