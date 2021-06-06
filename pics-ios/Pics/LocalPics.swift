@@ -17,7 +17,7 @@ class LocalPics {
     init() {
         let dirString = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] + "/pics"
         dir = URL(fileURLWithPath: dirString, isDirectory: true)
-        small = dir.appendingPathComponent("small", isDirectory: true)
+        small = dir.appendingPathComponent("small2", isDirectory: true)
         LocalPics.createDirectory(at: dir)
         LocalPics.createDirectory(at: small)
         let smallFiles = LocalPics.listFiles(at: small)
@@ -129,7 +129,7 @@ class LocalPics {
                 return nil
             }
         } else {
-            log.info("Already exists: \(key)")
+            log.debug("Already exists: \(key)")
             return dest
         }
     }

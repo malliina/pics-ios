@@ -21,6 +21,10 @@ protocol PicDelegate {
 
 extension PicsVC: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+//        let rows = indexPaths.map { p in p.row }
+//        if let min = rows.min(), let max = rows.max() {
+//            self.log.info("Prefetching \(min)-\(max)")
+//        }
         for indexPath in indexPaths {
             let row = indexPath.row
             if pics.count > row {
@@ -189,7 +193,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func appendPics(limit: Int) {
         let beforeCount = onlinePics.count
         let wasOffline = !isOnline
+        log.info("Loading from \(beforeCount) with limit \(limit)")
         withLoading(from: beforeCount, limit: limit) { (filtered) in
+            self.log.info("Got \(filtered.count) pics from \(beforeCount) with limit \(limit).")
             if self.onlinePics.count == beforeCount {
                 if !filtered.isEmpty {
                     self.pics = self.onlinePics + filtered.map { p in Picture(meta: p) }
@@ -207,7 +213,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
                     self.displayNoItemsIfEmpty()
                 }
             } else {
-                self.log.warn("Count mismatch")
+                self.log.warn("Count mismatch. Before \(beforeCount) now \(self.onlinePics.count).")
                 self.displayNoItemsIfEmpty()
             }
         }
@@ -331,8 +337,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             let key = pic.meta.key
             onBackgroundThread {
                 if let data = LocalPics.shared.readSmall(key: key) {
+                    self.log.info("Updating locally \(indexPath.row)")
                     self.updateSmall(data: data, indexPath: indexPath, pic: pic)
                 } else {
+                    self.log.info("Downloading \(indexPath.row)")
                     Downloader.shared.download(url: pic.meta.small) { data in
                         self.onDownloaded(key: key, data: data, indexPath: indexPath, pic: pic)
                     }
@@ -343,11 +351,15 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     private func updateSmall(data: Data, indexPath: IndexPath, pic: Picture) {
         onUiThread {
-            if let image = UIImage(data: data), let coll = self.collectionView, self.pics.count > indexPath.row {
-                pic.small = image
-                coll.reloadItems(at: [indexPath])
+            if let image = UIImage(data: data) {
+                if let coll = self.collectionView, self.pics.count > indexPath.row {
+                    pic.small = image
+                    coll.reloadItems(at: [indexPath])
+                } else {
+                    self.log.info("Unable to update downloaded pic. count \(self.pics.count) \(self.isOnline) row \(indexPath.row) \(self.pics.count > indexPath.row)")
+                }
             } else {
-                self.log.info("Unable to update downloaded pic count \(self.pics.count) \(self.isOnline) row \(indexPath.row) \(self.pics.count > indexPath.row)")
+                self.log.info("Unable to update downloaded pic. Element \(indexPath.row) is not an image.")
             }
         }
     }
