@@ -10,7 +10,7 @@ import Foundation
 import AWSCognitoIdentityProvider
 
 class Backend {
-    static let shared = Backend(EnvConf.BaseUrl)
+    static let shared = Backend(EnvConf.shared.baseUrl)
     
     let library: PicsLibrary
     let socket: PicsSocket
@@ -22,7 +22,7 @@ class Backend {
     
     func updateToken(new token: AWSCognitoIdentityUserSessionToken?) {
         library.http.updateToken(token: token)
-        socket.updateAuthHeaderValue(newValue: authValue(token: token))
+        socket.updateAuthHeader(with: authValue(token: token))
     }
     
     private func authValue(token: AWSCognitoIdentityUserSessionToken?) -> String? {

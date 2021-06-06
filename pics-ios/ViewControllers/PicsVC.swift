@@ -176,7 +176,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     private func load(with token: AWSCognitoIdentityUserSessionToken?) {
         Backend.shared.updateToken(new: token)
-        self.socket.openSilently()
+        self.socket.connect()
         self.syncPics()
         onUiThread {
             self.updateStyle()
@@ -437,7 +437,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         offlinePics = []
         onlinePics = []
         Tokens.shared.clearDelegates()
-        socket.close()
+        socket.disconnect()
         isOnline = false
         resetDisplay()
     }

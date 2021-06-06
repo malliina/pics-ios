@@ -24,9 +24,9 @@ class PicsHttpClient: HttpClient {
     
     convenience init(accessToken: AWSCognitoIdentityUserSessionToken?) {
         if let accessToken = accessToken {
-            self.init(baseURL: EnvConf.BaseUrl, authValue: PicsHttpClient.authValueFor(forToken: accessToken))
+            self.init(baseURL: EnvConf.shared.baseUrl, authValue: PicsHttpClient.authValueFor(forToken: accessToken))
         } else {
-            self.init(baseURL: EnvConf.BaseUrl, authValue: nil)
+            self.init(baseURL: EnvConf.shared.baseUrl, authValue: nil)
         }
     }
     
