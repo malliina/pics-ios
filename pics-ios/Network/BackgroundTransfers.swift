@@ -132,10 +132,11 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         if let error = error {
             let desc = error.localizedDescription
             log.info("Download error for \(taskID): \(desc)")
+            removeTask(taskID, deleteFile: false)
         } else {
             log.info("Task \(taskID) complete.")
+            removeTask(taskID, deleteFile: true)
         }
-        removeTask(taskID)
     }
     
     func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
@@ -193,20 +194,24 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         }
     }
     
-    func removeTask(_ taskID: Int) {
+    func removeTask(_ taskID: Int, deleteFile: Bool) {
         synchronized {
             self.downloads.removeValue(forKey: taskID)
-            self.removeUploadedAndUploadNext(id: taskID)
+            self.removeUploadedAndUploadNext(id: taskID, deleteFile: deleteFile)
         }
     }
     
-    private func removeUploadedAndUploadNext(id: Int) {
+    private func removeUploadedAndUploadNext(id: Int, deleteFile: Bool) {
         if let removed = PicsSettings.shared.removeUpload(id: id) {
             let file = LocalPics.shared.computeUrl(folder: removed.folder, filename: removed.filename)
             do {
-                try fileManager.removeItem(at: file)
-                log.info("Removed \(file) of task \(id).")
-                Backend.shared.library.syncPicsForLatestUser()
+                if deleteFile {
+                    try fileManager.removeItem(at: file)
+                    log.info("Removed \(file) of task \(id).")
+                    Backend.shared.library.syncPicsForLatestUser()
+                } else {
+                    log.info("Not deleting \(file) of task \(id).")
+                }
             } catch let err {
                 if file.isFile {
                     log.error("Failed to remove \(file) of task \(id). \(err)")
