@@ -11,7 +11,6 @@ target 'pics-ios' do
     pod 'RxCocoa', '6.2.0'
     pod 'RxSwift', '6.2.0'
     pod 'SnapKit', '5.0.1'
-    pod 'SocketRocket', '0.6.0'
 end
 
 target 'pics-iosTests' do

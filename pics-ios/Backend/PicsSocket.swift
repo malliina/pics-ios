@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import SocketRocket
 import AWSCognitoIdentityProvider
 
 protocol PicsDelegate {
