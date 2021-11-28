@@ -18,7 +18,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let log = LoggerFactory.shared.system(AppDelegate.self)
 
     var window: UIWindow?
-    var auths: AuthHandler?
     
     var transferCompletionHandlers: [String: () -> Void] = [:]
 
@@ -40,7 +39,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if PicsSettings.shared.isEulaAccepted {
             do {
                 let authHandler = try AuthHandler.configure(window: w)
-                auths = authHandler
                 return authHandler.active
             } catch {
                 return OneLinerVC(text: "Unable to initialize app.")

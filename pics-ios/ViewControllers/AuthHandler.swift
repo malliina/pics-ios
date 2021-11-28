@@ -17,7 +17,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     let authVc: AuthVC
     let newPassVc: NewPassVC
     let rememberMe: RememberMe
-    var active: UIViewController
+    let active: UIViewController
     
     let window: UIWindow
     

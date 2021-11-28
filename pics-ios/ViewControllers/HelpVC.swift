@@ -31,9 +31,12 @@ class HelpVC: BaseVC {
     }
     
     override func initUI() {
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(cancelClicked(_:)))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(cancelClicked(_:)))
         view.backgroundColor = backgroundColor
-        navigationItem.title = "Help"
+        navigationItem.title = "Information"
+        let navbar = navigationController?.navigationBar
+        navbar?.titleTextAttributes = [.foregroundColor: textColor]
+        navbar?.largeTitleTextAttributes = [.foregroundColor: textColor]
         view.addSubview(developedByLabel)
         developedByLabel.textColor = textColor
         developedByLabel.snp.makeConstraints { (make) in
