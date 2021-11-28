@@ -13,6 +13,7 @@ class LocalPics {
     let jpgExt = ".jpg"
     let uploadingSubFolder = "uploading"
     let stagingSubFolder = "staging"
+    let uploadedFolder = "uploaded"
     
     init() {
         let dirString = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] + "/pics"
@@ -54,6 +55,10 @@ class LocalPics {
     
     func uploadingDirectory(for owner: Username) -> URL {
         directory(for: owner, sub: uploadingSubFolder)
+    }
+    
+    func uploadedDirectory(for owner: Username) -> URL {
+        directory(for: owner, sub: uploadedFolder)
     }
     
     func directory(for owner: Username, sub: String) -> URL {

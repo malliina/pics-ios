@@ -1,11 +1,11 @@
 PODS:
-  - AppCenter (4.1.1):
-    - AppCenter/Analytics (= 4.1.1)
-    - AppCenter/Crashes (= 4.1.1)
-  - AppCenter/Analytics (4.1.1):
+  - AppCenter (4.3.0):
+    - AppCenter/Analytics (= 4.3.0)
+    - AppCenter/Crashes (= 4.3.0)
+  - AppCenter/Analytics (4.3.0):
     - AppCenter/Core
-  - AppCenter/Core (4.1.1)
-  - AppCenter/Crashes (4.1.1):
+  - AppCenter/Core (4.3.0)
+  - AppCenter/Crashes (4.3.0):
     - AppCenter/Core
   - AWSCognito (2.19.1):
     - AWSCore (= 2.19.1)
@@ -21,16 +21,16 @@ PODS:
     - RxSwift (= 6.2.0)
   - RxSwift (6.2.0)
   - SnapKit (5.0.1)
-  - SocketRocket (0.5.1)
+  - SocketRocket (0.6.0)
 
 DEPENDENCIES:
-  - AppCenter (= 4.1.1)
+  - AppCenter (= 4.3.0)
   - AWSCognito (= 2.19.1)
   - AWSCognitoIdentityProvider (= 2.19.1)
   - RxCocoa (= 6.2.0)
   - RxSwift (= 6.2.0)
   - SnapKit (= 5.0.1)
-  - SocketRocket (= 0.5.1)
+  - SocketRocket (= 0.6.0)
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
@@ -46,7 +46,7 @@ SPEC REPOS:
     - SocketRocket
 
 SPEC CHECKSUMS:
-  AppCenter: cd53e3ed3563cc720bcb806c9731a12389b40d44
+  AppCenter: 883369ab78427b0561c688158d689dfe1f993ea9
   AWSCognito: f50de600804941d083af37a7568905f31a774727
   AWSCognitoIdentityProvider: e6932c709d3e0b234128aeb5f2052c9bf1032d8d
   AWSCognitoIdentityProviderASF: 749f58b75e69f7f0144b9d38539525562b843d34
@@ -55,8 +55,8 @@ SPEC CHECKSUMS:
   RxRelay: e72dbfd157807478401ef1982e1c61c945c94b2f
   RxSwift: d356ab7bee873611322f134c5f9ef379fa183d8f
   SnapKit: 97b92857e3df3a0c71833cce143274bf6ef8e5eb
-  SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
+  SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
 
-PODFILE CHECKSUM: 171c08ce59079e031dd4b61f878139bdd9fb5c6e
+PODFILE CHECKSUM: 3b68f3f85857040603ae13d848884371b5d224c4
 
 COCOAPODS: 1.10.1

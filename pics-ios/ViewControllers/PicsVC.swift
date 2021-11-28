@@ -9,6 +9,7 @@ import SnapKit
 import UIKit
 import AWSCognitoIdentityProvider
 import MessageUI
+import Photos
 
 protocol PicsRenderer {
     func reconnectAndSync()
@@ -37,7 +38,7 @@ extension PicsVC: UICollectionViewDataSourcePrefetching {
     }
 }
 
-class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate, PicsRenderer {
+class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate, PicsRenderer, CLLocationManagerDelegate {
     static let preferredItemSize: Double = Devices.isIpad ? 200 : 130
     static let itemsPerLoad = 100
     
@@ -79,6 +80,8 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     var textColor: UIColor { isPrivate ? .lightText : .darkText }
     
+    var locs: CLLocationManager? = nil
+    
     init() {
         let flow = UICollectionViewFlowLayout()
         flow.itemSize = CGSize(width: PicsVC.preferredItemSize, height: PicsVC.preferredItemSize)
@@ -112,6 +115,37 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         self.socket.delegate = self
         LifeCycle.shared.renderer = self
         loadPics(for: activeUser)
+        locationServices()
+    }
+    
+    func locationServices() {
+        let status = CLLocationManager.authorizationStatus()
+        log.info("Loc svc \(status) not determined = \(status == .notDetermined)")
+        let manager = CLLocationManager()
+        // Must assign to variable otherwise nothing works
+        locs = manager
+        manager.desiredAccuracy = kCLLocationAccuracyKilometer
+        manager.delegate = self
+        manager.requestWhenInUseAuthorization()
+        //manager.startUpdatingLocation()
+        log.info("Loc svc started")
+        //let _ = CLLocationManager.requestWhenInUseAuthorization(manager)
+        
+        // let photoStatus = PHPhotoLibrary.authorizationStatus()
+
+        //if photoStatus == .notDetermined  {
+        //    PHPhotoLibrary.requestAuthorization( { authStatus in
+        //        self.log.info("Status \(authStatus)")
+        //    })
+        //}
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        log.info("Changed auth")
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        log.info("Locations updated")
     }
     
     @objc func helpClicked(_ button: UIBarButtonItem) {
@@ -625,6 +659,17 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
             log.error("Original image is not an UIImage")
             return
         }
+        // let what = info[.phAsset]
+        if let pha = info[UIImagePickerControllerPHAsset] as? PHAsset {
+            let loc = pha.location
+            let coordinate = loc?.coordinate
+            log.info("Latitude \(coordinate?.latitude)")
+            log.info("Longitude \(coordinate?.longitude)")
+        } else {
+            log.info("No PHAsset")
+        }
+        
+        
         let clientKey = ClientKey.random()
         let pic = Picture(image: originalImage, clientKey: clientKey)
         guard let data = UIImageJPEGRepresentation(originalImage, 1) else {

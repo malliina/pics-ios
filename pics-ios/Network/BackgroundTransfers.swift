@@ -178,6 +178,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
             // folder impl wtf?
             saveUpload(task: UploadTask(id: task.taskIdentifier, folder: file.deletingLastPathComponent().deletingLastPathComponent().lastPathComponent, filename: file.lastPathComponent))
         }
+        log.info("Uploading \(file) to \(dest.absoluteString)...")
         task.resume()
     }
     
