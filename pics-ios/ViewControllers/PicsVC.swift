@@ -662,9 +662,11 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         // let what = info[.phAsset]
         if let pha = info[UIImagePickerControllerPHAsset] as? PHAsset {
             let loc = pha.location
-            let coordinate = loc?.coordinate
-            log.info("Latitude \(coordinate?.latitude)")
-            log.info("Longitude \(coordinate?.longitude)")
+            if let coordinate = loc?.coordinate {
+                log.info("Latitude \(coordinate.latitude) longitude \(coordinate.longitude).")
+            } else {
+                log.info("Got PHAsset, but no coordinate.")
+            }
         } else {
             log.info("No PHAsset")
         }

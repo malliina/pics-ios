@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import AWSCognito
 import AWSCognitoIdentityProvider
 import AppCenter
 import AppCenterAnalytics

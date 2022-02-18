@@ -17,7 +17,7 @@ class ConfirmVC: BaseVC {
     let username = PicsTextField.with(placeholder: "Username")
     let code = PicsTextField.with(placeholder: "Code")
     let confirmButton = PicsButton.create(title: "Confirm")
-    let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .white)
+    let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .medium)
     
     let resendButton = PicsButton.secondary(title: "Resend Code")
     var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }

@@ -18,7 +18,7 @@ class SignupVC: BaseVC {
     let password = PicsTextField.with(placeholder: "Password", isPassword: true)
     let repeatPassword = PicsTextField.with(placeholder: "Repeat password", isPassword: true)
     let signupButton = PicsButton.create(title: "Sign up")
-    let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .white)
+    let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .medium)
     
     let maxWidth = 500
     let marginSmall = 8
