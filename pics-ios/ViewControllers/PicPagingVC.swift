@@ -47,8 +47,8 @@ class PicPagingVC: BaseVC {
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
-        addChildViewController(pager)
-        pager.didMove(toParentViewController: self)
+        addChild(pager)
+        pager.didMove(toParent: self)
         view.addSubview(pager.view)
         pager.view.snp.makeConstraints { (make) in
             make.top.bottom.leading.trailing.equalToSuperview()
@@ -83,7 +83,7 @@ class PicPagingVC: BaseVC {
             })
             content.addAction(UIAlertAction(title: "Open in Safari", style: .default) { action in
                 if !meta.url.isFileURL {
-                    UIApplication.shared.open(meta.url, options: [:], completionHandler: nil)
+                    UIApplication.shared.open(meta.url, options: convertToUIApplicationOpenExternalURLOptionsKeyDictionary([:]), completionHandler: nil)
                 } else {
                     self.log.warn("Refusing to open a file URL in browser.")
                 }
@@ -148,7 +148,7 @@ extension PicPagingVC: UIPageViewControllerDelegate {
     func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
         if completed {
             guard let current = pageViewController.viewControllers?.first as? PicVC else { return }
-            guard let newIndex = self.pics.index(where: { p in p.meta.key == current.pic.meta.key || (p.meta.clientKey != nil && p.meta.clientKey == current.pic.meta.clientKey) }) else { return }
+            guard let newIndex = self.pics.firstIndex(where: { p in p.meta.key == current.pic.meta.key || (p.meta.clientKey != nil && p.meta.clientKey == current.pic.meta.clientKey) }) else { return }
             index = newIndex
         }
     }
@@ -180,4 +180,9 @@ extension PicPagingVC: UIPageViewControllerDataSource {
 //    func presentationIndex(for pageViewController: UIPageViewController) -> Int {
 //        return index
 //    }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertToUIApplicationOpenExternalURLOptionsKeyDictionary(_ input: [String: Any]) -> [UIApplication.OpenExternalURLOptionsKey: Any] {
+	return Dictionary(uniqueKeysWithValues: input.map { key, value in (UIApplication.OpenExternalURLOptionsKey(rawValue: key), value)})
 }

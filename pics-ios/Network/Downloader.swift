@@ -17,7 +17,7 @@ class Downloader {
     // Adapted from https://andreygordeev.com/2017/02/20/uitableview-prefetching/
     func download(url: URL, onData: @escaping (Data) -> Void) {
         self.queue.sync {
-            guard tasks.index(where: { $0.originalRequest?.url == url }) == nil else {
+            guard tasks.firstIndex(where: { $0.originalRequest?.url == url }) == nil else {
                 // We're already downloading the URL
                 log.warn("Already downloading \(url.absoluteString), aborting")
                 return
@@ -27,7 +27,7 @@ class Downloader {
                 self.queue.sync {
                     let log = self.log
 //                    log.info("Task \(url) complete.")
-                    if let idx = self.tasks.index(where: { $0.originalRequest?.url == url }) {
+                    if let idx = self.tasks.firstIndex(where: { $0.originalRequest?.url == url }) {
                         self.tasks.remove(at: idx)
                     }
                     if let error = error {
@@ -53,7 +53,7 @@ class Downloader {
     
     func cancelDownload(forUrl url: URL) {
         queue.sync {
-            guard let taskIndex = tasks.index(where: { $0.originalRequest?.url == url }) else {
+            guard let taskIndex = tasks.firstIndex(where: { $0.originalRequest?.url == url }) else {
                 return
             }
             let task = tasks[taskIndex]

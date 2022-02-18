@@ -501,7 +501,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     private func indexFor(_ clientKey: ClientKey) -> Int? {
-        self.pics.index(where: { (p) -> Bool in
+        self.pics.firstIndex(where: { (p) -> Bool in
             p.meta.clientKey == clientKey
         })
     }
@@ -641,7 +641,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         picker.dismiss(animated: true, completion: nil)
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String: Any]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         picker.dismiss(animated: true) { () in
             self.onBackgroundThread {
                 do {
@@ -653,14 +653,14 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         }
     }
     
-    func handleMedia(info: [String: Any]) throws {
+    func handleMedia(info: [UIImagePickerController.InfoKey: Any]) throws {
         log.info("Pic taken, processing...")
-        guard let originalImage = info[UIImagePickerControllerOriginalImage] as? UIImage else {
+        guard let originalImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage else {
             log.error("Original image is not an UIImage")
             return
         }
         // let what = info[.phAsset]
-        if let pha = info[UIImagePickerControllerPHAsset] as? PHAsset {
+        if let pha = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
             let loc = pha.location
             if let coordinate = loc?.coordinate {
                 log.info("Latitude \(coordinate.latitude) longitude \(coordinate.longitude).")
@@ -674,7 +674,7 @@ extension PicsVC: UIImagePickerControllerDelegate, UINavigationControllerDelegat
         
         let clientKey = ClientKey.random()
         let pic = Picture(image: originalImage, clientKey: clientKey)
-        guard let data = UIImageJPEGRepresentation(originalImage, 1) else {
+        guard let data = originalImage.jpegData(compressionQuality: 1) else {
             log.error("Taken image is not in JPEG format")
             return
         }
@@ -716,4 +716,14 @@ extension Data {
         }
         return String(utf16CodeUnits: chars, count: chars.count)
     }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+	return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+	return input.rawValue
 }

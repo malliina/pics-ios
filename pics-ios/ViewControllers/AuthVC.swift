@@ -19,7 +19,7 @@ class AuthVC: BaseVC {
     let password = PicsTextField.with(placeholder: "Password", isPassword: true)
     let loginButton = PicsButton.create(title: "Log in")
     let signupButton = PicsButton.create(title: "Sign up")
-    let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .medium)
+    let activityIndicator = UIActivityIndicatorView(style: .medium)
     
     let marginSmall = 8
     let marginLarge = 24
