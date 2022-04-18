@@ -37,7 +37,6 @@
 		61A9C4CB2003EDFA0085BA25 /* Arrays.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4CA2003EDFA0085BA25 /* Arrays.swift */; };
 		61A9C4CF200693510085BA25 /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4CE200693510085BA25 /* Backend.swift */; };
 		61A9C4D120069DF10085BA25 /* LifeCycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4D020069DF10085BA25 /* LifeCycle.swift */; };
-		61B69D52201E4ADF00B01D6B /* HelpVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B69D51201E4ADF00B01D6B /* HelpVC.swift */; };
 		61D214B61FD2ABB300781DC7 /* AuthVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B51FD2ABB300781DC7 /* AuthVC.swift */; };
 		61D214B81FD2DF1400781DC7 /* NewPassVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B71FD2DF1400781DC7 /* NewPassVC.swift */; };
 		61D214BA1FD339A100781DC7 /* SignupVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B91FD339A100781DC7 /* SignupVC.swift */; };
@@ -64,6 +63,7 @@
 		7D175C6327C0195A0050E29B /* AppCenterAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 7D175C6227C0195A0050E29B /* AppCenterAnalytics */; };
 		7D175C6527C0195A0050E29B /* AppCenterCrashes in Frameworks */ = {isa = PBXBuildFile; productRef = 7D175C6427C0195A0050E29B /* AppCenterCrashes */; };
 		7D62E9E7266BF5C600380475 /* WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D62E9E6266BF5C600380475 /* WebSocket.swift */; };
+		7D6BF6E4280DE3C5007C5FD5 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -121,7 +121,6 @@
 		61A9C4CA2003EDFA0085BA25 /* Arrays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Arrays.swift; sourceTree = "<group>"; };
 		61A9C4CE200693510085BA25 /* Backend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend.swift; sourceTree = "<group>"; };
 		61A9C4D020069DF10085BA25 /* LifeCycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeCycle.swift; sourceTree = "<group>"; };
-		61B69D51201E4ADF00B01D6B /* HelpVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpVC.swift; sourceTree = "<group>"; };
 		61D214B51FD2ABB300781DC7 /* AuthVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthVC.swift; sourceTree = "<group>"; };
 		61D214B71FD2DF1400781DC7 /* NewPassVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPassVC.swift; sourceTree = "<group>"; };
 		61D214B91FD339A100781DC7 /* SignupVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupVC.swift; sourceTree = "<group>"; };
@@ -142,6 +141,7 @@
 		61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsSocket.swift; sourceTree = "<group>"; };
 		61FD20B4223AE69400BAF31B /* codables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = codables.swift; sourceTree = "<group>"; };
 		7D62E9E6266BF5C600380475 /* WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocket.swift; sourceTree = "<group>"; };
+		7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -311,7 +311,7 @@
 				61D214C31FD4571B00781DC7 /* BaseVC.swift */,
 				61D214C71FD488DD00781DC7 /* ConfirmVC.swift */,
 				615647F4201E16F1000E3BBD /* EulaVC.swift */,
-				61B69D51201E4ADF00B01D6B /* HelpVC.swift */,
+				7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */,
 				61D214B71FD2DF1400781DC7 /* NewPassVC.swift */,
 				61D214C11FD4570500781DC7 /* OneLinerVC.swift */,
 				61A9C4BF1FF271D30085BA25 /* PicPagingVC.swift */,
@@ -512,7 +512,6 @@
 				61898B8B21EE5204007FAF1E /* TransferModels.swift in Sources */,
 				61D214C61FD464B800781DC7 /* AuthHandler.swift in Sources */,
 				61A9C4CB2003EDFA0085BA25 /* Arrays.swift in Sources */,
-				61B69D52201E4ADF00B01D6B /* HelpVC.swift in Sources */,
 				61A702DD1FCAD8D000814051 /* models.swift in Sources */,
 				61A9C4C42003EADA0085BA25 /* StorageSize.swift in Sources */,
 				61D214CA1FD499C200781DC7 /* PicsLabel.swift in Sources */,
@@ -541,6 +540,7 @@
 				615647F5201E16F1000E3BBD /* EulaVC.swift in Sources */,
 				61A9C4CF200693510085BA25 /* Backend.swift in Sources */,
 				61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */,
+				7D6BF6E4280DE3C5007C5FD5 /* HelpView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -637,7 +637,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -690,7 +690,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -877,7 +877,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;

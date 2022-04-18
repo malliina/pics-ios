@@ -10,6 +10,7 @@ import UIKit
 import AWSCognitoIdentityProvider
 import MessageUI
 import Photos
+import SwiftUI
 
 protocol PicsRenderer {
     func reconnectAndSync()
@@ -149,7 +150,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     @objc func helpClicked(_ button: UIBarButtonItem) {
-        let helpVC = HelpVC(isPrivate: isPrivate)
+        let helpVC = UIHostingController(rootView: HelpView(isPrivate: isPrivate) {
+            self.dismiss(animated: true, completion: nil)
+        })
         let dest = UINavigationController(rootViewController: helpVC)
         dest.modalPresentationStyle = .formSheet
         dest.navigationBar.barStyle = barStyle
