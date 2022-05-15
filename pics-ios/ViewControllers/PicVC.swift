@@ -19,7 +19,7 @@ class PicVC: BaseVC {
     let navHiddenInitially: Bool
     let isPrivate: Bool
     
-    var backgroundColor: UIColor { return isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    var backgroundColor: UIColor { isPrivate ? PicsColors.background : PicsColors.lightBackground }
     
     init(pic: Picture, navHiddenInitially: Bool, isPrivate: Bool) {
         self.pic = pic

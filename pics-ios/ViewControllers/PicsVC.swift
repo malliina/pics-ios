@@ -120,9 +120,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func locationServices() {
-        let status = CLLocationManager.authorizationStatus()
-        log.info("Loc svc \(status) not determined = \(status == .notDetermined)")
         let manager = CLLocationManager()
+        let status = manager.authorizationStatus
+        log.info("Loc svc \(status) not determined = \(status == .notDetermined)")
         // Must assign to variable otherwise nothing works
         locs = manager
         manager.desiredAccuracy = kCLLocationAccuracyKilometer

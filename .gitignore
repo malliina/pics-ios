@@ -20,3 +20,13 @@ Pods
 .DS_Store
 pics-ios/Credentials.plist
 
+pics-ios/Credentials.plist
+pics-ios.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+pics-ios.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+fastlane/report.xml
+fastlane/test_output
+fastlane/Preview.html
+
+AuthKey*
+certificate*
