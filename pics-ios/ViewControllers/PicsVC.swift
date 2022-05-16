@@ -322,18 +322,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let spaceBetweenItems = 10.0
-        let minWidthPerItem = PicsVC.preferredItemSize
-        let totalWidth = Double(view.frame.width)
-        // for n items in a row, we have n-1 spaces between them, therefore
-        // nx + (n-1)s = w
-        // where n = items per row, x = width per item, s = space between items, w = width of frame
-        // solves for n with a given minimum x, then solves for x given n
-        let itemsPerRow = floor((totalWidth + spaceBetweenItems) / (minWidthPerItem + spaceBetweenItems))
-        let widthPerItem = (totalWidth - (itemsPerRow - 1.0) * spaceBetweenItems) / itemsPerRow
-        // log.info("Got width \(widthPerItem) for \(indexPath.row) with total width \(view.frame.width)")
-        // aspect is 4/3 for all thumbnails
-        return CGSize(width: widthPerItem, height: widthPerItem * 3.0 / 4.0)
+        return PicsCell.sizeForItem(minWidthPerItem: PicsVC.preferredItemSize, totalWidth: Double(view.frame.width)).sizePerItem
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
