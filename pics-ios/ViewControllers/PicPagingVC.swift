@@ -9,6 +9,26 @@ import Foundation
 import UIKit
 import SnapKit
 import MessageUI
+import SwiftUI
+
+struct PicPagingView: UIViewControllerRepresentable {
+    private let log = LoggerFactory.shared.vc(PicPagingView.self)
+    typealias UIViewControllerType = PicPagingVC
+    
+    let pics: [Picture]
+    let startIndex: Int
+    let isPrivate: Bool
+    let delegate: PicDelegate
+    
+    func makeUIViewController(context: Context) -> PicPagingVC {
+        return PicPagingVC(pics: pics, startIndex: startIndex, isPrivate: isPrivate, delegate: delegate)
+    }
+    
+    func updateUIViewController(_ uiViewController: PicPagingVC, context: Context) {
+        guard let parent = uiViewController.parent else { return }
+        uiViewController.updateNavBar(vc: parent)
+    }
+}
 
 /// Swipe horizontally to show the next/previous image in the gallery.
 /// Uses a UIPageViewController for paging.
@@ -20,6 +40,7 @@ class PicPagingVC: BaseVC {
     let abuseEmail = "info@skogberglabs.com"
     let pics: [Picture]
     private var index: Int
+    var idx: Int { index }
     let isPrivate: Bool
     let delegate: PicDelegate
     
@@ -37,11 +58,7 @@ class PicPagingVC: BaseVC {
     }
     
     override func initUI() {
-        navigationItem.title = "Pic"
-        navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareClicked(_:))),
-            UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(actionsClicked(_:)))
-        ]
+        updateNavBar(vc: self)
         navigationController?.setNavigationBarHidden(true, animated: true)
         let vc = PicVC(pic: pics[index], navHiddenInitially: true, isPrivate: isPrivate)
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
@@ -53,6 +70,16 @@ class PicPagingVC: BaseVC {
         pager.view.snp.makeConstraints { (make) in
             make.top.bottom.leading.trailing.equalToSuperview()
         }
+        log.info("Pic UI init")
+    }
+    
+    func updateNavBar(vc: UIViewController) {
+        vc.navigationItem.title = "Pic \(index)"
+        vc.navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareClicked(_:))),
+            UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(actionsClicked(_:)))
+        ]
+        log.info("Updated nav bar with idx \(index)")
     }
     
     @objc func shareClicked(_ button: UIBarButtonItem) {
@@ -150,6 +177,9 @@ extension PicPagingVC: UIPageViewControllerDelegate {
             guard let current = pageViewController.viewControllers?.first as? PicVC else { return }
             guard let newIndex = self.pics.firstIndex(where: { p in p.meta.key == current.pic.meta.key || (p.meta.clientKey != nil && p.meta.clientKey == current.pic.meta.clientKey) }) else { return }
             index = newIndex
+            log.info("New index \(newIndex)")
+            guard let parent = pageViewController.parent?.parent else { return }
+            updateNavBar(vc: parent)
         }
     }
 }
@@ -165,6 +195,7 @@ extension PicPagingVC: UIPageViewControllerDataSource {
     
     func go(to newIndex: Int) -> UIViewController? {
         if newIndex >= 0 && newIndex < pics.count {
+//            index = newIndex
             return PicVC(pic: pics[newIndex], navHiddenInitially: navigationController?.isNavigationBarHidden ?? true, isPrivate: isPrivate)
         } else {
             return nil

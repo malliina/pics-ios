@@ -62,6 +62,7 @@ class PicVC: BaseVC {
                 }
             }
         }
+//        navigationItem.title = "Hah"
     }
     
     @objc func onTap(_ sender: UITapGestureRecognizer) {

@@ -39,6 +39,15 @@ extension PicsVC: UICollectionViewDataSourcePrefetching {
     }
 }
 
+class User {
+    static let shared = User()
+    
+    var picsSettings: PicsSettings { PicsSettings.shared }
+    var activeUser: Username? { picsSettings.activeUser }
+    var isPrivate: Bool { picsSettings.activeUser != nil }
+    var currentUsernameOrAnon: Username { activeUser ?? Username.anon }
+}
+
 class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate, PicsRenderer, CLLocationManagerDelegate {
     static let preferredItemSize: Double = Devices.isIpad ? 200 : 130
     static let itemsPerLoad = 100
@@ -88,6 +97,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         flow.itemSize = CGSize(width: PicsVC.preferredItemSize, height: PicsVC.preferredItemSize)
         super.init(collectionViewLayout: flow)
         offlinePics = picsSettings.localPictures(for: currentUsernameOrAnon)
+        log.info("Hi")
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -150,6 +160,11 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     @objc func helpClicked(_ button: UIBarButtonItem) {
+        let dest = UIHostingController(rootView: PicsView(viewModel: PicsVM()))
+        self.navigationController?.pushViewController(dest, animated: true)
+    }
+    
+    @objc func helpClicked2(_ button: UIBarButtonItem) {
         let helpVC = UIHostingController(rootView: HelpView(isPrivate: isPrivate) {
             self.dismiss(animated: true, completion: nil)
         })

@@ -29,12 +29,35 @@ class PicsLibrary {
         http.picsGetParsed("/pics?offset=\(from)&limit=\(limit)", PicsResponse.self).map { $0.pics }
     }
     
+    func loadAsync(from: Int, limit: Int) async throws -> [PicMeta] {
+        try await singleAsync(load(from: from, limit: limit))
+    }
+    
     func save(picture: Data, clientKey: ClientKey) -> Single<PicMeta> {
         http.picsPostParsed("/pics", data: picture, clientKey: clientKey, PicResponse.self).map { $0.pic }
     }
     
+    func saveAsync(picture: Data, clientKey: ClientKey) async throws -> PicMeta {
+        try await singleAsync(save(picture: picture, clientKey: clientKey))
+    }
+    
+    private func singleAsync<T>(_ s: Single<T>) async throws -> T {
+        return try await withCheckedThrowingContinuation { cont in
+            let _ = s.subscribe { event in
+                switch event {
+                case .success(let result): cont.resume(returning: result)
+                case .failure(let error): cont.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
     func delete(key: ClientKey) -> Single<HttpResponse> {
         http.picsDelete("/pics/\(key)")
+    }
+    
+    func deleteAsync(key: ClientKey) async throws -> HttpResponse {
+        try await singleAsync(http.picsDelete("/pics/\(key)"))
     }
     
     func syncPicsForLatestUser() {

@@ -63,6 +63,7 @@
 		7D175C6327C0195A0050E29B /* AppCenterAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 7D175C6227C0195A0050E29B /* AppCenterAnalytics */; };
 		7D175C6527C0195A0050E29B /* AppCenterCrashes in Frameworks */ = {isa = PBXBuildFile; productRef = 7D175C6427C0195A0050E29B /* AppCenterCrashes */; };
 		7D20883D28318FC9005C0BBA /* PicsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D20883C28318FC9005C0BBA /* PicsView.swift */; };
+		7D20883F2835684F005C0BBA /* PicsVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D20883E2835684F005C0BBA /* PicsVM.swift */; };
 		7D62E9E7266BF5C600380475 /* WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D62E9E6266BF5C600380475 /* WebSocket.swift */; };
 		7D6BF6E4280DE3C5007C5FD5 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */; };
 		7D6BF6E6280F48FD007C5FD5 /* PicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E5280F48FD007C5FD5 /* PicView.swift */; };
@@ -143,6 +144,7 @@
 		61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsSocket.swift; sourceTree = "<group>"; };
 		61FD20B4223AE69400BAF31B /* codables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = codables.swift; sourceTree = "<group>"; };
 		7D20883C28318FC9005C0BBA /* PicsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsView.swift; sourceTree = "<group>"; };
+		7D20883E2835684F005C0BBA /* PicsVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsVM.swift; sourceTree = "<group>"; };
 		7D62E9E6266BF5C600380475 /* WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocket.swift; sourceTree = "<group>"; };
 		7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		7D6BF6E5280F48FD007C5FD5 /* PicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicView.swift; sourceTree = "<group>"; };
@@ -325,6 +327,7 @@
 				615647F0201C9EEA000E3BBD /* ProfilePopover.swift */,
 				61D214B91FD339A100781DC7 /* SignupVC.swift */,
 				7D20883C28318FC9005C0BBA /* PicsView.swift */,
+				7D20883E2835684F005C0BBA /* PicsVM.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -542,6 +545,7 @@
 				615647F3201CA633000E3BBD /* PicsSettings.swift in Sources */,
 				618623D11FD71DFC0009345E /* CognitoConf.swift in Sources */,
 				61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */,
+				7D20883F2835684F005C0BBA /* PicsVM.swift in Sources */,
 				61A702D61FCAC86100814051 /* JsonError.swift in Sources */,
 				614230451FC1891E00CD4173 /* AppDelegate.swift in Sources */,
 				615647F5201E16F1000E3BBD /* EulaVC.swift in Sources */,

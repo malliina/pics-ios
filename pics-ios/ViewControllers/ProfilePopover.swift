@@ -8,11 +8,26 @@
 
 import Foundation
 import UIKit
+import SwiftUI
 
 protocol ProfileDelegate {
     func onPublic()
     func onPrivate(user: Username)
     func onLogout()
+}
+
+struct ProfilePopoverView: UIViewControllerRepresentable {
+    let log = LoggerFactory.shared.vc(ProfilePopoverView.self)
+    typealias UIViewControllerType = ProfilePopover
+    let user: Username?
+    let delegate: ProfileDelegate
+    
+    func makeUIViewController(context: Context) -> ProfilePopover {
+        return ProfilePopover(user: user, delegate: delegate)
+    }
+    
+    func updateUIViewController(_ uiViewController: ProfilePopover, context: Context) {
+    }
 }
 
 class ProfilePopover: UITableViewController, UIPopoverPresentationControllerDelegate {
@@ -39,8 +54,6 @@ class ProfilePopover: UITableViewController, UIPopoverPresentationControllerDele
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(ProfilePopover.dismissSelf(_:)))
         ]
-//        navigationController?.isNavigationBarHidden = false
-        tableView.cellLayoutMarginsFollowReadableWidth = false
         // Removes separators when there are no more rows
         tableView.tableFooterView = UIView()
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: popoverCellIdentifier)

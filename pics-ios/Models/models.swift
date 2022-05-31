@@ -187,7 +187,7 @@ struct PicsResponse: Codable {
     let pics: [PicMeta]
 }
 
-struct PicMeta: Codable {
+struct PicMeta: Codable, Hashable {
     static let Pic = "pic"
     static let Pics = "pics"
     
