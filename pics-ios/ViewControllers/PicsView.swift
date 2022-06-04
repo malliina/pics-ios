@@ -11,7 +11,6 @@ import SwiftUI
 import AWSCognitoIdentityProvider
 
 class PicViewDelegate <T> : PicDelegate where T: PicsVMLike {
-    
     let viewModel: T
     
     init(viewModel: T) {
@@ -32,6 +31,7 @@ struct PicsView<T>: View where T: PicsVMLike {
     
     @ObservedObject var viewModel: T
     
+    @State private var picsNavigationBarHidden = false
     @State private var picNavigationBarHidden = true
     @State private var showProfile = false
     @State private var showHelp = false
@@ -41,7 +41,7 @@ struct PicsView<T>: View where T: PicsVMLike {
     var body: some View {
         GeometryReader { geometry in
             grid(geometry: geometry).onAppear {
-                viewModel.load()
+                viewModel.loadPics(for: PicsSettings.shared.activeUser)
             }
         }
     }
@@ -97,12 +97,17 @@ struct PicsView<T>: View where T: PicsVMLike {
             }
         }
         .sheet(isPresented: $showProfile) {
-            ProfilePopoverView(user: user.activeUser, delegate: ProfileViewDelegate())
+            ProfilePopoverView(user: user.activeUser, delegate: ProfileViewDelegate(viewModel: viewModel))
         }
     }
 }
 
-class ProfileViewDelegate: ProfileDelegate {
+class ProfileViewDelegate <T> : ProfileDelegate where T: PicsVMLike {
+    let log = LoggerFactory.shared.vc(ProfileViewDelegate.self)
+    let viewModel: T
+    init(viewModel: T) {
+        self.viewModel = viewModel
+    }
     var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     var picsSettings: PicsSettings { PicsSettings.shared }
     
@@ -113,13 +118,14 @@ class ProfileViewDelegate: ProfileDelegate {
     }
     
     func signOut() {
+        log.info("Signing out...")
         pool.currentUser()?.signOut()
         pool.clearLastKnownUser()
         picsSettings.activeUser = nil
 //        self.collectionView?.backgroundView = nil
 //        self.navigationController?.navigationBar.isHidden = true
-//        resetData()
-//        loadPics(for: activeUser)
+        viewModel.resetData()
+        viewModel.loadPics(for: nil)
     }
 }
 

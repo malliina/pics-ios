@@ -22,6 +22,10 @@ struct ProfilePopoverView: UIViewControllerRepresentable {
     let user: Username?
     let delegate: ProfileDelegate
     
+//    let onPublic: () -> Void
+//    let onPrivate: (
+//    func onLogout()
+    
     func makeUIViewController(context: Context) -> ProfilePopover {
         return ProfilePopover(user: user, delegate: delegate)
     }
