@@ -25,6 +25,7 @@ struct PicPagingView: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: PicPagingVC, context: Context) {
+        log.info("Updating UI VC")
         guard let parent = uiViewController.parent else { return }
         uiViewController.updateNavBar(vc: parent)
     }
@@ -74,7 +75,7 @@ class PicPagingVC: BaseVC {
     }
     
     func updateNavBar(vc: UIViewController) {
-        vc.navigationItem.title = "Pic \(index)"
+        vc.navigationItem.title = "Pic"
         vc.navigationItem.rightBarButtonItems = [
             UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareClicked(_:))),
             UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(actionsClicked(_:)))

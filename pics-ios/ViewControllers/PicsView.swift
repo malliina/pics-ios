@@ -10,12 +10,20 @@ import Foundation
 import SwiftUI
 import AWSCognitoIdentityProvider
 
-class PicViewDelegate: PicDelegate {
+class PicViewDelegate <T> : PicDelegate where T: PicsVMLike {
+    
+    let viewModel: T
+    
+    init(viewModel: T) {
+        self.viewModel = viewModel
+    }
+    
     func remove(key: ClientKey) {
+        viewModel.remove(key: key)
     }
     
     func block(key: ClientKey) {
-        
+        viewModel.block(key: key)
     }
 }
 
@@ -45,7 +53,7 @@ struct PicsView<T>: View where T: PicsVMLike {
             LazyVGrid(columns: columns) {
                 ForEach(Array(viewModel.pics.enumerated()), id: \.offset) { index, pic in
                     NavigationLink {
-                        PicPagingView(pics: viewModel.pics.map { p in Picture(meta: p) }, startIndex: index, isPrivate: user.isPrivate, delegate: PicViewDelegate())
+                        PicPagingView(pics: viewModel.pics.map { p in Picture(meta: p) }, startIndex: index, isPrivate: user.isPrivate, delegate: PicViewDelegate(viewModel: viewModel))
                             .navigationBarHidden(picNavigationBarHidden)
                             .onTapGesture {
                                 picNavigationBarHidden = !picNavigationBarHidden
