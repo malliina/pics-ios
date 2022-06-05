@@ -37,6 +37,10 @@ class Tokens {
     
     let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)!
     
+    func retrieveUserInfoAsync(cancellationToken: AWSCancellationTokenSource? = nil) async throws -> UserInfo {
+        return try await Async.async(from: retrieveUserInfo(cancellationToken: cancellationToken))
+    }
+    
     func retrieveUserInfo(cancellationToken: AWSCancellationTokenSource? = nil) -> Single<UserInfo> {
         log.info("Retrieving token...")
         guard let user = pool.currentUser() else { return Single.error(AppError.simple("Unknown user.")) }

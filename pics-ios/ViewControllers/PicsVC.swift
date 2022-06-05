@@ -39,15 +39,6 @@ extension PicsVC: UICollectionViewDataSourcePrefetching {
     }
 }
 
-class User {
-    static let shared = User()
-    
-    var picsSettings: PicsSettings { PicsSettings.shared }
-    var activeUser: Username? { picsSettings.activeUser }
-    var isPrivate: Bool { picsSettings.activeUser != nil }
-    var currentUsernameOrAnon: Username { activeUser ?? Username.anon }
-}
-
 class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, PicsDelegate, PicsRenderer, CLLocationManagerDelegate {
     static let preferredItemSize: Double = Devices.isIpad ? 200 : 130
     static let itemsPerLoad = 100

@@ -30,7 +30,7 @@ class PicsLibrary {
     }
     
     func loadAsync(from: Int, limit: Int) async throws -> [PicMeta] {
-        try await singleAsync(load(from: from, limit: limit))
+        try await Async.async(from: load(from: from, limit: limit))
     }
     
     func save(picture: Data, clientKey: ClientKey) -> Single<PicMeta> {
@@ -38,18 +38,7 @@ class PicsLibrary {
     }
     
     func saveAsync(picture: Data, clientKey: ClientKey) async throws -> PicMeta {
-        try await singleAsync(save(picture: picture, clientKey: clientKey))
-    }
-    
-    private func singleAsync<T>(_ s: Single<T>) async throws -> T {
-        return try await withCheckedThrowingContinuation { cont in
-            let _ = s.subscribe { event in
-                switch event {
-                case .success(let result): cont.resume(returning: result)
-                case .failure(let error): cont.resume(throwing: error)
-                }
-            }
-        }
+        try await Async.async(from: save(picture: picture, clientKey: clientKey))
     }
     
     func delete(key: ClientKey) -> Single<HttpResponse> {
@@ -57,7 +46,7 @@ class PicsLibrary {
     }
     
     func deleteAsync(key: ClientKey) async throws -> HttpResponse {
-        try await singleAsync(http.picsDelete("/pics/\(key)"))
+        try await Async.async(from: http.picsDelete("/pics/\(key)"))
     }
     
     func syncPicsForLatestUser() {

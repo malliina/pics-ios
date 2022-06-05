@@ -9,64 +9,75 @@
 import Foundation
 import AWSCognitoIdentityProvider
 
+class User {
+    static let shared = User()
+    
+    var picsSettings: PicsSettings { PicsSettings.shared }
+    var activeUser: Username? { picsSettings.activeUser }
+    var isPrivate: Bool { picsSettings.activeUser != nil }
+    var currentUsernameOrAnon: Username { activeUser ?? Username.anon }
+}
+
 protocol PicsVMLike: ObservableObject {
     var pics: [PicMeta] { get }
+    var isPrivate: Bool { get }
     
-//    func load()
     func loadPics(for user: Username?)
     func remove(key: ClientKey)
     func block(key: ClientKey)
     func resetData()
+    func onPublic()
+    func onPrivate(user: Username)
+    func signOut()
 }
 
 class PicsVM: PicsVMLike {
     private let log = LoggerFactory.shared.vc(PicsVM.self)
     
+    let user = User.shared
+    
     @Published var pics: [PicMeta] = []
+    @Published private(set) var isPrivate = User.shared.isPrivate
     
     private var library: PicsLibrary { Backend.shared.library }
+    private var picsSettings: PicsSettings { PicsSettings.shared }
+    var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     private var authCancellation: AWSCancellationTokenSource? = nil
     
     func loadPics(for user: Username?) {
-        if let user = user {
-            loadPrivatePics(for: user)
-        } else {
-            loadAnonymousPics()
-        }
-    }
-    
-    private func loadPrivatePics(for user: Username) {
-//        mightHaveMore = true
-        authCancellation = AWSCancellationTokenSource()
-        let _ = Tokens.shared.retrieveUserInfo(cancellationToken: authCancellation).subscribe { event in
-            switch event {
-            case .success(let userInfo):
-                self.load(with: userInfo.token)
-//                self.library.syncOffline(for: userInfo.username)
-            case .failure(let error):
-                self.onLoadError(error: error)
+        Task {
+            do {
+                if let user = user {
+                    try await loadPrivatePics(for: user)
+                } else {
+                    try await loadAnonymousPics()
+                }
+            } catch let error {
+                onLoadError(error: error)
             }
         }
     }
     
-    private func loadAnonymousPics() {
+    private func loadPrivatePics(for user: Username) async throws {
 //        mightHaveMore = true
-        load(with: nil)
+        authCancellation = AWSCancellationTokenSource()
+        let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: authCancellation)
+        try await load(with: userInfo.token)
+//        self.library.syncOffline(for: userInfo.username)
+    }
+    
+    private func loadAnonymousPics() async throws {
+//        mightHaveMore = true
+        try await load(with: nil)
     }
     
     private func onLoadError(error: Error) {
         log.error("Load error \(error)")
     }
     
-    func load(with token: AWSCognitoIdentityUserSessionToken?) {
-        Task {
-            do {
-                Backend.shared.updateToken(new: token)
-                try await appendPics()
-            } catch let err {
-                log.error("Failed to load. \(err)")
-            }
-        }
+    func load(with token: AWSCognitoIdentityUserSessionToken?) async throws {
+        Backend.shared.updateToken(new: token)
+        try await appendPics()
     }
     
     func appendPics(limit: Int = PicsVC.itemsPerLoad) async throws {
@@ -113,13 +124,64 @@ class PicsVM: PicsVMLike {
 //        isOnline = false
 //        resetDisplay()
     }
+    
+    func onPublic() {
+        Task {
+            picsSettings.activeUser = nil
+            onUiThread {
+                self.pics = []
+                self.isPrivate = false
+            }
+    //        onUiThread {
+    //            self.offlinePics = self.picsSettings.localPictures(for: Username.anon)
+    //            self.collectionView?.reloadData()
+    //        }
+            try await loadAnonymousPics()
+            log.info("Current user is \(user.currentUsernameOrAnon)")
+        }
+    }
+    
+    func onPrivate(user: Username) {
+        Task {
+            picsSettings.activeUser = user
+            onUiThread {
+                self.pics = []
+                self.isPrivate = true
+            }
+//            DispatchQueue.main.async {
+    //            self.offlinePics = self.picsSettings.localPictures(for: user)
+//                self.updateStyle()
+//                isPrivate = true
+    //            self.collectionView?.reloadData()
+//            }
+            try await loadPrivatePics(for: user)
+        }
+    }
+    
+    func signOut() {
+        log.info("Signing out...")
+        pool.currentUser()?.signOut()
+        pool.clearLastKnownUser()
+        picsSettings.activeUser = nil
+//        self.collectionView?.backgroundView = nil
+//        self.navigationController?.navigationBar.isHidden = true
+        resetData()
+        loadPics(for: nil)
+    }
+    
+    func onUiThread(_ f: @escaping () -> Void) {
+        DispatchQueue.main.async(execute: f)
+    }
 }
 
 class PreviewPicsVM: PicsVMLike {
     @Published var pics: [PicMeta] = []
-    
+    @Published var isPrivate: Bool = false
     func loadPics(for user: Username?) { }
     func resetData() { }
+    func onPublic() { }
+    func onPrivate(user: Username) { }
+    func signOut() { }
     func remove(key: ClientKey) { }
     func block(key: ClientKey) { }
 }

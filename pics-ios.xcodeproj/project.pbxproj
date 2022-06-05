@@ -55,6 +55,7 @@
 		61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */; };
 		61EB2D8F1FF1855500A27F1A /* PicsSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */; };
 		61FD20B5223AE69400BAF31B /* codables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FD20B4223AE69400BAF31B /* codables.swift */; };
+		7D00DAC4284D020B00C6B06A /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D00DAC3284D020B00C6B06A /* Async.swift */; };
 		7D175C5627C018BC0050E29B /* AWSCognitoAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 7D175C5527C018BC0050E29B /* AWSCognitoAuth */; };
 		7D175C5827C018BC0050E29B /* AWSCognitoIdentityProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 7D175C5727C018BC0050E29B /* AWSCognitoIdentityProvider */; };
 		7D175C5B27C018E50050E29B /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 7D175C5A27C018E50050E29B /* SnapKit */; };
@@ -143,6 +144,7 @@
 		61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
 		61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsSocket.swift; sourceTree = "<group>"; };
 		61FD20B4223AE69400BAF31B /* codables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = codables.swift; sourceTree = "<group>"; };
+		7D00DAC3284D020B00C6B06A /* Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		7D20883C28318FC9005C0BBA /* PicsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsView.swift; sourceTree = "<group>"; };
 		7D20883E2835684F005C0BBA /* PicsVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsVM.swift; sourceTree = "<group>"; };
 		7D62E9E6266BF5C600380475 /* WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocket.swift; sourceTree = "<group>"; };
@@ -285,6 +287,7 @@
 				61A702D11FCAC6C200814051 /* Log.swift */,
 				61A9C4C32003EAD90085BA25 /* StorageSize.swift */,
 				61A9C4C82003ECC20085BA25 /* Strings.swift */,
+				7D00DAC3284D020B00C6B06A /* Async.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -457,9 +460,9 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */,
-				7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift.git" */,
-				7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */,
+				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */,
+				7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift" */,
+				7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -542,6 +545,7 @@
 				61A9C4C92003ECC20085BA25 /* Strings.swift in Sources */,
 				61A702DA1FCAD86300814051 /* PicsHttpClient.swift in Sources */,
 				61EB2D841FDD45BB00A27F1A /* PicVC.swift in Sources */,
+				7D00DAC4284D020B00C6B06A /* Async.swift in Sources */,
 				615647F3201CA633000E3BBD /* PicsSettings.swift in Sources */,
 				618623D11FD71DFC0009345E /* CognitoConf.swift in Sources */,
 				61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */,
@@ -1024,7 +1028,7 @@
 				version = 2.27.1;
 			};
 		};
-		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */ = {
+		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
 			requirement = {
@@ -1032,7 +1036,7 @@
 				version = 5.0.1;
 			};
 		};
-		7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift.git" */ = {
+		7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ReactiveX/RxSwift.git";
 			requirement = {
@@ -1040,7 +1044,7 @@
 				version = 6.5.0;
 			};
 		};
-		7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */ = {
+		7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/microsoft/appcenter-sdk-apple.git";
 			requirement = {
@@ -1063,27 +1067,27 @@
 		};
 		7D175C5A27C018E50050E29B /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */;
+			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
 		};
 		7D175C5D27C0190F0050E29B /* RxCocoa */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift.git" */;
+			package = 7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxCocoa;
 		};
 		7D175C5F27C0190F0050E29B /* RxSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift.git" */;
+			package = 7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxSwift;
 		};
 		7D175C6227C0195A0050E29B /* AppCenterAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterAnalytics;
 		};
 		7D175C6427C0195A0050E29B /* AppCenterCrashes */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterCrashes;
 		};
 /* End XCSwiftPackageProductDependency section */

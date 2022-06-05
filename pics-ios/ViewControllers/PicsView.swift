@@ -36,6 +36,18 @@ struct PicsView<T>: View where T: PicsVMLike {
     @State private var showProfile = false
     @State private var showHelp = false
     
+//    @Binding var backgroundColor2: Binding<UIColor> { $viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    
+//    @Binding var backgroundColor {
+//        Binding {
+//            Color($viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground)
+//        } set: { _ in
+//
+//        }
+//
+//    }
+    var backgroundColor: UIColor { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    
     let user = User()
     
     var body: some View {
@@ -71,7 +83,7 @@ struct PicsView<T>: View where T: PicsVMLike {
                     }
                 }
             }.font(.largeTitle)
-        }
+        }.background(Color(backgroundColor))
         .navigationTitle("Pics")
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarLeading) {
@@ -108,24 +120,20 @@ class ProfileViewDelegate <T> : ProfileDelegate where T: PicsVMLike {
     init(viewModel: T) {
         self.viewModel = viewModel
     }
-    var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
-    var picsSettings: PicsSettings { PicsSettings.shared }
     
-    func onPublic() {}
-    func onPrivate(user: Username) {}
+    func onPublic() {
+        viewModel.onPublic()
+    }
+    func onPrivate(user: Username) {
+        viewModel.onPrivate(user: user)
+    }
+    
     func onLogout() {
         signOut()
     }
     
     func signOut() {
-        log.info("Signing out...")
-        pool.currentUser()?.signOut()
-        pool.clearLastKnownUser()
-        picsSettings.activeUser = nil
-//        self.collectionView?.backgroundView = nil
-//        self.navigationController?.navigationBar.isHidden = true
-        viewModel.resetData()
-        viewModel.loadPics(for: nil)
+        viewModel.signOut()
     }
 }
 
