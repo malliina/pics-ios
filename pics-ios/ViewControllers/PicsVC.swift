@@ -88,7 +88,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         flow.itemSize = CGSize(width: PicsVC.preferredItemSize, height: PicsVC.preferredItemSize)
         super.init(collectionViewLayout: flow)
         offlinePics = picsSettings.localPictures(for: currentUsernameOrAnon)
-        log.info("Hi")
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -151,8 +150,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     @objc func helpClicked(_ button: UIBarButtonItem) {
-        let dest = UIHostingController(rootView: PicsView(viewModel: PicsVM()))
-        self.navigationController?.pushViewController(dest, animated: true)
+        guard let navController = self.navigationController else { return }
+        let dest = UIHostingController(rootView: PicsView(viewModel: PicsVM(navController: navController)))
+        navController.pushViewController(dest, animated: true)
     }
     
     @objc func helpClicked2(_ button: UIBarButtonItem) {

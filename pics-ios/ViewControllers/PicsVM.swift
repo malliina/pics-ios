@@ -33,11 +33,19 @@ protocol PicsVMLike: ObservableObject {
 
 class PicsVM: PicsVMLike {
     private let log = LoggerFactory.shared.vc(PicsVM.self)
+    let navController: UINavigationController
+    
+    init(navController: UINavigationController) {
+        self.navController = navController
+    }
     
     let user = User.shared
     
     @Published var pics: [PicMeta] = []
     @Published private(set) var isPrivate = User.shared.isPrivate
+    
+    var barStyle: UIBarStyle { isPrivate ? .black : .default }
+    var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     private var library: PicsLibrary { Backend.shared.library }
     private var picsSettings: PicsSettings { PicsSettings.shared }
@@ -126,36 +134,46 @@ class PicsVM: PicsVMLike {
     }
     
     func onPublic() {
-        Task {
-            picsSettings.activeUser = nil
-            onUiThread {
-                self.pics = []
-                self.isPrivate = false
+        picsSettings.activeUser = nil
+        onUiThread {
+            self.pics = []
+            self.isPrivate = false
+            
+            Task {
+                await self.updateStyle()
+                try await self.loadAnonymousPics()
             }
-    //        onUiThread {
-    //            self.offlinePics = self.picsSettings.localPictures(for: Username.anon)
-    //            self.collectionView?.reloadData()
-    //        }
-            try await loadAnonymousPics()
-            log.info("Current user is \(user.currentUsernameOrAnon)")
         }
+//        onUiThread {
+//            self.offlinePics = self.picsSettings.localPictures(for: Username.anon)
+//            self.collectionView?.reloadData()
+//        }
+        
+        log.info("Current user is \(user.currentUsernameOrAnon)")
     }
     
     func onPrivate(user: Username) {
-        Task {
-            picsSettings.activeUser = user
-            onUiThread {
-                self.pics = []
-                self.isPrivate = true
+        picsSettings.activeUser = user
+        onUiThread {
+            self.pics = []
+            self.isPrivate = true
+            Task {
+                await self.updateStyle()
+                try await self.loadPrivatePics(for: user)
             }
+        }
 //            DispatchQueue.main.async {
-    //            self.offlinePics = self.picsSettings.localPictures(for: user)
+//            self.offlinePics = self.picsSettings.localPictures(for: user)
 //                self.updateStyle()
 //                isPrivate = true
-    //            self.collectionView?.reloadData()
+//            self.collectionView?.reloadData()
 //            }
-            try await loadPrivatePics(for: user)
-        }
+    }
+    
+    @MainActor
+    func updateStyle() {
+        navController.navigationBar.barStyle = barStyle
+        navController.navigationBar.titleTextAttributes = [.foregroundColor: self.titleTextColor]
     }
     
     func signOut() {

@@ -47,6 +47,8 @@ struct PicsView<T>: View where T: PicsVMLike {
 //
 //    }
     var backgroundColor: UIColor { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    var cellBackgroundColor: UIColor { viewModel.isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
+    var textColor: UIColor { viewModel.isPrivate ? .lightText : .darkText }
     
     let user = User()
     

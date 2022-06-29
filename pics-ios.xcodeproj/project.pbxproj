@@ -283,11 +283,11 @@
 			isa = PBXGroup;
 			children = (
 				61A9C4CA2003EDFA0085BA25 /* Arrays.swift */,
+				7D00DAC3284D020B00C6B06A /* Async.swift */,
 				61EB2D851FDD517500A27F1A /* Devices.swift */,
 				61A702D11FCAC6C200814051 /* Log.swift */,
 				61A9C4C32003EAD90085BA25 /* StorageSize.swift */,
 				61A9C4C82003ECC20085BA25 /* Strings.swift */,
-				7D00DAC3284D020B00C6B06A /* Async.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -325,12 +325,12 @@
 				61D214C11FD4570500781DC7 /* OneLinerVC.swift */,
 				61A9C4BF1FF271D30085BA25 /* PicPagingVC.swift */,
 				614230461FC1891E00CD4173 /* PicsVC.swift */,
+				7D20883C28318FC9005C0BBA /* PicsView.swift */,
+				7D20883E2835684F005C0BBA /* PicsVM.swift */,
 				61EB2D831FDD45BB00A27F1A /* PicVC.swift */,
 				7D6BF6E5280F48FD007C5FD5 /* PicView.swift */,
 				615647F0201C9EEA000E3BBD /* ProfilePopover.swift */,
 				61D214B91FD339A100781DC7 /* SignupVC.swift */,
-				7D20883C28318FC9005C0BBA /* PicsView.swift */,
-				7D20883E2835684F005C0BBA /* PicsVM.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
