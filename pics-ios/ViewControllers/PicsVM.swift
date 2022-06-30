@@ -14,7 +14,7 @@ class User {
     
     var picsSettings: PicsSettings { PicsSettings.shared }
     var activeUser: Username? { picsSettings.activeUser }
-    var isPrivate: Bool { picsSettings.activeUser != nil }
+    var isPrivate: Bool { picsSettings.activeUser != nil 		}
     var currentUsernameOrAnon: Username { activeUser ?? Username.anon }
 }
 
