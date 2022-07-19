@@ -20,9 +20,11 @@ class User {
 
 protocol PicsVMLike: ObservableObject {
     var pics: [PicMeta] { get }
+    var hasMore: Bool { get }
     var isPrivate: Bool { get }
     
 //    func loadPics(for user: Username?)
+    func loadMore()
     func loadPicsAsync(for user: Username?) async
     func remove(key: ClientKey)
     func block(key: ClientKey)
@@ -52,6 +54,7 @@ class PicsVM: PicsVMLike {
     
     @Published var pics: [PicMeta] = []
     @Published private(set) var isPrivate = User.shared.isPrivate
+    @Published private(set) var hasMore = false
     
 //    var barStyle: UIBarStyle { isPrivate ? .black : .default }
     var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
@@ -60,6 +63,11 @@ class PicsVM: PicsVMLike {
     private var picsSettings: PicsSettings { PicsSettings.shared }
     var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     private var authCancellation: AWSCancellationTokenSource? = nil
+    
+    func loadMore() {
+        loadPics(for: user.activeUser)
+        // log.info("load more now")
+    }
     
     func loadPicsAsync(for user: Username?) async {
         Task {
@@ -100,9 +108,10 @@ class PicsVM: PicsVMLike {
     func appendPics(limit: Int = PicsVC.itemsPerLoad) async throws {
         let beforeCount = pics.count
         let batch = try await library.loadAsync(from: beforeCount, limit: limit)
-        log.info("Got batch of \(batch.count) pics")
-        DispatchQueue.main.async {
+        log.info("Got batch of \(batch.count) pics from \(beforeCount)")
+        onUiThread {
             self.pics += batch
+            self.hasMore = batch.count == limit
         }
     }
     
@@ -196,7 +205,6 @@ class PicsVM: PicsVMLike {
 //        self.collectionView?.backgroundView = nil
 //        self.navigationController?.navigationBar.isHidden = true
         resetData()
-//        loadPics(for: nil)
     }
     
     func onUiThread(_ f: @escaping () -> Void) {
@@ -206,7 +214,9 @@ class PicsVM: PicsVMLike {
 
 class PreviewPicsVM: PicsVMLike {
     @Published var pics: [PicMeta] = []
+    @Published var hasMore: Bool = false
     @Published var isPrivate: Bool = false
+    func loadMore() { }
     func loadPicsAsync(for user: Username?) async { }
     func resetData() { }
     func onPublic() { }

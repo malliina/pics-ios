@@ -46,6 +46,7 @@ struct PicsView<T>: View where T: PicsVMLike {
 //        }
 //
 //    }
+    
     var backgroundColor: UIColor { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var cellBackgroundColor: UIColor { viewModel.isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
     var textColor: UIColor { viewModel.isPrivate ? .lightText : .darkText }
@@ -85,6 +86,11 @@ struct PicsView<T>: View where T: PicsVMLike {
                         }.frame(width: sizeInfo.sizePerItem.width, height: sizeInfo.sizePerItem.height)
                     }
                 }
+                if viewModel.hasMore {
+                    ProgressView().onAppear {
+                        viewModel.loadMore()
+                    }
+                }
             }.font(.largeTitle)
         }
         .background(Color(backgroundColor))
@@ -121,6 +127,7 @@ struct PicsView<T>: View where T: PicsVMLike {
 class ProfileViewDelegate <T> : ProfileDelegate where T: PicsVMLike {
     let log = LoggerFactory.shared.vc(ProfileViewDelegate.self)
     let viewModel: T
+    
     init(viewModel: T) {
         self.viewModel = viewModel
     }

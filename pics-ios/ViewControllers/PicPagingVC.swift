@@ -80,11 +80,10 @@ class PicPagingVC: BaseVC {
             make.top.bottom.leading.trailing.equalToSuperview()
         }
         log.info("Pic UI init private \(isPrivate)")
-
     }
     
     func updateNavBar(vc: UIViewController) {
-        vc.navigationItem.title = "Pic \(idx)"
+        vc.navigationItem.title = "Pic"
         vc.navigationItem.rightBarButtonItems = [
             UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareClicked(_:))),
             UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(actionsClicked(_:)))
@@ -94,7 +93,7 @@ class PicPagingVC: BaseVC {
             log.info("No nav")
             return
         }
-        navCtrl.navigationBar.barStyle = .black
+        // navCtrl.navigationBar.barStyle = .black
         navCtrl.navigationBar.titleTextAttributes = [.foregroundColor: titleTextColor]
         log.info("Updated pic style.")
     }
