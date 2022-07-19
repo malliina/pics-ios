@@ -18,6 +18,7 @@ struct PicPagingView: UIViewControllerRepresentable {
     let pics: [Picture]
     let startIndex: Int
     let isPrivate: Bool
+//    let navCtrl: UINavigationController
     let delegate: PicDelegate
     
     func makeUIViewController(context: Context) -> PicPagingVC {
@@ -28,6 +29,7 @@ struct PicPagingView: UIViewControllerRepresentable {
         log.info("Updating UI VC")
         guard let parent = uiViewController.parent else { return }
         uiViewController.updateNavBar(vc: parent)
+        log.info("Parent \(parent) parent nav \(parent.navigationController)")
     }
 }
 
@@ -43,15 +45,21 @@ class PicPagingVC: BaseVC {
     private var index: Int
     var idx: Int { index }
     let isPrivate: Bool
+//    let navCtrl: UINavigationController
     let delegate: PicDelegate
+    
+    var barStyle: UIBarStyle { isPrivate ? .black : .default }
+    var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     init(pics: [Picture], startIndex: Int, isPrivate: Bool, delegate: PicDelegate) {
         self.pics = pics
         self.index = startIndex
         self.isPrivate = isPrivate
+//        self.navCtrl = navCtrl
         self.delegate = delegate
         super.init(nibName: nil, bundle: nil)
         self.edgesForExtendedLayout = []
+        log.info("Init pic with private \(isPrivate)")
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -71,16 +79,24 @@ class PicPagingVC: BaseVC {
         pager.view.snp.makeConstraints { (make) in
             make.top.bottom.leading.trailing.equalToSuperview()
         }
-        log.info("Pic UI init")
+        log.info("Pic UI init private \(isPrivate)")
+
     }
     
     func updateNavBar(vc: UIViewController) {
-        vc.navigationItem.title = "Pic"
+        vc.navigationItem.title = "Pic \(idx)"
         vc.navigationItem.rightBarButtonItems = [
             UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareClicked(_:))),
             UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(actionsClicked(_:)))
         ]
         log.info("Updated nav bar with idx \(index)")
+        guard let navCtrl = vc.navigationController else {
+            log.info("No nav")
+            return
+        }
+        navCtrl.navigationBar.barStyle = .black
+        navCtrl.navigationBar.titleTextAttributes = [.foregroundColor: titleTextColor]
+        log.info("Updated pic style.")
     }
     
     @objc func shareClicked(_ button: UIBarButtonItem) {
@@ -180,6 +196,8 @@ extension PicPagingVC: UIPageViewControllerDelegate {
             index = newIndex
             log.info("New index \(newIndex)")
             guard let parent = pageViewController.parent?.parent else { return }
+//            log.info("nav \(pageViewController.navigationController) parent nav \(pageViewController.parent?.navigationController) pp nav \(parent.navigationController)")
+            pageViewController.navigationController?.navigationBar.barStyle = .black
             updateNavBar(vc: parent)
         }
     }

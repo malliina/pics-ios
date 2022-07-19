@@ -22,13 +22,22 @@ protocol PicsVMLike: ObservableObject {
     var pics: [PicMeta] { get }
     var isPrivate: Bool { get }
     
-    func loadPics(for user: Username?)
+//    func loadPics(for user: Username?)
+    func loadPicsAsync(for user: Username?) async
     func remove(key: ClientKey)
     func block(key: ClientKey)
     func resetData()
     func onPublic()
     func onPrivate(user: Username)
     func signOut()
+}
+
+extension PicsVMLike {
+    func loadPics(for user: Username?) {
+        Task {
+            await loadPicsAsync(for: user)
+        }
+    }
 }
 
 class PicsVM: PicsVMLike {
@@ -44,7 +53,7 @@ class PicsVM: PicsVMLike {
     @Published var pics: [PicMeta] = []
     @Published private(set) var isPrivate = User.shared.isPrivate
     
-    var barStyle: UIBarStyle { isPrivate ? .black : .default }
+//    var barStyle: UIBarStyle { isPrivate ? .black : .default }
     var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     private var library: PicsLibrary { Backend.shared.library }
@@ -52,7 +61,7 @@ class PicsVM: PicsVMLike {
     var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     private var authCancellation: AWSCancellationTokenSource? = nil
     
-    func loadPics(for user: Username?) {
+    func loadPicsAsync(for user: Username?) async {
         Task {
             do {
                 if let user = user {
@@ -124,10 +133,13 @@ class PicsVM: PicsVMLike {
     }
     
     func resetData() {
-        DispatchQueue.main.async {
+        onUiThread {
             self.pics = []
+            Tokens.shared.clearDelegates()
+            Task {
+                await self.loadPicsAsync(for: nil)
+            }
         }
-        Tokens.shared.clearDelegates()
 //        socket.disconnect()
 //        isOnline = false
 //        resetDisplay()
@@ -172,7 +184,7 @@ class PicsVM: PicsVMLike {
     
     @MainActor
     func updateStyle() {
-        navController.navigationBar.barStyle = barStyle
+//        navController.navigationBar.barStyle = barStyle
         navController.navigationBar.titleTextAttributes = [.foregroundColor: self.titleTextColor]
     }
     
@@ -184,7 +196,7 @@ class PicsVM: PicsVMLike {
 //        self.collectionView?.backgroundView = nil
 //        self.navigationController?.navigationBar.isHidden = true
         resetData()
-        loadPics(for: nil)
+//        loadPics(for: nil)
     }
     
     func onUiThread(_ f: @escaping () -> Void) {
@@ -195,7 +207,7 @@ class PicsVM: PicsVMLike {
 class PreviewPicsVM: PicsVMLike {
     @Published var pics: [PicMeta] = []
     @Published var isPrivate: Bool = false
-    func loadPics(for user: Username?) { }
+    func loadPicsAsync(for user: Username?) async { }
     func resetData() { }
     func onPublic() { }
     func onPrivate(user: Username) { }

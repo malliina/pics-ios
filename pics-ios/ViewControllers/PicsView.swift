@@ -68,6 +68,7 @@ struct PicsView<T>: View where T: PicsVMLike {
                 ForEach(Array(viewModel.pics.enumerated()), id: \.offset) { index, pic in
                     NavigationLink {
                         PicPagingView(pics: viewModel.pics.map { p in Picture(meta: p) }, startIndex: index, isPrivate: user.isPrivate, delegate: PicViewDelegate(viewModel: viewModel))
+                            .background(Color(backgroundColor))
                             .navigationBarHidden(picNavigationBarHidden)
                             .onTapGesture {
                                 picNavigationBarHidden = !picNavigationBarHidden
@@ -85,7 +86,8 @@ struct PicsView<T>: View where T: PicsVMLike {
                     }
                 }
             }.font(.largeTitle)
-        }.background(Color(backgroundColor))
+        }
+        .background(Color(backgroundColor))
         .navigationTitle("Pics")
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarLeading) {
