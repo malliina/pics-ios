@@ -183,7 +183,6 @@ class PicsVM: PicsVMLike {
                 try await self.loadPrivatePics(for: user)
             }
             self.adjustTitleTextColor(PicsColors.almostLight)
-//            self.adjustTitleTextColor(UIColor.red)
 //            self.log.info("Set almost light title foreground color")
         }
 //            DispatchQueue.main.async {
@@ -207,6 +206,21 @@ class PicsVM: PicsVMLike {
     
     private func adjustTitleTextColor(_ color: UIColor) {
         navController.navigationBar.titleTextAttributes = [.foregroundColor: color]
+        navController.navigationBar.largeTitleTextAttributes = [.foregroundColor: color]
+        
+//        let appearance = UINavigationBarAppearance()
+//
+//        appearance.configureWithOpaqueBackground()
+//        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+//        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor  .white]
+//
+//        appearance.largeTitleTextAttributes = [.font : UIFont(name: "OfficinaSans", size: 30)!]
+//        appearance.titleTextAttributes = [ .font : UIFont(name: "OfficinaSans", size: 20)!]
+//        appearance.shadowColor = .white
+//
+//        navigationBar.standardAppearance = appearance
+//        navigationBar.compactAppearance = appearance
+//        navigationBar.scrollEdgeAppearance = appearance
     }
     
     func onUiThread(_ f: @escaping () -> Void) {
