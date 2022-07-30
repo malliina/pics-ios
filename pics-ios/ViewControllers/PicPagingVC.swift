@@ -21,12 +21,17 @@ struct PicPagingView: UIViewControllerRepresentable {
 //    let navCtrl: UINavigationController
     let delegate: PicDelegate
     
+    var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    
     func makeUIViewController(context: Context) -> PicPagingVC {
+        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: titleTextColor]
         return PicPagingVC(pics: pics, startIndex: startIndex, isPrivate: isPrivate, delegate: delegate)
     }
     
     func updateUIViewController(_ uiViewController: PicPagingVC, context: Context) {
-        log.info("Updating UI VC")
+        let n = uiViewController.navigationController
+        let pn = uiViewController.parent?.navigationController
+        log.info("Updating UI VC n \(n) pn \(pn)")
         guard let parent = uiViewController.parent else { return }
         uiViewController.updateNavBar(vc: parent)
         log.info("Parent \(parent) parent nav \(parent.navigationController)")
@@ -89,12 +94,12 @@ class PicPagingVC: BaseVC {
             UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(actionsClicked(_:)))
         ]
         log.info("Updated nav bar with idx \(index)")
-        guard let navCtrl = vc.navigationController else {
-            log.info("No nav")
-            return
-        }
+//        guard let navCtrl = vc.navigationController else {
+//            log.info("No nav")
+//            return
+//        }
         // navCtrl.navigationBar.barStyle = .black
-        navCtrl.navigationBar.titleTextAttributes = [.foregroundColor: titleTextColor]
+//        navCtrl.navigationBar.titleTextAttributes = [.foregroundColor: titleTextColor]
         log.info("Updated pic style.")
     }
     

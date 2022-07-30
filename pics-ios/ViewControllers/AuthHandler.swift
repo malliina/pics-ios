@@ -21,11 +21,12 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     
     let window: UIWindow
     
-    init(window: UIWindow) {
+    init (window: UIWindow) {
         self.window = window
         let pool = Tokens.shared.pool
         let flow = UICollectionViewFlowLayout()
         flow.itemSize = CGSize(width: PicsVC.preferredItemSize, height: PicsVC.preferredItemSize)
+//        UIHostingController(rootView: PicsView(viewModel: PicsVM(navController: navController)))
         let pics = PicsVC()
         picsVc = UINavigationController(rootViewController: pics)
 //        picsVc = PicsVC.build()

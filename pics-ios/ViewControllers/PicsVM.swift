@@ -161,9 +161,9 @@ class PicsVM: PicsVMLike {
             self.isPrivate = false
             
             Task {
-                await self.updateStyle()
                 try await self.loadAnonymousPics()
             }
+            self.adjustTitleTextColor(PicsColors.almostBlack)
         }
 //        onUiThread {
 //            self.offlinePics = self.picsSettings.localPictures(for: Username.anon)
@@ -179,9 +179,12 @@ class PicsVM: PicsVMLike {
             self.pics = []
             self.isPrivate = true
             Task {
-                await self.updateStyle()
+//                await self.updateStyle()
                 try await self.loadPrivatePics(for: user)
             }
+            self.adjustTitleTextColor(PicsColors.almostLight)
+//            self.adjustTitleTextColor(UIColor.red)
+//            self.log.info("Set almost light title foreground color")
         }
 //            DispatchQueue.main.async {
 //            self.offlinePics = self.picsSettings.localPictures(for: user)
@@ -189,12 +192,6 @@ class PicsVM: PicsVMLike {
 //                isPrivate = true
 //            self.collectionView?.reloadData()
 //            }
-    }
-    
-    @MainActor
-    func updateStyle() {
-//        navController.navigationBar.barStyle = barStyle
-        navController.navigationBar.titleTextAttributes = [.foregroundColor: self.titleTextColor]
     }
     
     func signOut() {
@@ -205,6 +202,11 @@ class PicsVM: PicsVMLike {
 //        self.collectionView?.backgroundView = nil
 //        self.navigationController?.navigationBar.isHidden = true
         resetData()
+        adjustTitleTextColor(PicsColors.almostBlack)
+    }
+    
+    private func adjustTitleTextColor(_ color: UIColor) {
+        navController.navigationBar.titleTextAttributes = [.foregroundColor: color]
     }
     
     func onUiThread(_ f: @escaping () -> Void) {

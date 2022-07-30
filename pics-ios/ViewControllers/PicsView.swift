@@ -36,22 +36,18 @@ struct PicsView<T>: View where T: PicsVMLike {
     @State private var showProfile = false
     @State private var showHelp = false
     
-//    @Binding var backgroundColor2: Binding<UIColor> { $viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
-    
-//    @Binding var backgroundColor {
-//        Binding {
-//            Color($viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground)
-//        } set: { _ in
-//
-//        }
-//
-//    }
-    
     var backgroundColor: UIColor { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var cellBackgroundColor: UIColor { viewModel.isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
     var textColor: UIColor { viewModel.isPrivate ? .lightText : .darkText }
+    var titleTextColor: UIColor { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     let user = User()
+    
+//    init(viewModel: T) {
+//        self.viewModel = viewModel
+//        log.info("Init PicsView")
+//        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.yellow]
+//    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -95,6 +91,7 @@ struct PicsView<T>: View where T: PicsVMLike {
         }
         .background(Color(backgroundColor))
         .navigationTitle("Pics")
+        .foregroundColor(Color.blue)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarLeading) {
                 Button {
@@ -128,15 +125,19 @@ class ProfileViewDelegate <T> : ProfileDelegate where T: PicsVMLike {
     let log = LoggerFactory.shared.vc(ProfileViewDelegate.self)
     let viewModel: T
     
+    var titleTextColor: UIColor { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    
     init(viewModel: T) {
         self.viewModel = viewModel
     }
     
     func onPublic() {
         viewModel.onPublic()
+//        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: PicsColors.almostBlack]
     }
     func onPrivate(user: Username) {
         viewModel.onPrivate(user: user)
+//        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: PicsColors.almostLight]
     }
     
     func onLogout() {
