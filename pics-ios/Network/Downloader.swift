@@ -51,6 +51,14 @@ class Downloader {
         }
     }
     
+    func downloadAsync(url: URL) async -> Data {
+        return await withCheckedContinuation { continuation in
+            download(url: url) { data in
+                continuation.resume(returning: data)
+            }
+        }
+    }
+    
     func cancelDownload(forUrl url: URL) {
         queue.sync {
             guard let taskIndex = tasks.firstIndex(where: { $0.originalRequest?.url == url }) else {

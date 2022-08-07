@@ -64,7 +64,6 @@ extension UIViewController {
     
     func presentModally(vc: UIViewController, animated: Bool = true, completion: (() -> Void)? = nil) {
         let dest = UINavigationController(rootViewController: vc)
-        dest.navigationBar.barStyle = .black
         dest.navigationBar.prefersLargeTitles = true
         self.present(dest, animated: animated, completion: completion)
     }

@@ -18,14 +18,14 @@ class User {
     var currentUsernameOrAnon: Username { activeUser ?? Username.anon }
 }
 
-protocol PicsVMLike: ObservableObject {
-    var pics: [PicMeta] { get }
+protocol PicsVMLike: ObservableObject, AuthInit {
+    var pics: [Picture] { get }
     var hasMore: Bool { get }
     var isPrivate: Bool { get }
     
-//    func loadPics(for user: Username?)
-    func loadMore()
-    func loadPicsAsync(for user: Username?) async
+    func loadMore() async
+    func loadPicsAsync(for user: Username?, initial: Bool) async
+    func display(newPics: [Picture])
     func remove(key: ClientKey)
     func block(key: ClientKey)
     func resetData()
@@ -34,29 +34,43 @@ protocol PicsVMLike: ObservableObject {
     func signOut()
 }
 
+protocol AuthInit {
+    func reInit() async
+    func changeStyle(dark: Bool)
+}
+
 extension PicsVMLike {
-    func loadPics(for user: Username?) {
+    func loadPics(for user: Username?, initial: Bool = false) {
         Task {
-            await loadPicsAsync(for: user)
+            await loadPicsAsync(for: user, initial: initial)
         }
+    }
+    func loadPicsForUser() {
+        
+    }
+}
+
+extension PicsVM: AuthInit {
+    func reInit() async {
+        authCancellation?.cancel()
+        authCancellation?.dispose()
+        await loadPicsAsync(for: user.activeUser, initial: false)
+    }
+    
+    func changeStyle(dark: Bool) {
+        
     }
 }
 
 class PicsVM: PicsVMLike {
     private let log = LoggerFactory.shared.vc(PicsVM.self)
-    let navController: UINavigationController
-    
-    init(navController: UINavigationController) {
-        self.navController = navController
-    }
     
     let user = User.shared
     
-    @Published var pics: [PicMeta] = []
+    @Published var pics: [Picture] = []
     @Published private(set) var isPrivate = User.shared.isPrivate
     @Published private(set) var hasMore = false
     
-//    var barStyle: UIBarStyle { isPrivate ? .black : .default }
     var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     private var library: PicsLibrary { Backend.shared.library }
@@ -64,18 +78,28 @@ class PicsVM: PicsVMLike {
     var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     private var authCancellation: AWSCancellationTokenSource? = nil
     
-    func loadMore() {
-        loadPics(for: user.activeUser)
-        // log.info("load more now")
+    let userChanged: (Username?) -> Void
+    
+    init(userChanged: @escaping (Username?) -> Void) {
+        self.userChanged = userChanged
     }
     
-    func loadPicsAsync(for user: Username?) async {
+    func loadMore() async {
+        await loadPicsAsync(for: user.activeUser, initial: false)
+    }
+    
+    func loadPicsAsync(for user: Username?, initial: Bool) async {
         Task {
             do {
                 if let user = user {
                     try await loadPrivatePics(for: user)
                 } else {
                     try await loadAnonymousPics()
+                }
+                onUiThread {
+                    if initial {
+                        self.userChanged(user)
+                    }
                 }
             } catch let error {
                 onLoadError(error: error)
@@ -84,7 +108,6 @@ class PicsVM: PicsVMLike {
     }
     
     private func loadPrivatePics(for user: Username) async throws {
-//        mightHaveMore = true
         authCancellation = AWSCancellationTokenSource()
         let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: authCancellation)
         try await load(with: userInfo.token)
@@ -109,8 +132,17 @@ class PicsVM: PicsVMLike {
         let beforeCount = pics.count
         let batch = try await library.loadAsync(from: beforeCount, limit: limit)
         log.info("Got batch of \(batch.count) pics from \(beforeCount)")
+        let syncedBatch: [PicMeta] = batch.map { meta in
+            let key = meta.key
+            guard let url = LocalPics.shared.findLocal(key: key) else {
+//                log.debug("Local not found for '\(key)'.")
+                return meta
+            }
+            log.info("Found local URL '\(url)' for '\(key)'.")
+            return meta.withUrl(url: url)
+        }
         onUiThread {
-            self.pics += batch
+            self.pics += syncedBatch.map { p in Picture(meta: p) }
             self.hasMore = batch.count == limit
         }
     }
@@ -135,9 +167,21 @@ class PicsVM: PicsVMLike {
         removeLocally(key: key)
     }
     
+    func display(newPics: [Picture]) {
+        let newPicsNewestFirst: [Picture] = newPics.reversed()
+        let prepended = newPicsNewestFirst + self.pics
+        DispatchQueue.main.async {
+            self.pics = prepended
+//            let indexPaths = newPicsNewestFirst.enumerated().map { (offset, pic) -> IndexPath in
+//                IndexPath(row: offset, section: 0)
+//            }
+            // self.displayItems(at: indexPaths)
+        }
+    }
+    
     private func removeLocally(key: ClientKey) {
         DispatchQueue.main.async {
-            self.pics = self.pics.filter { pic in pic.key != key }
+            self.pics = self.pics.filter { pic in pic.meta.key != key }
         }
     }
     
@@ -146,7 +190,7 @@ class PicsVM: PicsVMLike {
             self.pics = []
             Tokens.shared.clearDelegates()
             Task {
-                await self.loadPicsAsync(for: nil)
+                await self.loadPicsAsync(for: nil, initial: true)
             }
         }
 //        socket.disconnect()
@@ -159,11 +203,13 @@ class PicsVM: PicsVMLike {
         onUiThread {
             self.pics = []
             self.isPrivate = false
+            self.userChanged(nil)
             
             Task {
                 try await self.loadAnonymousPics()
             }
-            self.adjustTitleTextColor(PicsColors.almostBlack)
+//            self.adjustTitleTextColor(PicsColors.almostBlack)
+            
         }
 //        onUiThread {
 //            self.offlinePics = self.picsSettings.localPictures(for: Username.anon)
@@ -178,11 +224,12 @@ class PicsVM: PicsVMLike {
         onUiThread {
             self.pics = []
             self.isPrivate = true
+            self.userChanged(user)
             Task {
 //                await self.updateStyle()
                 try await self.loadPrivatePics(for: user)
             }
-            self.adjustTitleTextColor(PicsColors.almostLight)
+//            self.adjustTitleTextColor(PicsColors.almostLight)
 //            self.log.info("Set almost light title foreground color")
         }
 //            DispatchQueue.main.async {
@@ -205,22 +252,10 @@ class PicsVM: PicsVMLike {
     }
     
     private func adjustTitleTextColor(_ color: UIColor) {
-        navController.navigationBar.titleTextAttributes = [.foregroundColor: color]
-        navController.navigationBar.largeTitleTextAttributes = [.foregroundColor: color]
-        
-//        let appearance = UINavigationBarAppearance()
-//
-//        appearance.configureWithOpaqueBackground()
-//        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-//        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor  .white]
-//
-//        appearance.largeTitleTextAttributes = [.font : UIFont(name: "OfficinaSans", size: 30)!]
-//        appearance.titleTextAttributes = [ .font : UIFont(name: "OfficinaSans", size: 20)!]
-//        appearance.shadowColor = .white
-//
-//        navigationBar.standardAppearance = appearance
-//        navigationBar.compactAppearance = appearance
-//        navigationBar.scrollEdgeAppearance = appearance
+        log.info("Adjusting title color")
+//        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.red]
+//        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.yellow]
+//        UINavigationBar.appearance().barStyle = barStyle
     }
     
     func onUiThread(_ f: @escaping () -> Void) {
@@ -229,15 +264,18 @@ class PicsVM: PicsVMLike {
 }
 
 class PreviewPicsVM: PicsVMLike {
-    @Published var pics: [PicMeta] = []
+    @Published var pics: [Picture] = []
     @Published var hasMore: Bool = false
     @Published var isPrivate: Bool = false
-    func loadMore() { }
-    func loadPicsAsync(for user: Username?) async { }
+    func loadMore() async { }
+    func loadPicsAsync(for user: Username?, initial: Bool) async { }
     func resetData() { }
     func onPublic() { }
     func onPrivate(user: Username) { }
     func signOut() { }
     func remove(key: ClientKey) { }
     func block(key: ClientKey) { }
+    func display(newPics: [Picture]) { }
+    func reInit() { }
+    func changeStyle(dark: Bool) { }
 }

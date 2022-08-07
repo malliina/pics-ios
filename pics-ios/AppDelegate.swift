@@ -25,6 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //            Analytics.self,
 //            Crashes.self
 //        ])
+
         // Cleans up old pics
         let _ = LocalPics.shared
         let w = UIWindow(frame: UIScreen.main.bounds)

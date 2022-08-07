@@ -35,24 +35,22 @@ struct PicsView<T>: View where T: PicsVMLike {
     @State private var picNavigationBarHidden = true
     @State private var showProfile = false
     @State private var showHelp = false
+    @State private var showCamera = false
     
     var backgroundColor: UIColor { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
-    var cellBackgroundColor: UIColor { viewModel.isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
-    var textColor: UIColor { viewModel.isPrivate ? .lightText : .darkText }
-    var titleTextColor: UIColor { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    var titleColor: UIColor { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     let user = User()
+    let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
     
-//    init(viewModel: T) {
-//        self.viewModel = viewModel
-//        log.info("Init PicsView")
-//        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.yellow]
-//    }
+    init(viewModel: T) {
+        self.viewModel = viewModel
+    }
     
     var body: some View {
         GeometryReader { geometry in
-            grid(geometry: geometry).onAppear {
-                viewModel.loadPics(for: PicsSettings.shared.activeUser)
+            grid(geometry: geometry).task {
+                await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initial: true)
             }
         }
     }
@@ -64,34 +62,26 @@ struct PicsView<T>: View where T: PicsVMLike {
             LazyVGrid(columns: columns) {
                 ForEach(Array(viewModel.pics.enumerated()), id: \.offset) { index, pic in
                     NavigationLink {
-                        PicPagingView(pics: viewModel.pics.map { p in Picture(meta: p) }, startIndex: index, isPrivate: user.isPrivate, delegate: PicViewDelegate(viewModel: viewModel))
+                        PicPagingView(pics: viewModel.pics, startIndex: index, isPrivate: user.isPrivate, delegate: PicViewDelegate(viewModel: viewModel))
                             .background(Color(backgroundColor))
                             .navigationBarHidden(picNavigationBarHidden)
                             .onTapGesture {
                                 picNavigationBarHidden = !picNavigationBarHidden
                             }
                     } label: {
-                        AsyncImage(url: pic.medium) { phase in
-                            if let image = phase.image {
-                                image.resizable().scaledToFill().frame(width: sizeInfo.sizePerItem.width, height: sizeInfo.sizePerItem.height).clipped()
-                            } else if phase.error != nil {
-                                Color.red // Indicates an error.
-                            } else {
-                                ProgressView()
-                            }
-                        }.frame(width: sizeInfo.sizePerItem.width, height: sizeInfo.sizePerItem.height)
+                        // SwiftUI comes with AsyncImage, but not sure how to cache resources (URLs)
+                        // it fetches, so it's not used.
+                        CachedImage(size: sizeInfo.sizePerItem)
+                            .environmentObject(ImageData(pic: pic))
                     }
                 }
                 if viewModel.hasMore {
-                    ProgressView().onAppear {
-                        viewModel.loadMore()
+                    ProgressView().task {
+                        await viewModel.loadMore()
                     }
                 }
             }.font(.largeTitle)
         }
-        .background(Color(backgroundColor))
-        .navigationTitle("Pics")
-        .foregroundColor(Color.blue)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarLeading) {
                 Button {
@@ -103,21 +93,41 @@ struct PicsView<T>: View where T: PicsVMLike {
                 Button {
                     showHelp = !showHelp
                 } label: {
+//                    Image(systemName: "questionmark.circle")
                     Image(uiImage: #imageLiteral(resourceName: "HelpIcon"))
                         .renderingMode(.template)
+                }
+            }
+            ToolbarItem(placement: .principal) {
+                Text("Pics")
+                    .font(.headline)
+                    .foregroundColor(Color(titleColor))
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if isCameraAvailable {
+                    Button {
+                        showCamera = !showCamera
+                    } label: {
+                        Image(systemName: "camera")
+                            .renderingMode(.template)
+                    }
                 }
             }
         }
         .sheet(isPresented: $showHelp) {
             NavigationView {
-                HelpView(isPrivate: user.isPrivate) {
-                    showHelp = false
-                }
+                HelpView(isPrivate: user.isPrivate)
             }
         }
         .sheet(isPresented: $showProfile) {
             ProfilePopoverView(user: user.activeUser, delegate: ProfileViewDelegate(viewModel: viewModel))
         }
+        .sheet(isPresented: $showCamera) {
+            ImagePicker { image in
+                viewModel.display(newPics: [image])
+            }.background(Color(backgroundColor))
+        }
+        .background(Color(backgroundColor))
     }
 }
 
@@ -125,19 +135,16 @@ class ProfileViewDelegate <T> : ProfileDelegate where T: PicsVMLike {
     let log = LoggerFactory.shared.vc(ProfileViewDelegate.self)
     let viewModel: T
     
-    var titleTextColor: UIColor { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
-    
     init(viewModel: T) {
         self.viewModel = viewModel
     }
     
     func onPublic() {
         viewModel.onPublic()
-//        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: PicsColors.almostBlack]
     }
+    
     func onPrivate(user: Username) {
         viewModel.onPrivate(user: user)
-//        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: PicsColors.almostLight]
     }
     
     func onLogout() {

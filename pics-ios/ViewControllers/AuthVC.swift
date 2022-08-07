@@ -27,9 +27,9 @@ class AuthVC: BaseVC {
     
     var passwordAuthenticationCompletion: AWSTaskCompletionSource<AWSCognitoIdentityPasswordAuthenticationDetails>?
     
-    var root: PicsVC? = nil
+    var root: AuthInit? = nil
     
-    init(root: PicsVC) {
+    init(root: AuthInit) {
         self.root = root
         super.init(nibName: nil, bundle: nil)
     }
@@ -116,7 +116,9 @@ class AuthVC: BaseVC {
         self.dismiss(animated: true) {
             if let root = self.root {
                 // the login view has already been dismissed, yet no session has been obtained, so we reinitialize
-                root.reInit()
+                Task {
+                    await root.reInit()
+                }
             }
         }
     }

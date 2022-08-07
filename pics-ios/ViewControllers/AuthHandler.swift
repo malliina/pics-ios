@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 import AWSCognitoIdentityProvider
+import SwiftUI
 
 class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate {
     let log = LoggerFactory.shared.vc(AuthHandler.self)
@@ -21,17 +22,18 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     
     let window: UIWindow
     
-    init (window: UIWindow) {
+    init(window: UIWindow) {
         self.window = window
         let pool = Tokens.shared.pool
-        let flow = UICollectionViewFlowLayout()
-        flow.itemSize = CGSize(width: PicsVC.preferredItemSize, height: PicsVC.preferredItemSize)
-//        UIHostingController(rootView: PicsView(viewModel: PicsVM(navController: navController)))
-        let pics = PicsVC()
-        picsVc = UINavigationController(rootViewController: pics)
-//        picsVc = PicsVC.build()
-        authVc = AuthVC(root: pics)
-        newPassVc = NewPassVC(root: pics)
+        let nav = UINavigationController()
+        let picsViewModel = PicsVM { user in
+            nav.navigationBar.barStyle = user != nil ? UIBarStyle.black : .default
+        }
+        let pics = UIHostingController(rootView: PicsView(viewModel: picsViewModel))
+        nav.pushViewController(pics, animated: false)
+        picsVc = nav
+        authVc = AuthVC(root: picsViewModel)
+        newPassVc = NewPassVC(root: picsViewModel)
         rememberMe = RememberMe()
         active = picsVc
         super.init()
@@ -65,7 +67,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     func present(_ dest: UIViewController, from: UIViewController) {
         DispatchQueue.main.async {
             let navCtrl = UINavigationController(rootViewController: dest)
-            navCtrl.navigationBar.barStyle = .black
+            // navCtrl.navigationBar.barStyle = .black
             navCtrl.navigationBar.prefersLargeTitles = true
 //            self.log.info("Presenting \(navCtrl) from \(from)")
 //            self.window.rootViewController?.present(navCtrl, animated: true, completion: nil)

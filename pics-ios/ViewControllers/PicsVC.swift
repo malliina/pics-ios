@@ -23,10 +23,6 @@ protocol PicDelegate {
 
 extension PicsVC: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-//        let rows = indexPaths.map { p in p.row }
-//        if let min = rows.min(), let max = rows.max() {
-//            self.log.info("Prefetching \(min)-\(max)")
-//        }
         for indexPath in indexPaths {
             let row = indexPath.row
             if pics.count > row {
@@ -77,7 +73,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
 
     var backgroundColor: UIColor { isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var cellBackgroundColor: UIColor { isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
-    var barStyle: UIBarStyle { isPrivate ? .black : .default }
     var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     var textColor: UIColor { isPrivate ? .lightText : .darkText }
     
@@ -149,19 +144,17 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         log.info("Locations updated")
     }
     
-    @objc func helpClicked(_ button: UIBarButtonItem) {
-        guard let navController = self.navigationController else { return }
-        let dest = UIHostingController(rootView: PicsView(viewModel: PicsVM(navController: navController)))
-        navController.pushViewController(dest, animated: true)
-    }
+//    @objc func helpClicked(_ button: UIBarButtonItem) {
+//        guard let navController = self.navigationController else { return }
+//        let dest = UIHostingController(rootView: PicsView(viewModel: PicsVM()))
+//        navController.pushViewController(dest, animated: true)
+//    }
     
-    @objc func helpClicked2(_ button: UIBarButtonItem) {
-        let helpVC = UIHostingController(rootView: HelpView(isPrivate: isPrivate) {
-            self.dismiss(animated: true, completion: nil)
-        })
+    @objc func helpClicked(_ button: UIBarButtonItem) {
+        let helpVC = UIHostingController(rootView: HelpView(isPrivate: isPrivate))
         let dest = UINavigationController(rootViewController: helpVC)
         dest.modalPresentationStyle = .formSheet
-        dest.navigationBar.barStyle = barStyle
+        // dest.navigationBar.barStyle = barStyle
         dest.navigationBar.prefersLargeTitles = true
         present(dest, animated: true, completion: nil)
     }
@@ -323,7 +316,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     func initStyle() {
         view.backgroundColor = backgroundColor
         collectionView?.backgroundColor = backgroundColor
-        navigationController?.navigationBar.barStyle = barStyle
+        // navigationController?.navigationBar.barStyle = barStyle
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: titleTextColor]
     }
     
