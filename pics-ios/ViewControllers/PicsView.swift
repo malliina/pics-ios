@@ -50,7 +50,7 @@ struct PicsView<T>: View where T: PicsVMLike {
     var body: some View {
         GeometryReader { geometry in
             grid(geometry: geometry).task {
-                await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initial: true)
+                await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
             }
         }
     }

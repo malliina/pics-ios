@@ -33,6 +33,9 @@ class ImageData: ObservableObject {
     }
     
     func picData() async -> Data {
+        if let cache = pic.smallData {
+            return cache
+        }
         let key = pic.meta.key
         if let uiImage = pic.preferred,
             let imageData = uiImage.jpegData(compressionQuality: 1) {

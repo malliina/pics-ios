@@ -24,7 +24,7 @@ protocol PicsVMLike: ObservableObject, AuthInit {
     var isPrivate: Bool { get }
     
     func loadMore() async
-    func loadPicsAsync(for user: Username?, initial: Bool) async
+    func loadPicsAsync(for user: Username?, initialOnly: Bool) async
     func display(newPics: [Picture])
     func remove(key: ClientKey)
     func block(key: ClientKey)
@@ -43,7 +43,7 @@ extension PicsVM: AuthInit {
     func reInit() async {
         authCancellation?.cancel()
         authCancellation?.dispose()
-        await loadPicsAsync(for: user.activeUser, initial: false)
+        await loadPicsAsync(for: user.activeUser, initialOnly: false)
     }
     
     func changeStyle(dark: Bool) {
@@ -65,7 +65,7 @@ class PicsVM: PicsVMLike {
     }
     @Published private(set) var isPrivate = User.shared.isPrivate
     @Published private(set) var hasMore = false
-    
+    private var isInitial = true
     
     var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
@@ -86,27 +86,30 @@ class PicsVM: PicsVMLike {
     }
     
     func loadMore() async {
-        await loadPicsAsync(for: user.activeUser, initial: false)
+        await loadPicsAsync(for: user.activeUser, initialOnly: false)
     }
     
-    func loadPicsAsync(for user: Username?, initial: Bool) async {
-        if initial {
-            offlinePics = picsSettings.localPictures(for: currentUsernameOrAnon)
-            log.info("Offline count \(offlinePics.count)")
-        }
-        do {
-            if let user = user {
-                try await loadPrivatePics(for: user)
-            } else {
-                try await loadAnonymousPics()
+    func loadPicsAsync(for user: Username?, initialOnly: Bool) async {
+        if !initialOnly || isInitial {
+            isInitial = false
+            if initialOnly {
+                offlinePics = picsSettings.localPictures(for: currentUsernameOrAnon)
+                log.info("Offline count \(offlinePics.count)")
             }
-            onUiThread {
-                if initial {
-                    self.userChanged(user)
+            do {
+                if let user = user {
+                    try await loadPrivatePics(for: user)
+                } else {
+                    try await loadAnonymousPics()
                 }
+                onUiThread {
+                    if initialOnly {
+                        self.userChanged(user)
+                    }
+                }
+            } catch let error {
+                onLoadError(error: error)
             }
-        } catch let error {
-            onLoadError(error: error)
         }
     }
     
@@ -192,7 +195,7 @@ class PicsVM: PicsVMLike {
             self.savePics(newPics: [])
             self.offlinePics = []
             Task {
-                await self.loadPicsAsync(for: nil, initial: true)
+                await self.loadPicsAsync(for: nil, initialOnly: true)
             }
         }
 //        socket.disconnect()
@@ -262,7 +265,7 @@ class PreviewPicsVM: PicsVMLike {
     @Published var hasMore: Bool = false
     @Published var isPrivate: Bool = false
     func loadMore() async { }
-    func loadPicsAsync(for user: Username?, initial: Bool) async { }
+    func loadPicsAsync(for user: Username?, initialOnly: Bool) async { }
     func resetData() { }
     func onPublic() { }
     func onPrivate(user: Username) { }
