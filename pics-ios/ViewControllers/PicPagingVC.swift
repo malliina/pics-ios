@@ -18,7 +18,6 @@ struct PicPagingView: UIViewControllerRepresentable {
     let pics: [Picture]
     let startIndex: Int
     let isPrivate: Bool
-//    let navCtrl: UINavigationController
     let delegate: PicDelegate
     
     var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }

@@ -39,17 +39,6 @@ protocol AuthInit {
     func changeStyle(dark: Bool)
 }
 
-extension PicsVMLike {
-    func loadPics(for user: Username?, initial: Bool = false) {
-        Task {
-            await loadPicsAsync(for: user, initial: initial)
-        }
-    }
-    func loadPicsForUser() {
-        
-    }
-}
-
 extension PicsVM: AuthInit {
     func reInit() async {
         authCancellation?.cancel()
@@ -67,9 +56,16 @@ class PicsVM: PicsVMLike {
     
     let user = User.shared
     
-    @Published var pics: [Picture] = []
+    @Published var offlinePics: [Picture] = []
+    @Published var onlinePics: [Picture] = []
+    @Published private(set) var isOnline = false
+    var currentUsernameOrAnon: Username { User.shared.activeUser ?? Username.anon }
+    var pics: [Picture] {
+        get { isOnline ? onlinePics : offlinePics }
+    }
     @Published private(set) var isPrivate = User.shared.isPrivate
     @Published private(set) var hasMore = false
+    
     
     var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
@@ -84,26 +80,33 @@ class PicsVM: PicsVMLike {
         self.userChanged = userChanged
     }
     
+    private func savePics(newPics: [Picture]) {
+        onlinePics = newPics
+        let _ = self.picsSettings.save(pics: newPics, for: self.currentUsernameOrAnon)
+    }
+    
     func loadMore() async {
         await loadPicsAsync(for: user.activeUser, initial: false)
     }
     
     func loadPicsAsync(for user: Username?, initial: Bool) async {
-        Task {
-            do {
-                if let user = user {
-                    try await loadPrivatePics(for: user)
-                } else {
-                    try await loadAnonymousPics()
-                }
-                onUiThread {
-                    if initial {
-                        self.userChanged(user)
-                    }
-                }
-            } catch let error {
-                onLoadError(error: error)
+        if initial {
+            offlinePics = picsSettings.localPictures(for: currentUsernameOrAnon)
+            log.info("Offline count \(offlinePics.count)")
+        }
+        do {
+            if let user = user {
+                try await loadPrivatePics(for: user)
+            } else {
+                try await loadAnonymousPics()
             }
+            onUiThread {
+                if initial {
+                    self.userChanged(user)
+                }
+            }
+        } catch let error {
+            onLoadError(error: error)
         }
     }
     
@@ -115,7 +118,6 @@ class PicsVM: PicsVMLike {
     }
     
     private func loadAnonymousPics() async throws {
-//        mightHaveMore = true
         try await load(with: nil)
     }
     
@@ -129,7 +131,7 @@ class PicsVM: PicsVMLike {
     }
     
     func appendPics(limit: Int = PicsVC.itemsPerLoad) async throws {
-        let beforeCount = pics.count
+        let beforeCount = onlinePics.count
         let batch = try await library.loadAsync(from: beforeCount, limit: limit)
         log.info("Got batch of \(batch.count) pics from \(beforeCount)")
         let syncedBatch: [PicMeta] = batch.map { meta in
@@ -142,7 +144,8 @@ class PicsVM: PicsVMLike {
             return meta.withUrl(url: url)
         }
         onUiThread {
-            self.pics += syncedBatch.map { p in Picture(meta: p) }
+            self.onlinePics += syncedBatch.map { p in Picture(meta: p) }
+            self.isOnline = true
             self.hasMore = batch.count == limit
         }
     }
@@ -171,24 +174,23 @@ class PicsVM: PicsVMLike {
         let newPicsNewestFirst: [Picture] = newPics.reversed()
         let prepended = newPicsNewestFirst + self.pics
         DispatchQueue.main.async {
-            self.pics = prepended
-//            let indexPaths = newPicsNewestFirst.enumerated().map { (offset, pic) -> IndexPath in
-//                IndexPath(row: offset, section: 0)
-//            }
-            // self.displayItems(at: indexPaths)
+            self.savePics(newPics: prepended)
         }
     }
     
     private func removeLocally(key: ClientKey) {
         DispatchQueue.main.async {
-            self.pics = self.pics.filter { pic in pic.meta.key != key }
+            self.offlinePics = self.offlinePics.filter { pic in pic.meta.key != key }
+            self.savePics(newPics: self.onlinePics.filter { pic in pic.meta.key != key })
         }
     }
     
     func resetData() {
         onUiThread {
-            self.pics = []
             Tokens.shared.clearDelegates()
+            self.isOnline = false
+            self.savePics(newPics: [])
+            self.offlinePics = []
             Task {
                 await self.loadPicsAsync(for: nil, initial: true)
             }
@@ -201,15 +203,14 @@ class PicsVM: PicsVMLike {
     func onPublic() {
         picsSettings.activeUser = nil
         onUiThread {
-            self.pics = []
             self.isPrivate = false
+            self.offlinePics = self.picsSettings.localPictures(for: Username.anon)
+            self.savePics(newPics: [])
             self.userChanged(nil)
             
             Task {
                 try await self.loadAnonymousPics()
             }
-//            self.adjustTitleTextColor(PicsColors.almostBlack)
-            
         }
 //        onUiThread {
 //            self.offlinePics = self.picsSettings.localPictures(for: Username.anon)
@@ -222,15 +223,13 @@ class PicsVM: PicsVMLike {
     func onPrivate(user: Username) {
         picsSettings.activeUser = user
         onUiThread {
-            self.pics = []
+            self.offlinePics = []
+            self.savePics(newPics: [])
             self.isPrivate = true
             self.userChanged(user)
             Task {
-//                await self.updateStyle()
                 try await self.loadPrivatePics(for: user)
             }
-//            self.adjustTitleTextColor(PicsColors.almostLight)
-//            self.log.info("Set almost light title foreground color")
         }
 //            DispatchQueue.main.async {
 //            self.offlinePics = self.picsSettings.localPictures(for: user)
@@ -245,17 +244,12 @@ class PicsVM: PicsVMLike {
         pool.currentUser()?.signOut()
         pool.clearLastKnownUser()
         picsSettings.activeUser = nil
-//        self.collectionView?.backgroundView = nil
-//        self.navigationController?.navigationBar.isHidden = true
         resetData()
         adjustTitleTextColor(PicsColors.almostBlack)
     }
     
     private func adjustTitleTextColor(_ color: UIColor) {
         log.info("Adjusting title color")
-//        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.red]
-//        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.yellow]
-//        UINavigationBar.appearance().barStyle = barStyle
     }
     
     func onUiThread(_ f: @escaping () -> Void) {

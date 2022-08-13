@@ -50,11 +50,21 @@ class PicVC: BaseVC {
             make.leading.trailing.top.bottom.equalToSuperview()
         }
         imageView.backgroundColor = backgroundColor
-        // Uses the small image until a larger is available
         if let image = pic.large {
+            log.info("Using large image for \(pic.meta.key)")
             imageView.image = image
         } else {
-            imageView.image = pic.small
+            // Uses the small image until a larger is available
+            if let smallData = pic.smallData, let smallImage = UIImage(data: smallData) {
+                imageView.image = smallImage
+            } else {
+                imageView.image = pic.preferred
+                if pic.preferred != nil {
+                    log.info("Using temp image for \(pic.meta.key)")
+                } else {
+                    log.info("No pic available for \(pic.meta.key)")
+                }
+            }
             downloadLarge(pic: pic) { large in
                 self.onUiThread {
                     self.pic.large = large

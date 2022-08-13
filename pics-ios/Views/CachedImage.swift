@@ -26,6 +26,7 @@ class ImageData: ObservableObject {
     
     func load() async {
         let data = await picData()
+        pic.smallData = data
         DispatchQueue.main.async {
             self.image = data
         }
