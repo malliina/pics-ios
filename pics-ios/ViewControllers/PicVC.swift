@@ -67,7 +67,7 @@ class PicVC: BaseVC {
             }
             downloadLarge(pic: pic) { large in
                 self.onUiThread {
-                    self.pic.large = large
+//                    self.pic.large = large
                     self.imageView.image = large
                 }
             }

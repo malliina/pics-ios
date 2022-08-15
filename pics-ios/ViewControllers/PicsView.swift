@@ -26,6 +26,27 @@ class PicViewDelegate <T> : PicDelegate where T: PicsVMLike {
     }
 }
 
+class DemoData: ObservableObject {
+    @Published var names: [String] = ["https://pics.malliina.com/jnmczfc.jpg?s=s"]
+}
+
+struct DemoListView: View {
+    @EnvironmentObject var viewModel: DemoData
+    
+    var body: some View {
+        VStack {
+            Button("Add") {
+                viewModel.names.append("https://pics.malliina.com/jnmczfc.jpg?s=s")
+            }
+            List {
+                ForEach(viewModel.names, id: \.self) { task in
+                    AsyncImage(url: URL(string: task))
+                }
+            }
+        }
+    }
+}
+
 struct PicsView<T>: View where T: PicsVMLike {
     let log = LoggerFactory.shared.vc(PicsView.self)
     
@@ -45,6 +66,10 @@ struct PicsView<T>: View where T: PicsVMLike {
     
     init(viewModel: T) {
         self.viewModel = viewModel
+    }
+    
+    var body2: some View {
+        DemoListView().environmentObject(DemoData())
     }
     
     var body: some View {
@@ -71,8 +96,7 @@ struct PicsView<T>: View where T: PicsVMLike {
                     } label: {
                         // SwiftUI comes with AsyncImage, but not sure how to cache resources (URLs)
                         // it fetches, so it's not used.
-                        CachedImage(size: sizeInfo.sizePerItem)
-                            .environmentObject(ImageData(pic: pic))
+                        CachedImage(pic: pic, size: sizeInfo.sizePerItem)
                     }
                 }
                 if viewModel.hasMore {

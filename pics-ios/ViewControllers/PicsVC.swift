@@ -378,7 +378,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         onUiThread {
             if let image = UIImage(data: data) {
                 if let coll = self.collectionView, self.pics.count > indexPath.row {
-                    pic.small = image
+//                    pic.small = image
                     coll.reloadItems(at: [indexPath])
                 } else {
                     self.log.info("Unable to update downloaded pic. count \(self.pics.count) \(self.isOnline) row \(indexPath.row) \(self.pics.count > indexPath.row)")
@@ -485,7 +485,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     private func updateMeta(pic: PicMeta) {
         if let clientKey = pic.clientKey, let idx = self.indexFor(clientKey) {
-            self.pics[idx] = self.pics[idx].withMeta(meta: pic)
+//            self.pics[idx] = self.pics[idx].withMeta(meta: pic)
         } else {
             log.info("Cannot update \(pic.key), pic not found in memory.")
         }
@@ -539,10 +539,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
             let syncedPics = gallery.map { p -> Picture in
                 let merged = Picture(meta: p)
                 if let oldPic = old.first(where: { $0.meta.key == p.key }) {
-                    merged.url = oldPic.url
-                    merged.small = oldPic.small
-                    merged.medium = oldPic.medium
-                    merged.large = oldPic.large
+//                    merged.url = oldPic.url
+//                    merged.small = oldPic.small
+//                    merged.medium = oldPic.medium
+//                    merged.large = oldPic.large
                 }
                 return merged
             }

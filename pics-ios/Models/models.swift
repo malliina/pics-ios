@@ -223,7 +223,7 @@ struct PicMeta: Codable, Hashable {
 
 typealias Timestamp = UInt64
 
-class Picture {
+struct Picture {
     static let TempFakeUrl = URL(string: "https://pics.malliina.com")!
     let meta: PicMeta
     var smallData: Data? = nil
@@ -232,16 +232,16 @@ class Picture {
     var medium: UIImage? = nil
     var large: UIImage? = nil
     
-    convenience init(image: UIImage, clientKey: ClientKey) {
+    init(image: UIImage, clientKey: ClientKey) {
         let millis = Picture.nowMillis()
         self.init(url: Picture.TempFakeUrl, image: image, clientKey: clientKey, added: millis)
     }
     
-    convenience init(image: UIImage, added: Timestamp) {
+    init(image: UIImage, added: Timestamp) {
         self.init(url: Picture.TempFakeUrl, image: image, clientKey: ClientKey.random(), added: added)
     }
     
-    convenience init(url: URL, image: UIImage, clientKey: ClientKey, added: Timestamp) {
+    init(url: URL, image: UIImage, clientKey: ClientKey, added: Timestamp) {
         self.init(meta: PicMeta.oneUrl(key: clientKey, url: url, added: added, clientKey: clientKey))
         self.url = image
         small = image
@@ -263,18 +263,18 @@ class Picture {
         String(UUID().uuidString.prefix(7)).lowercased()
     }
     
-    func withMeta(meta: PicMeta) -> Picture {
-        let other = Picture(meta: meta)
-        other.url = url
-        other.small = small
-        other.medium = medium
-        other.large = large
-        return other
-    }
+//    func withMeta(meta: PicMeta) -> Picture {
+//        let other = Picture(meta: meta)
+//        other.url = url
+//        other.small = small
+//        other.medium = medium
+//        other.large = large
+//        return other
+//    }
     
-    func withUrl(url: URL) -> Picture {
-        withMeta(meta: meta.withUrl(url: url))
-    }
+//    func withUrl(url: URL) -> Picture {
+//        withMeta(meta: meta.withUrl(url: url))
+//    }
 }
 
 struct KeyedEvent: Codable {

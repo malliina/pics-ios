@@ -60,13 +60,10 @@ class PicsVM: PicsVMLike {
     @Published var onlinePics: [Picture] = []
     @Published private(set) var isOnline = false
     var currentUsernameOrAnon: Username { User.shared.activeUser ?? Username.anon }
-    var pics: [Picture] {
-        get { isOnline ? onlinePics : offlinePics }
-    }
-    @Published private(set) var isPrivate = User.shared.isPrivate
+    var pics: [Picture] { isOnline ? onlinePics : offlinePics }
+    private(set) var isPrivate = User.shared.isPrivate
     @Published private(set) var hasMore = false
     private var isInitial = true
-    
     var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     private var library: PicsLibrary { Backend.shared.library }
@@ -82,6 +79,7 @@ class PicsVM: PicsVMLike {
     
     private func savePics(newPics: [Picture]) {
         onlinePics = newPics
+        isOnline = true
         let _ = self.picsSettings.save(pics: newPics, for: self.currentUsernameOrAnon)
     }
     
@@ -147,7 +145,7 @@ class PicsVM: PicsVMLike {
             return meta.withUrl(url: url)
         }
         onUiThread {
-            self.onlinePics += syncedBatch.map { p in Picture(meta: p) }
+            self.savePics(newPics: self.onlinePics + syncedBatch.map { p in Picture(meta: p) })
             self.isOnline = true
             self.hasMore = batch.count == limit
         }
