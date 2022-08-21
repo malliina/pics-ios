@@ -358,20 +358,20 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     private func download(_ indexPath: IndexPath, pic: Picture) {
-        if pic.small == nil {
-            let key = pic.meta.key
-            onBackgroundThread {
-                if let data = LocalPics.shared.readSmall(key: key) {
-                    self.log.info("Updating locally \(indexPath.row)")
-                    self.updateSmall(data: data, indexPath: indexPath, pic: pic)
-                } else {
-                    self.log.info("Downloading \(indexPath.row)")
-                    Downloader.shared.download(url: pic.meta.small) { data in
-                        self.onDownloaded(key: key, data: data, indexPath: indexPath, pic: pic)
-                    }
-                }
-            }
-        }
+//        if pic.small == nil {
+//            let key = pic.meta.key
+//            onBackgroundThread {
+//                if let data = LocalPics.shared.readSmall(key: key) {
+//                    self.log.info("Updating locally \(indexPath.row)")
+//                    self.updateSmall(data: data, indexPath: indexPath, pic: pic)
+//                } else {
+//                    self.log.info("Downloading \(indexPath.row)")
+//                    Downloader.shared.download(url: pic.meta.small) { data in
+//                        self.onDownloaded(key: key, data: data, indexPath: indexPath, pic: pic)
+//                    }
+//                }
+//            }
+//        }
     }
     
     private func updateSmall(data: Data, indexPath: IndexPath, pic: Picture) {

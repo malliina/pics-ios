@@ -148,8 +148,10 @@ class PicsSettings {
     }
     
     func localPictures(for user: Username) -> [Picture] {
-        let metas = prefs.load(key(for: user), PicRefs.self)?.pics ?? []
-        return metas.compactMap { PicMeta.ref($0).map { meta in Picture(meta: meta) } }
+        let metas = prefs.load(key(for: user), PicRefs.self)?.pics.filter({ ref in
+            !ref.filename.isEmpty
+        }) ?? []
+        return metas.compactMap { m in PicMeta.ref(m).map { meta in Picture(meta: meta) } }
     }
     
     static func loadBlocked() -> [ClientKey] {

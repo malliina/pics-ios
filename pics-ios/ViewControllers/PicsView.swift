@@ -85,7 +85,7 @@ struct PicsView<T>: View where T: PicsVMLike {
         let columns: [GridItem] = Array(repeating: .init(.fixed(sizeInfo.sizePerItem.width)), count: sizeInfo.itemsPerRow)
         return ScrollView {
             LazyVGrid(columns: columns) {
-                ForEach(Array(viewModel.pics.enumerated()), id: \.offset) { index, pic in
+                ForEach(Array(viewModel.pics.enumerated()), id: \.element.meta.key) { index, pic in
                     NavigationLink {
                         PicPagingView(pics: viewModel.pics, startIndex: index, isPrivate: user.isPrivate, delegate: PicViewDelegate(viewModel: viewModel))
                             .background(Color(backgroundColor))
@@ -97,6 +97,7 @@ struct PicsView<T>: View where T: PicsVMLike {
                         // SwiftUI comes with AsyncImage, but not sure how to cache resources (URLs)
                         // it fetches, so it's not used.
                         CachedImage(pic: pic, size: sizeInfo.sizePerItem)
+//                        AsyncImage(url: pic.meta.small)
                     }
                 }
                 if viewModel.hasMore {

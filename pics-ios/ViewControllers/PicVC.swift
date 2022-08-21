@@ -65,12 +65,12 @@ class PicVC: BaseVC {
                     log.info("No pic available for \(pic.meta.key)")
                 }
             }
-            downloadLarge(pic: pic) { large in
-                self.onUiThread {
-//                    self.pic.large = large
-                    self.imageView.image = large
-                }
-            }
+//            downloadLarge(pic: pic) { large in
+//                self.onUiThread {
+////                    self.pic.large = large
+//                    self.imageView.image = large
+//                }
+//            }
         }
     }
     
@@ -91,11 +91,11 @@ class PicVC: BaseVC {
 extension UIViewController {
     func downloadLarge(pic: Picture, onImage: @escaping (UIImage) -> Void) {
         if pic.large == nil {
-            Downloader.shared.download(url: pic.meta.large) { data in
-                if let image = UIImage(data: data) {
-                    onImage(image)
-                }
-            }
+//            Downloader.shared.download(url: pic.meta.large) { data in
+//                if let image = UIImage(data: data) {
+//                    onImage(image)
+//                }
+//            }
         }
     }
 }

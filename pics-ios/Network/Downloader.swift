@@ -8,6 +8,11 @@
 
 import Foundation
 
+enum DownloadResult {
+    case data(data: Data)
+    case failure(error: Error)
+}
+
 class Downloader {
     static let shared = Downloader()
     private let log = LoggerFactory.shared.network(Downloader.self)
@@ -15,13 +20,13 @@ class Downloader {
     private let queue = DispatchQueue(label: "DownloaderTaskQueue")
     
     // Adapted from https://andreygordeev.com/2017/02/20/uitableview-prefetching/
-    func download(url: URL, onData: @escaping (Data) -> Void) {
+    func download(url: URL, onData: @escaping (DownloadResult) -> Void) {
         self.queue.sync {
-            guard tasks.firstIndex(where: { $0.originalRequest?.url == url }) == nil else {
-                // We're already downloading the URL
-                log.warn("Already downloading \(url.absoluteString), aborting")
-                return
-            }
+//            guard tasks.firstIndex(where: { $0.originalRequest?.url == url }) == nil else {
+//                // We're already downloading the URL
+//                log.warn("Already downloading \(url.absoluteString), aborting")
+//                return
+//            }
             log.info("Submitting download of \(url)")
             let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
                 self.queue.sync {
@@ -36,12 +41,14 @@ class Downloader {
                         } else {
                             log.error("Download failed with error \(error)")
                         }
+                        onData(.failure(error: error))
                     } else {
                         if let data = data {
         //                    log.info("Downloaded \(url.absoluteString)")
-                            onData(data)
+                            onData(.data(data: data))
                         } else {
                             log.warn("No data returned in download of \(url.absoluteString), but also no error reported")
+                            onData(.failure(error: AppError.simple("No data returned")))
                         }
                     }
                 }
@@ -51,10 +58,15 @@ class Downloader {
         }
     }
     
-    func downloadAsync(url: URL) async -> Data {
-        return await withCheckedContinuation { continuation in
+    func downloadAsync(url: URL) async throws -> Data {
+        return try await withCheckedThrowingContinuation { continuation in
             download(url: url) { data in
-                continuation.resume(returning: data)
+                switch data {
+                case .data(let data):
+                    continuation.resume(returning: data)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
             }
         }
     }

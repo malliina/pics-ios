@@ -10,35 +10,42 @@ import Foundation
 import SwiftUI
 
 struct CachedImage: View {
-    private static let log = LoggerFactory.shared.pics(CachedImage.self)
-    @State var data: Data? = nil
+    private static let logger = LoggerFactory.shared.pics(CachedImage.self)
+    var log: Logger { CachedImage.logger }
+    
     let pic: Picture
     let size: CGSize
     
     var localStorage: LocalPics { LocalPics.shared }
+    
+    @State var data: Data? = nil
     
     @MainActor
     func loadImage() async {
         data = await picData()
     }
     
-    func picData() async -> Data {
+    func picData() async -> Data? {
+        let key = pic.meta.key
+        log.info("Loading \(pic.meta.key)...")
         if let cache = pic.smallData {
             return cache
         }
-        let key = pic.meta.key
         if let uiImage = pic.preferred,
             let imageData = uiImage.jpegData(compressionQuality: 1) {
-            CachedImage.log.info("Using local image for '\(key)'.")
+            log.info("Using local image for '\(key)'.")
             return imageData
         }
         if let localData = localStorage.readSmall(key: key) {
-            CachedImage.log.info("Using local pic for '\(key)'.")
+            log.info("Using local pic for '\(key)'.")
             return localData
         }
-        let data = await Downloader.shared.downloadAsync(url: pic.meta.small)
-        let _ = localStorage.saveSmall(data: data, key: pic.meta.key)
-        return data
+        if let data = try? await Downloader.shared.downloadAsync(url: pic.meta.small) {
+            let _ = localStorage.saveSmall(data: data, key: pic.meta.key)
+            return data
+        } else {
+            return nil
+        }
     }
     
     var body: some View {

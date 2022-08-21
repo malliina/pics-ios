@@ -56,11 +56,29 @@ class PicsVM: PicsVMLike {
     
     let user = User.shared
     
-    @Published var offlinePics: [Picture] = []
-    @Published var onlinePics: [Picture] = []
+//    @Published var offlinePics: [Picture] = []
+//    @Published var onlinePics: [Picture] = []
     @Published private(set) var isOnline = false
     var currentUsernameOrAnon: Username { User.shared.activeUser ?? Username.anon }
-    var pics: [Picture] { isOnline ? onlinePics : offlinePics }
+    
+    @Published var pics: [Picture] = []
+    
+//    var pics2: [Picture] {
+//        get {
+//            isOnline ? onlinePics : offlinePics
+//        }
+////        set (newPics) {
+////            let _ = picsSettings.save(pics: newPics, for: currentUsernameOrAnon)
+////            if isOnline {
+////                if let f = newPics.first {
+////                    log.info("First is \(f.meta.key)")
+////                }
+////                onlinePics = newPics
+////            } else {
+////                offlinePics = newPics
+////            }
+////        }
+//    }
     private(set) var isPrivate = User.shared.isPrivate
     @Published private(set) var hasMore = false
     private var isInitial = true
@@ -78,12 +96,13 @@ class PicsVM: PicsVMLike {
     }
     
     private func savePics(newPics: [Picture]) {
-        onlinePics = newPics
         isOnline = true
+        self.pics = newPics
         let _ = self.picsSettings.save(pics: newPics, for: self.currentUsernameOrAnon)
     }
     
     func loadMore() async {
+        log.info("Loading more for \(self.currentUsernameOrAnon)...")
         await loadPicsAsync(for: user.activeUser, initialOnly: false)
     }
     
@@ -91,8 +110,9 @@ class PicsVM: PicsVMLike {
         if !initialOnly || isInitial {
             isInitial = false
             if initialOnly {
-                offlinePics = picsSettings.localPictures(for: currentUsernameOrAnon)
-                log.info("Offline count \(offlinePics.count)")
+                self.pics.removeAll()
+                self.pics = picsSettings.localPictures(for: currentUsernameOrAnon)
+                log.info("Offline count \(pics.count)")
             }
             do {
                 if let user = user {
@@ -112,6 +132,7 @@ class PicsVM: PicsVMLike {
     }
     
     private func loadPrivatePics(for user: Username) async throws {
+        log.info("Loading pics for \(user)...")
         authCancellation = AWSCancellationTokenSource()
         let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: authCancellation)
         try await load(with: userInfo.token)
@@ -119,6 +140,7 @@ class PicsVM: PicsVMLike {
     }
     
     private func loadAnonymousPics() async throws {
+        log.info("Loading anon pics...")
         try await load(with: nil)
     }
     
@@ -131,10 +153,10 @@ class PicsVM: PicsVMLike {
         try await appendPics()
     }
     
-    func appendPics(limit: Int = PicsVC.itemsPerLoad) async throws {
-        let beforeCount = onlinePics.count
+    private func appendPics(limit: Int = PicsVC.itemsPerLoad) async throws {
+        let beforeCount = pics.count
         let batch = try await library.loadAsync(from: beforeCount, limit: limit)
-        log.info("Got batch of \(batch.count) pics from \(beforeCount)")
+//        log.info("Got batch of \(batch.count) pics from \(beforeCount) online \(isOnline) private \(isPrivate) first is \(batch.first?.key.key ?? "none")")
         let syncedBatch: [PicMeta] = batch.map { meta in
             let key = meta.key
             guard let url = LocalPics.shared.findLocal(key: key) else {
@@ -145,8 +167,7 @@ class PicsVM: PicsVMLike {
             return meta.withUrl(url: url)
         }
         onUiThread {
-            self.savePics(newPics: self.onlinePics + syncedBatch.map { p in Picture(meta: p) })
-            self.isOnline = true
+            self.savePics(newPics: self.pics + syncedBatch.map { p in Picture(meta: p) })
             self.hasMore = batch.count == limit
         }
     }
@@ -181,8 +202,8 @@ class PicsVM: PicsVMLike {
     
     private func removeLocally(key: ClientKey) {
         DispatchQueue.main.async {
-            self.offlinePics = self.offlinePics.filter { pic in pic.meta.key != key }
-            self.savePics(newPics: self.onlinePics.filter { pic in pic.meta.key != key })
+//            self.offlinePics = self.offlinePics.filter { pic in pic.meta.key != key }
+            self.savePics(newPics: self.pics.filter { pic in pic.meta.key != key })
         }
     }
     
@@ -191,7 +212,7 @@ class PicsVM: PicsVMLike {
             Tokens.shared.clearDelegates()
             self.isOnline = false
             self.savePics(newPics: [])
-            self.offlinePics = []
+//            self.offlinePics = []
             Task {
                 await self.loadPicsAsync(for: nil, initialOnly: true)
             }
@@ -205,8 +226,9 @@ class PicsVM: PicsVMLike {
         picsSettings.activeUser = nil
         onUiThread {
             self.isPrivate = false
-            self.offlinePics = self.picsSettings.localPictures(for: Username.anon)
-            self.savePics(newPics: [])
+//            self.pics = self.picsSettings.localPictures(for: Username.anon)
+            self.savePics(newPics: self.picsSettings.localPictures(for: Username.anon))
+            self.hasMore = false
             self.userChanged(nil)
             
             Task {
@@ -224,9 +246,10 @@ class PicsVM: PicsVMLike {
     func onPrivate(user: Username) {
         picsSettings.activeUser = user
         onUiThread {
-            self.offlinePics = []
+//            self.pics = []
             self.savePics(newPics: [])
             self.isPrivate = true
+            self.hasMore = false
             self.userChanged(user)
             Task {
                 try await self.loadPrivatePics(for: user)
