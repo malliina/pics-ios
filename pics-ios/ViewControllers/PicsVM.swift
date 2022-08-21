@@ -19,6 +19,7 @@ class User {
 }
 
 protocol PicsVMLike: ObservableObject, AuthInit {
+    var isOnline: Bool { get }
     var pics: [Picture] { get }
     var hasMore: Bool { get }
     var isPrivate: Bool { get }
@@ -62,23 +63,6 @@ class PicsVM: PicsVMLike {
     var currentUsernameOrAnon: Username { User.shared.activeUser ?? Username.anon }
     
     @Published var pics: [Picture] = []
-    
-//    var pics2: [Picture] {
-//        get {
-//            isOnline ? onlinePics : offlinePics
-//        }
-////        set (newPics) {
-////            let _ = picsSettings.save(pics: newPics, for: currentUsernameOrAnon)
-////            if isOnline {
-////                if let f = newPics.first {
-////                    log.info("First is \(f.meta.key)")
-////                }
-////                onlinePics = newPics
-////            } else {
-////                offlinePics = newPics
-////            }
-////        }
-//    }
     private(set) var isPrivate = User.shared.isPrivate
     @Published private(set) var hasMore = false
     private var isInitial = true
@@ -110,8 +94,8 @@ class PicsVM: PicsVMLike {
         if !initialOnly || isInitial {
             isInitial = false
             if initialOnly {
-                self.pics.removeAll()
-                self.pics = picsSettings.localPictures(for: currentUsernameOrAnon)
+//                self.pics = picsSettings.localPictures(for: currentUsernameOrAnon)
+                self.pics = []
                 log.info("Offline count \(pics.count)")
             }
             do {
@@ -282,9 +266,10 @@ class PicsVM: PicsVMLike {
 }
 
 class PreviewPicsVM: PicsVMLike {
-    @Published var pics: [Picture] = []
-    @Published var hasMore: Bool = false
-    @Published var isPrivate: Bool = false
+    var isOnline: Bool = false
+    var pics: [Picture] = []
+    var hasMore: Bool = false
+    var isPrivate: Bool = false
     func loadMore() async { }
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async { }
     func resetData() { }

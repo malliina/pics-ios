@@ -126,7 +126,7 @@ struct PicsView<T>: View where T: PicsVMLike {
             ToolbarItem(placement: .principal) {
                 Text("Pics")
                     .font(.headline)
-                    .foregroundColor(Color(titleColor))
+                    .foregroundColor(viewModel.isOnline ? Color(titleColor) : Color.red)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 if isCameraAvailable {

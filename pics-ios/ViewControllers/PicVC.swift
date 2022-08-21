@@ -20,6 +20,7 @@ class PicVC: BaseVC {
     let isPrivate: Bool
     
     var backgroundColor: UIColor { isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    var cache: DataCache { DataCache.shared }
     
     init(pic: Picture, navHiddenInitially: Bool, isPrivate: Bool) {
         self.pic = pic
@@ -35,6 +36,8 @@ class PicVC: BaseVC {
     }
     
     override func initUI() {
+//        let meta = pic.meta
+//        log.info("Init pic, got s \(meta.small) m \(meta.medium) l \(meta.large) o \(meta.url)")
         // shows navbar on tap
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PicVC.onTap(_:)))
         view.addGestureRecognizer(gestureRecognizer)
@@ -55,7 +58,7 @@ class PicVC: BaseVC {
             imageView.image = image
         } else {
             // Uses the small image until a larger is available
-            if let smallData = pic.smallData, let smallImage = UIImage(data: smallData) {
+            if let smallData = cache.search(key: pic.meta.key), let smallImage = UIImage(data: smallData) {
                 imageView.image = smallImage
             } else {
                 imageView.image = pic.preferred
@@ -65,12 +68,13 @@ class PicVC: BaseVC {
                     log.info("No pic available for \(pic.meta.key)")
                 }
             }
-//            downloadLarge(pic: pic) { large in
-//                self.onUiThread {
-////                    self.pic.large = large
-//                    self.imageView.image = large
-//                }
-//            }
+//            log.info("Downloading large...")
+            downloadLarge(pic: pic) { large in
+                self.onUiThread {
+//                    self.pic.large = large
+                    self.imageView.image = large
+                }
+            }
         }
     }
     
@@ -91,11 +95,11 @@ class PicVC: BaseVC {
 extension UIViewController {
     func downloadLarge(pic: Picture, onImage: @escaping (UIImage) -> Void) {
         if pic.large == nil {
-//            Downloader.shared.download(url: pic.meta.large) { data in
-//                if let image = UIImage(data: data) {
-//                    onImage(image)
-//                }
-//            }
+            Downloader.shared.downloadOrLogError(url: pic.meta.large) { data in
+                if let image = UIImage(data: data) {
+                    onImage(image)
+                }
+            }
         }
     }
 }

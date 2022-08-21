@@ -19,6 +19,17 @@ class Downloader {
     fileprivate var tasks = [URLSessionTask]()
     private let queue = DispatchQueue(label: "DownloaderTaskQueue")
     
+    func downloadOrLogError(url: URL, onData: @escaping (Data) -> Void) {
+        download(url: url) { result in
+            switch result {
+            case .data(let data):
+                onData(data)
+            case .failure(let error):
+                self.log.info("Download of '\(url)' failed. \(error)")
+            }
+        }
+    }
+    
     // Adapted from https://andreygordeev.com/2017/02/20/uitableview-prefetching/
     func download(url: URL, onData: @escaping (DownloadResult) -> Void) {
         self.queue.sync {

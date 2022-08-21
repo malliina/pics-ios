@@ -9,26 +9,40 @@
 import Foundation
 import SwiftUI
 
+class DataCache {
+    static let shared = DataCache()
+    
+    private var cache: [ClientKey: Data] = [:]
+    
+    func search(key: ClientKey) -> Data? { cache[key] }
+    
+    func put(key: ClientKey, data: Data) { cache[key] = data }
+}
+
 struct CachedImage: View {
     private static let logger = LoggerFactory.shared.pics(CachedImage.self)
     var log: Logger { CachedImage.logger }
     
-    let pic: Picture
+    var pic: Picture
     let size: CGSize
     
     var localStorage: LocalPics { LocalPics.shared }
+    var cache: DataCache { DataCache.shared }
     
     @State var data: Data? = nil
     
     @MainActor
     func loadImage() async {
         data = await picData()
+        if let data = data {
+            DataCache.shared.put(key: pic.meta.key, data: data)
+        }
     }
     
     func picData() async -> Data? {
         let key = pic.meta.key
-        log.info("Loading \(pic.meta.key)...")
-        if let cache = pic.smallData {
+//        log.info("Loading \(pic.meta.key)...")
+        if let cache = cache.search(key: pic.meta.key) {
             return cache
         }
         if let uiImage = pic.preferred,

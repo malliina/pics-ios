@@ -226,7 +226,7 @@ typealias Timestamp = UInt64
 struct Picture {
     static let TempFakeUrl = URL(string: "https://pics.malliina.com")!
     let meta: PicMeta
-    var smallData: Data? = nil
+//    var smallData: Data? = nil
     var url: UIImage? = nil
     var small: UIImage? = nil
     var medium: UIImage? = nil
@@ -262,19 +262,6 @@ struct Picture {
     static func randomKey() -> String {
         String(UUID().uuidString.prefix(7)).lowercased()
     }
-    
-//    func withMeta(meta: PicMeta) -> Picture {
-//        let other = Picture(meta: meta)
-//        other.url = url
-//        other.small = small
-//        other.medium = medium
-//        other.large = large
-//        return other
-//    }
-    
-//    func withUrl(url: URL) -> Picture {
-//        withMeta(meta: meta.withUrl(url: url))
-//    }
 }
 
 struct KeyedEvent: Codable {
