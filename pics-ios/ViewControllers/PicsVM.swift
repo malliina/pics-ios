@@ -55,6 +55,9 @@ extension PicsVM: AuthInit {
 class PicsVM: PicsVMLike {
     private let log = LoggerFactory.shared.vc(PicsVM.self)
     
+    static let itemsPerLoad = 100
+    static let preferredItemSize: Double = Devices.isIpad ? 200 : 130
+    
     let user = User.shared
     
 //    @Published var offlinePics: [Picture] = []
@@ -66,7 +69,7 @@ class PicsVM: PicsVMLike {
     private(set) var isPrivate = User.shared.isPrivate
     @Published private(set) var hasMore = false
     private var isInitial = true
-    var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+//    var titleTextColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     private var library: PicsLibrary { Backend.shared.library }
     private var picsSettings: PicsSettings { PicsSettings.shared }
@@ -137,7 +140,7 @@ class PicsVM: PicsVMLike {
         try await appendPics()
     }
     
-    private func appendPics(limit: Int = PicsVC.itemsPerLoad) async throws {
+    private func appendPics(limit: Int = PicsVM.itemsPerLoad) async throws {
         let beforeCount = pics.count
         let batch = try await library.loadAsync(from: beforeCount, limit: limit)
 //        log.info("Got batch of \(batch.count) pics from \(beforeCount) online \(isOnline) private \(isPrivate) first is \(batch.first?.key.key ?? "none")")
@@ -253,7 +256,7 @@ class PicsVM: PicsVMLike {
         pool.clearLastKnownUser()
         picsSettings.activeUser = nil
         resetData()
-        adjustTitleTextColor(PicsColors.almostBlack)
+        adjustTitleTextColor(PicsColors.uiAlmostBlack)
     }
     
     private func adjustTitleTextColor(_ color: UIColor) {

@@ -14,7 +14,7 @@ class BaseVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = PicsColors.background
+        view.backgroundColor = PicsColors.uiBackground
         initUI()
     }
     

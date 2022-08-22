@@ -71,9 +71,9 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     var isPrivate: Bool { picsSettings.activeUser != nil }
     var currentUsernameOrAnon: Username { activeUser ?? Username.anon }
 
-    var backgroundColor: UIColor { isPrivate ? PicsColors.background : PicsColors.lightBackground }
-    var cellBackgroundColor: UIColor { isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
-    var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+//    var backgroundColor: UIColor { isPrivate ? PicsColors.uiBackground : PicsColors.uiLightBackground }
+    var cellBackgroundColor: Color { isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
+    var titleTextColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     var textColor: UIColor { isPrivate ? .lightText : .darkText }
     
     var locs: CLLocationManager? = nil
@@ -91,7 +91,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = backgroundColor
+//        view.backgroundColor = backgroundColor
         guard let coll = collectionView else { return }
         coll.register(PicsCell.self, forCellWithReuseIdentifier: PicCellIdentifier)
         coll.delegate = self
@@ -314,10 +314,10 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     }
     
     func initStyle() {
-        view.backgroundColor = backgroundColor
-        collectionView?.backgroundColor = backgroundColor
-        // navigationController?.navigationBar.barStyle = barStyle
-        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: titleTextColor]
+//        view.backgroundColor = backgroundColor
+//        collectionView?.backgroundColor = backgroundColor
+//        // navigationController?.navigationBar.barStyle = barStyle
+//        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: titleTextColor]
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -334,7 +334,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PicCellIdentifier, for: indexPath) as! PicsCell
-        cell.backgroundColor = cellBackgroundColor
+//        cell.backgroundColor = cellBackgroundColor
         let pic = pics[indexPath.row]
 //        if pic.meta.small.isFileURL {
 //            log.info("File \(pic.meta.small) exists \(pic.meta.small.exists)")
@@ -438,7 +438,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
         onUiThread {
             let feedbackLabel = PicsLabel.build(text: text, alignment: .center, numberOfLines: 0)
             feedbackLabel.textColor = self.textColor
-            feedbackLabel.backgroundColor = self.backgroundColor
+//            feedbackLabel.backgroundColor = self.backgroundColor
             self.collectionView?.backgroundView = feedbackLabel
             self.resetDisplay()
         }
@@ -707,14 +707,4 @@ extension Data {
         }
         return String(utf16CodeUnits: chars, count: chars.count)
     }
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
-	return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
-	return input.rawValue
 }

@@ -13,14 +13,14 @@ struct HelpView: View {
 //    var dismiss: () -> Void
     @Environment(\.dismiss) private var dismiss
     var textColor: UIColor { isPrivate ? .lightText : .darkText }
-    var titleColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
-    var backgroundColor: UIColor { isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    var titleColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    var backgroundColor: Color { isPrivate ? PicsColors.background : PicsColors.lightBackground }
     let bundleMeta = Bundle.main.infoDictionary
     
     var body: some View {
         ZStack {
             // iPad shows wrong color at sheet edges without this
-            Color(backgroundColor)
+            backgroundColor
                 .edgesIgnoringSafeArea(.all)
             VStack {
                 Text("Developed by Michael Skogberg.")
@@ -38,7 +38,7 @@ struct HelpView: View {
                 }
             }
             .navigationTitle("Information")
-            .navigationBarTitleTextColor(titleColor)
+            .navigationBarTitleTextColor(UIColor.blue)
             .navigationBarItems(trailing: Button("Done") {
                 dismiss()
             })
@@ -56,8 +56,8 @@ struct HelpTextView: View {
 extension View {
     /// https://stackoverflow.com/a/66050825
     func navigationBarTitleTextColor(_ color: UIColor) -> some View {
-        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: color]
-        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: color]
+        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.red]
+        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.red]
         return self
     }
 }

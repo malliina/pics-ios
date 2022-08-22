@@ -42,7 +42,7 @@ struct CachedImage: View {
     func picData() async -> Data? {
         let key = pic.meta.key
 //        log.info("Loading \(pic.meta.key)...")
-        if let cache = cache.search(key: pic.meta.key) {
+        if let cache = cache.search(key: key) {
             return cache
         }
         if let uiImage = pic.preferred,
@@ -55,7 +55,7 @@ struct CachedImage: View {
             return localData
         }
         if let data = try? await Downloader.shared.downloadAsync(url: pic.meta.small) {
-            let _ = localStorage.saveSmall(data: data, key: pic.meta.key)
+            let _ = localStorage.saveSmall(data: data, key: key)
             return data
         } else {
             return nil

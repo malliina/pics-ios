@@ -20,7 +20,7 @@ struct PicPagingView: UIViewControllerRepresentable {
     let isPrivate: Bool
     let delegate: PicDelegate
     
-    var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    var titleTextColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     func makeUIViewController(context: Context) -> PicPagingVC {
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: titleTextColor]
@@ -46,7 +46,7 @@ class PicPagingVC: BaseVC {
     var idx: Int { index }
     let isPrivate: Bool
     let delegate: PicDelegate
-    var titleTextColor: UIColor { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    var titleTextColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     init(pics: [Picture], startIndex: Int, isPrivate: Bool, delegate: PicDelegate) {
         self.pics = pics

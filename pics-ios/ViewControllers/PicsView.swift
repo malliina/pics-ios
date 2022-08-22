@@ -26,27 +26,6 @@ class PicViewDelegate <T> : PicDelegate where T: PicsVMLike {
     }
 }
 
-class DemoData: ObservableObject {
-    @Published var names: [String] = ["https://pics.malliina.com/jnmczfc.jpg?s=s"]
-}
-
-struct DemoListView: View {
-    @EnvironmentObject var viewModel: DemoData
-    
-    var body: some View {
-        VStack {
-            Button("Add") {
-                viewModel.names.append("https://pics.malliina.com/jnmczfc.jpg?s=s")
-            }
-            List {
-                ForEach(viewModel.names, id: \.self) { task in
-                    AsyncImage(url: URL(string: task))
-                }
-            }
-        }
-    }
-}
-
 struct PicsView<T>: View where T: PicsVMLike {
     let log = LoggerFactory.shared.vc(PicsView.self)
     
@@ -58,8 +37,8 @@ struct PicsView<T>: View where T: PicsVMLike {
     @State private var showHelp = false
     @State private var showCamera = false
     
-    var backgroundColor: UIColor { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
-    var titleColor: UIColor { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    var backgroundColor: Color { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    var titleColor: Color { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     let user = User()
     let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
@@ -68,27 +47,43 @@ struct PicsView<T>: View where T: PicsVMLike {
         self.viewModel = viewModel
     }
     
-    var body2: some View {
-        DemoListView().environmentObject(DemoData())
-    }
-    
     var body: some View {
         GeometryReader { geometry in
-            grid(geometry: geometry).task {
-                await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
+            ZStack {
+                grid(geometry: geometry).task {
+                    await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
+                }.overlay(alignment: .bottom) {
+                    Button {
+                        showCamera.toggle()
+                    } label: {
+                        HStack {
+                            Image(systemName: "camera")
+                                .renderingMode(.template)
+                            Text("Take pic")
+                                .fontWeight(.semibold)
+                                .font(.title)
+                        }
+                        .padding()
+                        .frame(minWidth: 220)
+//                        .foregroundColor(.white)
+                        .background(PicsColors.almostBlack)
+                        .cornerRadius(40)
+                    }
+
+                }
             }
         }
     }
     
     func grid(geometry: GeometryProxy) -> some View {
-        let sizeInfo = PicsCell.sizeForItem(minWidthPerItem: PicsVC.preferredItemSize, totalWidth: geometry.size.width)
+        let sizeInfo = PicsCell.sizeForItem(minWidthPerItem: PicsVM.preferredItemSize, totalWidth: geometry.size.width)
         let columns: [GridItem] = Array(repeating: .init(.fixed(sizeInfo.sizePerItem.width)), count: sizeInfo.itemsPerRow)
         return ScrollView {
             LazyVGrid(columns: columns) {
                 ForEach(Array(viewModel.pics.enumerated()), id: \.element.meta.key) { index, pic in
                     NavigationLink {
                         PicPagingView(pics: viewModel.pics, startIndex: index, isPrivate: user.isPrivate, delegate: PicViewDelegate(viewModel: viewModel))
-                            .background(Color(backgroundColor))
+                            .background(backgroundColor)
                             .navigationBarHidden(picNavigationBarHidden)
                             .onTapGesture {
                                 picNavigationBarHidden = !picNavigationBarHidden
@@ -126,7 +121,7 @@ struct PicsView<T>: View where T: PicsVMLike {
             ToolbarItem(placement: .principal) {
                 Text("Pics")
                     .font(.headline)
-                    .foregroundColor(viewModel.isOnline ? Color(titleColor) : Color.red)
+                    .foregroundColor(viewModel.isOnline ? titleColor : Color.red)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 if isCameraAvailable {
@@ -147,12 +142,14 @@ struct PicsView<T>: View where T: PicsVMLike {
         .sheet(isPresented: $showProfile) {
             ProfilePopoverView(user: user.activeUser, delegate: ProfileViewDelegate(viewModel: viewModel))
         }
-        .sheet(isPresented: $showCamera) {
+        .fullScreenCover(isPresented: $showCamera) {
             ImagePicker { image in
                 viewModel.display(newPics: [image])
-            }.background(Color(backgroundColor))
+            }
+            .edgesIgnoringSafeArea(.all)
+            .background(backgroundColor)
         }
-        .background(Color(backgroundColor))
+        .background(backgroundColor)
     }
 }
 
