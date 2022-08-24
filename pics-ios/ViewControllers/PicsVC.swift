@@ -71,7 +71,6 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     var isPrivate: Bool { picsSettings.activeUser != nil }
     var currentUsernameOrAnon: Username { activeUser ?? Username.anon }
 
-//    var backgroundColor: UIColor { isPrivate ? PicsColors.uiBackground : PicsColors.uiLightBackground }
     var cellBackgroundColor: Color { isPrivate ? PicsColors.almostBlack : PicsColors.almostLight }
     var titleTextColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     var textColor: UIColor { isPrivate ? .lightText : .darkText }
@@ -212,7 +211,7 @@ class PicsVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, Pi
     
     private func load(with token: AWSCognitoIdentityUserSessionToken?) {
         Backend.shared.updateToken(new: token)
-        self.socket.connect()
+        self.socket.reconnect()
         self.syncPics()
         onUiThread {
             self.updateStyle()

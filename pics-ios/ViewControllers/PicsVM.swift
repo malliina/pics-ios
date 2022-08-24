@@ -33,6 +33,9 @@ protocol PicsVMLike: ObservableObject, AuthInit {
     func onPublic()
     func onPrivate(user: Username)
     func signOut()
+    
+    func connect()
+    func disconnect()
 }
 
 protocol AuthInit {
@@ -52,6 +55,49 @@ extension PicsVM: AuthInit {
     }
 }
 
+extension PicsVM: PicsDelegate {
+    func onPics(pics: [PicMeta]) {
+        let (existingPics, newPics) = pics.partition(contains)
+        existingPics.forEach { meta in
+            updateMeta(pic: meta)
+        }
+        let picsToAdd = newPics.filter { pic in
+            !isBlocked(pic: pic)
+        }.map { meta in
+            Picture(meta: meta)
+        }
+        let updated = picsToAdd.reversed() + self.pics
+        savePics(newPics: updated)
+    }
+    
+    func onPicsRemoved(keys: [ClientKey]) {
+        removeLocally(keys: keys)
+    }
+    
+    func onProfile(info: ProfileInfo) {
+        
+    }
+    
+    private func updateMeta(pic: PicMeta) {
+        log.info("Metadata update not supported currently (\(pic.key).")
+//        if let clientKey = pic.clientKey, let idx = indexFor(clientKey) {
+////            self.pics[idx] = self.pics[idx].withMeta(meta: pic)
+//        } else {
+//            log.info("Cannot update \(pic.key), pic not found in memory.")
+//        }
+    }
+    
+    private func indexFor(_ clientKey: ClientKey) -> Int? {
+        self.pics.firstIndex(where: { (p) -> Bool in
+            p.meta.clientKey == clientKey
+        })
+    }
+    
+    private func contains(pic: PicMeta) -> Bool {
+        self.pics.contains(where: { p -> Bool in (pic.clientKey != nil && p.meta.clientKey == pic.clientKey) || p.meta.key == pic.key })
+    }
+}
+
 class PicsVM: PicsVMLike {
     private let log = LoggerFactory.shared.vc(PicsVM.self)
     
@@ -60,8 +106,6 @@ class PicsVM: PicsVMLike {
     
     let user = User.shared
     
-//    @Published var offlinePics: [Picture] = []
-//    @Published var onlinePics: [Picture] = []
     @Published private(set) var isOnline = false
     var currentUsernameOrAnon: Username { User.shared.activeUser ?? Username.anon }
     
@@ -69,17 +113,27 @@ class PicsVM: PicsVMLike {
     private(set) var isPrivate = User.shared.isPrivate
     @Published private(set) var hasMore = false
     private var isInitial = true
-//    var titleTextColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
     private var library: PicsLibrary { Backend.shared.library }
     private var picsSettings: PicsSettings { PicsSettings.shared }
     var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     private var authCancellation: AWSCancellationTokenSource? = nil
     
+    var socket: PicsSocket { Backend.shared.socket }
+    
     let userChanged: (Username?) -> Void
     
     init(userChanged: @escaping (Username?) -> Void) {
         self.userChanged = userChanged
+        socket.delegate = self
+    }
+    
+    func connect() {
+        socket.reconnect()
+    }
+    
+    func disconnect() {
+        socket.disconnect()
     }
     
     private func savePics(newPics: [Picture]) {
@@ -123,7 +177,6 @@ class PicsVM: PicsVMLike {
         authCancellation = AWSCancellationTokenSource()
         let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: authCancellation)
         try await load(with: userInfo.token)
-//        self.library.syncOffline(for: userInfo.username)
     }
     
     private func loadAnonymousPics() async throws {
@@ -136,14 +189,15 @@ class PicsVM: PicsVMLike {
     }
     
     func load(with token: AWSCognitoIdentityUserSessionToken?) async throws {
+        log.info("Loading!")
         Backend.shared.updateToken(new: token)
+        socket.reconnect()
         try await appendPics()
     }
     
     private func appendPics(limit: Int = PicsVM.itemsPerLoad) async throws {
         let beforeCount = pics.count
         let batch = try await library.loadAsync(from: beforeCount, limit: limit)
-//        log.info("Got batch of \(batch.count) pics from \(beforeCount) online \(isOnline) private \(isPrivate) first is \(batch.first?.key.key ?? "none")")
         let syncedBatch: [PicMeta] = batch.map { meta in
             let key = meta.key
             guard let url = LocalPics.shared.findLocal(key: key) else {
@@ -164,7 +218,7 @@ class PicsVM: PicsVMLike {
     }
     
     func remove(key: ClientKey) {
-        removeLocally(key: key)
+        removeLocally(keys: [key])
         Task {
             do {
                 let _ = try await library.deleteAsync(key: key)
@@ -176,7 +230,7 @@ class PicsVM: PicsVMLike {
     
     func block(key: ClientKey) {
         PicsSettings.shared.block(key: key)
-        removeLocally(key: key)
+        removeLocally(keys: [key])
     }
     
     func display(newPics: [Picture]) {
@@ -187,10 +241,11 @@ class PicsVM: PicsVMLike {
         }
     }
     
-    private func removeLocally(key: ClientKey) {
+    private func removeLocally(keys: [ClientKey]) {
         DispatchQueue.main.async {
-//            self.offlinePics = self.offlinePics.filter { pic in pic.meta.key != key }
-            self.savePics(newPics: self.pics.filter { pic in pic.meta.key != key })
+            self.savePics(newPics: self.pics.filter { pic in !keys.contains { key in
+                pic.meta.key == key
+            }})
         }
     }
     
@@ -269,6 +324,8 @@ class PicsVM: PicsVMLike {
 }
 
 class PreviewPicsVM: PicsVMLike {
+    func connect() {}
+    func disconnect() {}
     var isOnline: Bool = false
     var pics: [Picture] = []
     var hasMore: Bool = false

@@ -226,7 +226,7 @@ typealias Timestamp = UInt64
 struct Picture {
     static let TempFakeUrl = URL(string: "https://pics.malliina.com")!
     let meta: PicMeta
-//    var smallData: Data? = nil
+    
     var url: UIImage? = nil
     var small: UIImage? = nil
     var medium: UIImage? = nil

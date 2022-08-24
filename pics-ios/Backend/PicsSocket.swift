@@ -41,7 +41,7 @@ class PicsSocket: TokenDelegate, WebSocketMessageDelegate {
         Tokens.shared.addDelegate(self)
     }
     
-    func connect() {
+    func reconnect() {
         socket.connect()
     }
     
@@ -57,49 +57,10 @@ class PicsSocket: TokenDelegate, WebSocketMessageDelegate {
         socket.updateAuthHeader(newValue: value)
     }
     
-//    func send<T: Encodable>(_ json: T) -> ErrorMessage? {
-//        let encoder = JSONEncoder()
-//        do {
-//            let data = try encoder.encode(json)
-//            guard let asString = String(data: data, encoding: .utf8) else {
-//                return ErrorMessage("JSON-to-String conversion failed.")
-//            }
-//            socket.send(asString)
-//            //Log.info("Sent \(payload) to \(baseURL))")
-//            return nil
-//        } catch let err {
-//            return failWith("Unable to send payload, encountered non-JSON payload: '\(err)'.")
-//        }
-////        if let socket = socket {
-////            let encoder = JSONEncoder()
-////            do {
-////                let data = try encoder.encode(json)
-////                guard let asString = String(data: data, encoding: .utf8) else {
-////                    return ErrorMessage("JSON-to-String conversion failed.")
-////                }
-////                socket.send(asString)
-////                //Log.info("Sent \(payload) to \(baseURL))")
-////                return nil
-////            } catch let err {
-////                return failWith("Unable to send payload, encountered non-JSON payload: '\(err)'.")
-////            }
-////        } else {
-////            return failWith("Unable to send payload, socket not available.")
-////        }
-//    }
-    
     func failWith(_ message: String) -> ErrorMessage {
         log.error(message)
         return ErrorMessage(message)
     }
-    
-//    override func webSocket(_ webSocket: SRWebSocket!, didReceiveMessage message: Any!) {
-//        if let message = message as? String {
-//            on(message: message)
-//        } else {
-//            log.error("Received a non-string JSON message.")
-//        }
-//    }
     
     func on(message: String) {
         guard let data = message.data(using: String.Encoding.utf8, allowLossyConversion: false) else {

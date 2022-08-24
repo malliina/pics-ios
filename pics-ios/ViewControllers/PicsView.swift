@@ -37,6 +37,7 @@ struct PicsView<T>: View where T: PicsVMLike {
     @State private var showHelp = false
     @State private var showCamera = false
     
+    
     var backgroundColor: Color { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var titleColor: Color { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
@@ -62,14 +63,15 @@ struct PicsView<T>: View where T: PicsVMLike {
                             Text("Take pic")
                                 .fontWeight(.semibold)
                                 .font(.title)
+                            Image(systemName: "camera")
+                                .renderingMode(.template)
+                                .opacity(0)
                         }
                         .padding()
                         .frame(minWidth: 220)
-//                        .foregroundColor(.white)
                         .background(PicsColors.almostBlack)
                         .cornerRadius(40)
                     }
-
                 }
             }
         }

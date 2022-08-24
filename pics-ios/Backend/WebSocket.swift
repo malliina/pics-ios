@@ -32,7 +32,7 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
         sessionConfiguration = URLSessionConfiguration.default
         super.init()
         sessionConfiguration.httpAdditionalHeaders = headers
-        prepTask()
+//        prepTask()
     }
     
     private func prepTask() {
@@ -40,7 +40,15 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
         task = session?.webSocketTask(with: request)
     }
     
+    func reconnect() {
+        if task != nil {
+            disconnect()
+        }
+        connect()
+    }
+    
     func connect() {
+        prepTask()
         log.info("Connecting to \(urlString)...")
         task?.resume()
     }
@@ -87,7 +95,8 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
     }
     
     func disconnect() {
-      let reason = "Closing connection".data(using: .utf8)
-      task?.cancel(with: .goingAway, reason: reason)
+        self.log.info("Disconnecting from \(urlString).")
+        let reason = "Closing connection".data(using: .utf8)
+        task?.cancel(with: .goingAway, reason: reason)
     }
 }

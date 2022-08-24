@@ -13,7 +13,7 @@ struct HelpView: View {
 //    var dismiss: () -> Void
     @Environment(\.dismiss) private var dismiss
     var textColor: UIColor { isPrivate ? .lightText : .darkText }
-    var titleColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    var titleColor: UIColor { isPrivate ? PicsColors.uiAlmostLight : PicsColors.uiAlmostBlack }
     var backgroundColor: Color { isPrivate ? PicsColors.background : PicsColors.lightBackground }
     let bundleMeta = Bundle.main.infoDictionary
     
@@ -38,7 +38,7 @@ struct HelpView: View {
                 }
             }
             .navigationTitle("Information")
-            .navigationBarTitleTextColor(UIColor.blue)
+            .navigationBarTitleTextColor(titleColor)
             .navigationBarItems(trailing: Button("Done") {
                 dismiss()
             })
@@ -56,8 +56,8 @@ struct HelpTextView: View {
 extension View {
     /// https://stackoverflow.com/a/66050825
     func navigationBarTitleTextColor(_ color: UIColor) -> some View {
-        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.red]
-        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.red]
+        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: color]
+        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: color]
         return self
     }
 }
