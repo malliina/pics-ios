@@ -20,7 +20,7 @@ struct PicPagingView: UIViewControllerRepresentable {
     let isPrivate: Bool
     let delegate: PicDelegate
     
-    var titleTextColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    var titleTextColor: UIColor { isPrivate ? PicsColors.uiAlmostLight : PicsColors.uiAlmostBlack }
     
     func makeUIViewController(context: Context) -> PicPagingVC {
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: titleTextColor]
@@ -86,7 +86,8 @@ class PicPagingVC: BaseVC {
     }
     
     @objc func shareClicked(_ button: UIBarButtonItem) {
-        if index < pics.count, let image = pics[index].preferred {
+        if index < pics.count {
+            let image = pics[index].meta.url
             let vc = UIActivityViewController(activityItems: [image], applicationActivities: nil)
             vc.popoverPresentationController?.barButtonItem = button
             self.present(vc, animated: true, completion: nil)
