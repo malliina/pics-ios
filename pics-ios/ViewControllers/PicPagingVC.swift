@@ -11,6 +11,11 @@ import SnapKit
 import MessageUI
 import SwiftUI
 
+protocol PicDelegate {
+    func remove(key: ClientKey)
+    func block(key: ClientKey)
+}
+
 struct PicPagingView: UIViewControllerRepresentable {
     private let log = LoggerFactory.shared.vc(PicPagingView.self)
     typealias UIViewControllerType = PicPagingVC
@@ -64,7 +69,8 @@ class PicPagingVC: BaseVC {
     override func initUI() {
         updateNavBar(vc: self)
         navigationController?.setNavigationBarHidden(true, animated: true)
-        let vc = PicVC(pic: pics[index], navHiddenInitially: true, isPrivate: isPrivate)
+        let vc = UIHostingController(rootView: PicView(pic: pics[index], isPrivate: isPrivate))
+//        let vc2 = PicVC(pic: pics[index], navHiddenInitially: true, isPrivate: isPrivate)
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
@@ -114,7 +120,7 @@ class PicPagingVC: BaseVC {
             })
             content.addAction(UIAlertAction(title: "Open in Safari", style: .default) { action in
                 if !meta.url.isFileURL {
-                    UIApplication.shared.open(meta.url, options: convertToUIApplicationOpenExternalURLOptionsKeyDictionary([:]), completionHandler: nil)
+                    UIApplication.shared.open(meta.url)
                 } else {
                     self.log.warn("Refusing to open a file URL in browser.")
                 }
@@ -199,7 +205,6 @@ extension PicPagingVC: UIPageViewControllerDataSource {
     
     func go(to newIndex: Int) -> UIViewController? {
         if newIndex >= 0 && newIndex < pics.count {
-//            index = newIndex
             return PicVC(pic: pics[newIndex], navHiddenInitially: navigationController?.isNavigationBarHidden ?? true, isPrivate: isPrivate)
         } else {
             return nil
@@ -215,9 +220,4 @@ extension PicPagingVC: UIPageViewControllerDataSource {
 //    func presentationIndex(for pageViewController: UIPageViewController) -> Int {
 //        return index
 //    }
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertToUIApplicationOpenExternalURLOptionsKeyDictionary(_ input: [String: Any]) -> [UIApplication.OpenExternalURLOptionsKey: Any] {
-	return Dictionary(uniqueKeysWithValues: input.map { key, value in (UIApplication.OpenExternalURLOptionsKey(rawValue: key), value)})
 }

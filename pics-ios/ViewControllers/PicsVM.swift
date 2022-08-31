@@ -81,7 +81,7 @@ extension PicsVM: PicsDelegate {
     private func updateMeta(pic: PicMeta) {
         log.info("Metadata update not supported currently (\(pic.key).")
 //        if let clientKey = pic.clientKey, let idx = indexFor(clientKey) {
-////            self.pics[idx] = self.pics[idx].withMeta(meta: pic)
+//          self.pics[idx] = self.pics[idx].withMeta(meta: pic)
 //        } else {
 //            log.info("Cannot update \(pic.key), pic not found in memory.")
 //        }
@@ -151,7 +151,6 @@ class PicsVM: PicsVMLike {
         if !initialOnly || isInitial {
             isInitial = false
             if initialOnly {
-//                self.pics = picsSettings.localPictures(for: currentUsernameOrAnon)
                 self.pics = []
                 log.info("Offline count \(pics.count)")
             }
@@ -254,14 +253,10 @@ class PicsVM: PicsVMLike {
             Tokens.shared.clearDelegates()
             self.isOnline = false
             self.savePics(newPics: [])
-//            self.offlinePics = []
             Task {
                 await self.loadPicsAsync(for: nil, initialOnly: true)
             }
         }
-//        socket.disconnect()
-//        isOnline = false
-//        resetDisplay()
     }
     
     func onPublic() {
@@ -277,11 +272,6 @@ class PicsVM: PicsVMLike {
                 try await self.loadAnonymousPics()
             }
         }
-//        onUiThread {
-//            self.offlinePics = self.picsSettings.localPictures(for: Username.anon)
-//            self.collectionView?.reloadData()
-//        }
-        
         log.info("Current user is \(user.currentUsernameOrAnon)")
     }
     
@@ -297,12 +287,6 @@ class PicsVM: PicsVMLike {
                 try await self.loadPrivatePics(for: user)
             }
         }
-//            DispatchQueue.main.async {
-//            self.offlinePics = self.picsSettings.localPictures(for: user)
-//                self.updateStyle()
-//                isPrivate = true
-//            self.collectionView?.reloadData()
-//            }
     }
     
     func signOut() {

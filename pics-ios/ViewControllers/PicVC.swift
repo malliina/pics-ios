@@ -20,14 +20,13 @@ class PicVC: BaseVC {
     let isPrivate: Bool
     
     var backgroundColor: UIColor { isPrivate ? PicsColors.uiBackground : PicsColors.uiLightBackground }
-    var cache: DataCache { DataCache.shared }
+    var cache: DataCache { DataCache.small }
     
     init(pic: Picture, navHiddenInitially: Bool, isPrivate: Bool) {
         self.pic = pic
         self.navHiddenInitially = navHiddenInitially
         self.isPrivate = isPrivate
         super.init(nibName: nil, bundle: nil)
-        imageView.image = pic.url
         self.edgesForExtendedLayout = []
     }
     
@@ -36,8 +35,6 @@ class PicVC: BaseVC {
     }
     
     override func initUI() {
-//        let meta = pic.meta
-//        log.info("Init pic, got s \(meta.small) m \(meta.medium) l \(meta.large) o \(meta.url)")
         // shows navbar on tap
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PicVC.onTap(_:)))
         view.addGestureRecognizer(gestureRecognizer)
@@ -90,9 +87,7 @@ class PicVC: BaseVC {
         navigationController?.popViewController(animated: true)
         navigationController?.setNavigationBarHidden(false, animated: true)
     }
-}
-
-extension UIViewController {
+    
     func downloadLarge(pic: Picture, onImage: @escaping (UIImage) -> Void) {
         if pic.large == nil {
             Downloader.shared.downloadOrLogError(url: pic.meta.large) { data in
