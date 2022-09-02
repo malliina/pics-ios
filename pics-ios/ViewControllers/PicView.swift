@@ -33,7 +33,11 @@ struct PicView: View {
     
     var body: some View {
         if let data = data, let uiImage = UIImage(data: data) {
-            Image(uiImage: uiImage).resizable().scaledToFill().background(backgroundColor)
+            ZStack {
+                backgroundColor
+                    .edgesIgnoringSafeArea(.all)
+                Image(uiImage: uiImage).resizable().scaledToFit().background(backgroundColor)
+            }
         } else {
             ProgressView().scaledToFill().task {
                 await loadImage()

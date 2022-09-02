@@ -183,7 +183,11 @@ extension PicPagingVC: MFMailComposeViewControllerDelegate {
 extension PicPagingVC: UIPageViewControllerDelegate {
     func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
         if completed {
-            guard let current = pageViewController.viewControllers?.first as? PicVC else { return }
+            guard let hosting = pageViewController.viewControllers?.first as? UIHostingController<PicView> else {
+                log.warn("Current viewcontroller not found")
+                return
+            }
+            let current = hosting.rootView
             guard let newIndex = self.pics.firstIndex(where: { p in p.meta.key == current.pic.meta.key || (p.meta.clientKey != nil && p.meta.clientKey == current.pic.meta.clientKey) }) else { return }
             index = newIndex
             guard let parent = pageViewController.parent?.parent else { return }
@@ -194,16 +198,20 @@ extension PicPagingVC: UIPageViewControllerDelegate {
 
 extension PicPagingVC: UIPageViewControllerDataSource {
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        log.info("before \(index)")
         return go(to: index - 1)
     }
     
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        log.info("after \(index)")
         return go(to: index + 1)
     }
     
     func go(to newIndex: Int) -> UIViewController? {
         if newIndex >= 0 && newIndex < pics.count {
-            return PicVC(pic: pics[newIndex], navHiddenInitially: navigationController?.isNavigationBarHidden ?? true, isPrivate: isPrivate)
+            log.info("Go to \(newIndex)")
+            // navigationController?.setNavigationBarHidden(true, animated: true)
+            return UIHostingController(rootView: PicView(pic: pics[newIndex], isPrivate: isPrivate))
         } else {
             return nil
         }
