@@ -79,6 +79,14 @@ class PicPagingVC: BaseVC {
         pager.view.snp.makeConstraints { (make) in
             make.top.bottom.leading.trailing.equalToSuperview()
         }
+        // goes back on swipe up
+        let swipeRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(onSwipeUp(_:)))
+        swipeRecognizer.direction = .up
+        view.addGestureRecognizer(swipeRecognizer)
+    }
+    
+    @objc func onSwipeUp(_ sender: UISwipeGestureRecognizer) {
+        navigationController?.popViewController(animated: true)
     }
     
     func updateNavBar(vc: UIViewController) {
@@ -198,19 +206,16 @@ extension PicPagingVC: UIPageViewControllerDelegate {
 
 extension PicPagingVC: UIPageViewControllerDataSource {
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        log.info("before \(index)")
         return go(to: index - 1)
     }
     
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        log.info("after \(index)")
         return go(to: index + 1)
     }
     
     func go(to newIndex: Int) -> UIViewController? {
         if newIndex >= 0 && newIndex < pics.count {
-            log.info("Go to \(newIndex)")
-            // navigationController?.setNavigationBarHidden(true, animated: true)
+            // navigationController?.setNavigationBarHidden(true, animated: false)
             return UIHostingController(rootView: PicView(pic: pics[newIndex], isPrivate: isPrivate))
         } else {
             return nil
