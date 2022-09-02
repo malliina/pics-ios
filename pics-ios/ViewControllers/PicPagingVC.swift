@@ -90,7 +90,11 @@ class PicPagingVC: BaseVC {
     }
     
     func updateNavBar(vc: UIViewController) {
-        vc.navigationItem.title = "Pic"
+        let p = pics[index]
+        let d = Date(timeIntervalSince1970: Double(p.meta.added) / 1000)
+        let df = DateFormatter()
+        df.dateFormat = "y-MM-dd H:mm"
+        vc.navigationItem.title = df.string(from: d)
         vc.navigationItem.rightBarButtonItems = [
             UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareClicked(_:))),
             UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(actionsClicked(_:)))
@@ -213,9 +217,8 @@ extension PicPagingVC: UIPageViewControllerDataSource {
         return go(to: index + 1)
     }
     
-    func go(to newIndex: Int) -> UIViewController? {
+    private func go(to newIndex: Int) -> UIViewController? {
         if newIndex >= 0 && newIndex < pics.count {
-            // navigationController?.setNavigationBarHidden(true, animated: false)
             return UIHostingController(rootView: PicView(pic: pics[newIndex], isPrivate: isPrivate))
         } else {
             return nil

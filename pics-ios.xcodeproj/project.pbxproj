@@ -48,7 +48,6 @@
 		61D214C81FD488DD00781DC7 /* ConfirmVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C71FD488DD00781DC7 /* ConfirmVC.swift */; };
 		61D214CA1FD499C200781DC7 /* PicsLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C91FD499C200781DC7 /* PicsLabel.swift */; };
 		61E9FBEE20167F3800FA4F42 /* Credentials.plist in Resources */ = {isa = PBXBuildFile; fileRef = 618623CD1FD71DB60009345E /* Credentials.plist */; };
-		61EB2D841FDD45BB00A27F1A /* PicVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D831FDD45BB00A27F1A /* PicVC.swift */; };
 		61EB2D861FDD517500A27F1A /* Devices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D851FDD517500A27F1A /* Devices.swift */; };
 		61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */; };
 		61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */; };
@@ -138,7 +137,6 @@
 		61D214C91FD499C200781DC7 /* PicsLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsLabel.swift; sourceTree = "<group>"; };
 		61E9FBE2201666BD00FA4F42 /* AWSCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AWSCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61E9FBE62016677F00FA4F42 /* AWSCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AWSCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		61EB2D831FDD45BB00A27F1A /* PicVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicVC.swift; sourceTree = "<group>"; };
 		61EB2D851FDD517500A27F1A /* Devices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Devices.swift; sourceTree = "<group>"; };
 		61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPics.swift; sourceTree = "<group>"; };
 		61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
@@ -331,7 +329,6 @@
 				61A9C4BF1FF271D30085BA25 /* PicPagingVC.swift */,
 				7D20883C28318FC9005C0BBA /* PicsView.swift */,
 				7D20883E2835684F005C0BBA /* PicsVM.swift */,
-				61EB2D831FDD45BB00A27F1A /* PicVC.swift */,
 				7D6BF6E5280F48FD007C5FD5 /* PicView.swift */,
 				615647F0201C9EEA000E3BBD /* ProfilePopover.swift */,
 				61D214B91FD339A100781DC7 /* SignupVC.swift */,
@@ -463,9 +460,9 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */,
-				7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift.git" */,
-				7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */,
+				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */,
+				7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift" */,
+				7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -548,7 +545,6 @@
 				7D6BF6E6280F48FD007C5FD5 /* PicView.swift in Sources */,
 				61A9C4C92003ECC20085BA25 /* Strings.swift in Sources */,
 				61A702DA1FCAD86300814051 /* PicsHttpClient.swift in Sources */,
-				61EB2D841FDD45BB00A27F1A /* PicVC.swift in Sources */,
 				7D00DAC4284D020B00C6B06A /* Async.swift in Sources */,
 				615647F3201CA633000E3BBD /* PicsSettings.swift in Sources */,
 				618623D11FD71DFC0009345E /* CognitoConf.swift in Sources */,
@@ -1032,7 +1028,7 @@
 				version = 2.27.1;
 			};
 		};
-		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */ = {
+		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
 			requirement = {
@@ -1040,7 +1036,7 @@
 				version = 5.0.1;
 			};
 		};
-		7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift.git" */ = {
+		7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ReactiveX/RxSwift.git";
 			requirement = {
@@ -1048,7 +1044,7 @@
 				version = 6.5.0;
 			};
 		};
-		7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */ = {
+		7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/microsoft/appcenter-sdk-apple.git";
 			requirement = {
@@ -1071,27 +1067,27 @@
 		};
 		7D175C5A27C018E50050E29B /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */;
+			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
 		};
 		7D175C5D27C0190F0050E29B /* RxCocoa */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift.git" */;
+			package = 7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxCocoa;
 		};
 		7D175C5F27C0190F0050E29B /* RxSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift.git" */;
+			package = 7D175C5C27C0190F0050E29B /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxSwift;
 		};
 		7D175C6227C0195A0050E29B /* AppCenterAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterAnalytics;
 		};
 		7D175C6427C0195A0050E29B /* AppCenterCrashes */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterCrashes;
 		};
 /* End XCSwiftPackageProductDependency section */
