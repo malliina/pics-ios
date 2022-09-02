@@ -65,10 +65,8 @@ class PicVC: BaseVC {
                     log.info("No pic available for \(pic.meta.key)")
                 }
             }
-//            log.info("Downloading large...")
             downloadLarge(pic: pic) { large in
                 self.onUiThread {
-//                    self.pic.large = large
                     self.imageView.image = large
                 }
             }

@@ -70,7 +70,6 @@ class PicPagingVC: BaseVC {
         updateNavBar(vc: self)
         navigationController?.setNavigationBarHidden(true, animated: true)
         let vc = UIHostingController(rootView: PicView(pic: pics[index], isPrivate: isPrivate))
-//        let vc2 = PicVC(pic: pics[index], navHiddenInitially: true, isPrivate: isPrivate)
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
@@ -187,7 +186,6 @@ extension PicPagingVC: UIPageViewControllerDelegate {
             guard let current = pageViewController.viewControllers?.first as? PicVC else { return }
             guard let newIndex = self.pics.firstIndex(where: { p in p.meta.key == current.pic.meta.key || (p.meta.clientKey != nil && p.meta.clientKey == current.pic.meta.clientKey) }) else { return }
             index = newIndex
-            log.info("New index \(newIndex)")
             guard let parent = pageViewController.parent?.parent else { return }
             updateNavBar(vc: parent)
         }
