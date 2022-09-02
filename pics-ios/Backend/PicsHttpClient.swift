@@ -19,7 +19,6 @@ class PicsHttpClient: HttpClient {
     var postHeaders: [String: String] { return defaultHeaders.merging(postSpecificHeaders)  { (current, _) in current } }
     
     static let PicsVersion10 = "application/vnd.pics.v10+json"
-//    static let PicsVersion10 = "application/json"
     static let ClientPicHeader = "X-Client-Pic"
     
     convenience init(accessToken: AWSCognitoIdentityUserSessionToken?) {

@@ -10,9 +10,9 @@ import SwiftUI
 
 struct HelpView: View {
     var isPrivate: Bool
-//    var dismiss: () -> Void
     @Environment(\.dismiss) private var dismiss
-    var textColor: UIColor { isPrivate ? .lightText : .darkText }
+    var uiTextColor: UIColor { isPrivate ? .lightText : .darkText }
+    var textColor: Color { Color(uiTextColor) }
     var titleColor: UIColor { isPrivate ? PicsColors.uiAlmostLight : PicsColors.uiAlmostBlack }
     var backgroundColor: Color { isPrivate ? PicsColors.background : PicsColors.lightBackground }
     let bundleMeta = Bundle.main.infoDictionary
@@ -24,16 +24,16 @@ struct HelpView: View {
                 .edgesIgnoringSafeArea(.all)
             VStack {
                 Text("Developed by Michael Skogberg.")
-                    .foregroundColor(Color(textColor))
+                    .foregroundColor(textColor)
                     .padding(.top, 24)
                     .padding(.bottom, 16)
                 Text("You can reach me at info@skogberglabs.com. To report objectionable images or copyright violations: Tap the image, then tap it again to open the navigation bar and select an appropriate action from the action button. Abusive images will be removed within 24 hours.")
-                    .foregroundColor(Color(textColor))
+                    .foregroundColor(textColor)
                     .multilineTextAlignment(.center)
                 if let appVersion = bundleMeta?["CFBundleShortVersionString"] as? String, let buildId = bundleMeta?["CFBundleVersion"] as? String {
                     Spacer()
                     Text("Version \(appVersion) build \(buildId)")
-                        .foregroundColor(Color(textColor))
+                        .foregroundColor(textColor)
                         .font(.system(size: 14))
                 }
             }
@@ -44,12 +44,6 @@ struct HelpView: View {
             })
             .padding()
         }
-    }
-}
-
-struct HelpTextView: View {
-    var body: some View {
-        Text("Hej").background(Color.red)
     }
 }
 

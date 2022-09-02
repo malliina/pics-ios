@@ -188,7 +188,6 @@ class PicsVM: PicsVMLike {
     }
     
     func load(with token: AWSCognitoIdentityUserSessionToken?) async throws {
-        log.info("Loading!")
         Backend.shared.updateToken(new: token)
         socket.reconnect()
         try await appendPics()

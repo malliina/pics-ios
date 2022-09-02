@@ -23,6 +23,7 @@ class Backend {
     func updateToken(new token: AWSCognitoIdentityUserSessionToken?) {
         library.http.updateToken(token: token)
         socket.updateAuthHeader(with: authValue(token: token))
+        Downloader.shared.updateToken(token: token)
     }
     
     private func authValue(token: AWSCognitoIdentityUserSessionToken?) -> String? {

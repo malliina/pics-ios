@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AWSCognitoIdentityProvider
 
 enum DownloadResult {
     case data(data: Data)
@@ -18,6 +19,16 @@ class Downloader {
     private let log = LoggerFactory.shared.network(Downloader.self)
     fileprivate var tasks = [URLSessionTask]()
     private let queue = DispatchQueue(label: "DownloaderTaskQueue")
+    
+    private var requestHeaders: [String: String] = [HttpClient.accept: PicsHttpClient.PicsVersion10]
+    
+    func updateToken(token: AWSCognitoIdentityUserSessionToken?) {
+        if let token = token {
+            self.requestHeaders.updateValue(PicsHttpClient.authValueFor(forToken: token), forKey: HttpClient.authorization)
+        } else {
+            self.requestHeaders.removeValue(forKey: HttpClient.authorization)
+        }
+    }
     
     func downloadOrLogError(url: URL, onData: @escaping (Data) -> Void) {
         download(url: url) { result in
@@ -33,16 +44,14 @@ class Downloader {
     // Adapted from https://andreygordeev.com/2017/02/20/uitableview-prefetching/
     func download(url: URL, onData: @escaping (DownloadResult) -> Void) {
         self.queue.sync {
-//            guard tasks.firstIndex(where: { $0.originalRequest?.url == url }) == nil else {
-//                // We're already downloading the URL
-//                log.warn("Already downloading \(url.absoluteString), aborting")
-//                return
-//            }
+            var request = URLRequest(url: url)
+            for (key, value) in requestHeaders {
+                request.addValue(value, forHTTPHeaderField: key)
+            }
             log.info("Submitting download of \(url)")
-            let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+            let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
                 self.queue.sync {
                     let log = self.log
-//                    log.info("Task \(url) complete.")
                     if let idx = self.tasks.firstIndex(where: { $0.originalRequest?.url == url }) {
                         self.tasks.remove(at: idx)
                     }
@@ -55,7 +64,6 @@ class Downloader {
                         onData(.failure(error: error))
                     } else {
                         if let data = data {
-        //                    log.info("Downloaded \(url.absoluteString)")
                             onData(.data(data: data))
                         } else {
                             log.warn("No data returned in download of \(url.absoluteString), but also no error reported")

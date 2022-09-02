@@ -24,6 +24,7 @@ class Tokens {
     private let log = LoggerFactory.shared.system(Tokens.self)
     
     static let shared = Tokens()
+    let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)!
     
     private var delegates: [TokenDelegate] = []
     
@@ -34,8 +35,6 @@ class Tokens {
     func clearDelegates() {
         delegates = []
     }
-    
-    let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)!
     
     func retrieveUserInfoAsync(cancellationToken: AWSCancellationTokenSource? = nil) async throws -> UserInfo {
         return try await Async.async(from: retrieveUserInfo(cancellationToken: cancellationToken))
