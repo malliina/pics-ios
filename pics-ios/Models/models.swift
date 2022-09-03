@@ -130,13 +130,13 @@ struct FullUrl: ValidatedValueCodable {
 struct Username: Equatable, Hashable, ValueCodable {
     static let anon = Username("anon")
     let user: String
-    var value: String { return user }
+    var value: String { user }
     
     init(_ value: String) {
         self.user = value
     }
     
-    func encoded() -> String { return Data(user.utf8).hexEncodedString() }
+    func encoded() -> String { Data(user.utf8).hexEncodedString() }
 }
 
 struct ProfileInfo: Codable {
@@ -156,7 +156,7 @@ struct ClientKey: Equatable, Hashable, CustomStringConvertible, ValueCodable {
         self.key = value
     }
     
-    static func == (lhs: ClientKey, rhs: ClientKey) -> Bool { return lhs.key == rhs.key }
+    static func == (lhs: ClientKey, rhs: ClientKey) -> Bool { lhs.key == rhs.key }
     
     static func random() -> ClientKey {
         ClientKey(Picture.randomKey())

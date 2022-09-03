@@ -29,10 +29,13 @@ class PicsColors {
     static let background = Color(uiBackground)
 //    static let inputBackground = PicsColors.colorFor(red: 206, green: 206, blue: 210)
     static let inputBackground = blackish
+    static let inputBackground2 = Color(inputBackground)
 //    static let inputBackground = tealBlue
     static let inputText: UIColor = .white
     static let placeholder = UIColor.lightText
+    static let placeholder2 = almostLight
     static let blueish = UIColor(red: 0, green: 0.478431, blue: 1, alpha: 1)
+    static let blueish2 = Color(blueish)
     static let buttonText = blueish
     
     static func colorFor(red: Int, green: Int, blue: Int) -> UIColor {

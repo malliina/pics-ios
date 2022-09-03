@@ -54,8 +54,13 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     
     func startPasswordAuthentication() -> AWSCognitoIdentityPasswordAuthentication {
         log.info("Start authentication flow")
-        present(authVc, from: picsVc)
-        return authVc
+        let handler = LoginHandler()
+        let view = LoginView(handler: handler)
+        DispatchQueue.main.async {
+            let host = UIHostingController(rootView: view)
+            self.picsVc.present(host, animated: true, completion: nil)
+        }
+        return handler
     }
     
     func startNewPasswordRequired() -> AWSCognitoIdentityNewPasswordRequired {
@@ -67,10 +72,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     func present(_ dest: UIViewController, from: UIViewController) {
         DispatchQueue.main.async {
             let navCtrl = UINavigationController(rootViewController: dest)
-            // navCtrl.navigationBar.barStyle = .black
             navCtrl.navigationBar.prefersLargeTitles = true
-//            self.log.info("Presenting \(navCtrl) from \(from)")
-//            self.window.rootViewController?.present(navCtrl, animated: true, completion: nil)
             from.present(navCtrl, animated: true, completion: nil)
         }
     }
