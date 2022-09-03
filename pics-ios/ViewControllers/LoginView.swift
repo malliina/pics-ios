@@ -10,7 +10,11 @@ import Foundation
 import SwiftUI
 import AWSCognitoIdentityProvider
 
-class LoginHandler: NSObject, AWSCognitoIdentityPasswordAuthentication {
+class LoginHandler: NSObject, ObservableObject, AWSCognitoIdentityPasswordAuthentication {
+    let log = LoggerFactory.shared.vc(LoginHandler.self)
+    
+    @Published var isAuthError: Bool = false
+    
     var passwordAuthenticationCompletion: AWSTaskCompletionSource<AWSCognitoIdentityPasswordAuthenticationDetails>?
     
     func submit(credentials: PasswordCredentials) {
@@ -24,10 +28,13 @@ class LoginHandler: NSObject, AWSCognitoIdentityPasswordAuthentication {
     func didCompleteStepWithError(_ error: Error?) {
         let username = ""
         if let authError = SignupError.check(user: username, error: error) {
+            log.info("Auth failed.")
             if case .userNotConfirmed(let user) = authError {
 //                self.presentModally(vc: ConfirmVC(user: user, onSuccess: self.loginWithCurrentInput))
             } else {
-//                self.presentError(error: authError)
+                DispatchQueue.main.async {
+                    self.isAuthError = true
+                }
             }
         } else {
 //            self.username.text = nil
@@ -45,7 +52,9 @@ struct LoginView: View {
     @State var username: String = ""
     @State var password: String = ""
     
-    var handler: LoginHandler
+    @State var isSignup: Bool = false
+    
+    @ObservedObject var handler: LoginHandler
     
     func loginAs(credentials: PasswordCredentials) {
         log.info("Attempting login as \(credentials.username)...")
@@ -88,7 +97,7 @@ struct LoginView: View {
                 }
                 Spacer()
                 Button {
-                    
+                    isSignup = true
                 } label: {
                     Text("Sign up")
                         .foregroundColor(PicsColors.blueish2)
@@ -100,7 +109,7 @@ struct LoginView: View {
                 }
             }
             .frame(maxWidth: 400)
-            .background(PicsColors.almostBlack)
+//            .background(PicsColors.almostBlack)
             .environment(\.colorScheme, .dark)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
@@ -111,6 +120,10 @@ struct LoginView: View {
                             .foregroundColor(PicsColors.blueish2)
                     }
                 }
+            }.alert(isPresented: $handler.isAuthError) {
+                Alert(title: Text("Authentication error"), message: Text("Failed to log in."), dismissButton: .default(Text("Ok")))
+            }.sheet(isPresented: $isSignup) {
+                SignupView(handler: SignupHandler.build(completion: handler.passwordAuthenticationCompletion))
             }
         }
     }

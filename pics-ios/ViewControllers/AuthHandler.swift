@@ -56,10 +56,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
         log.info("Start authentication flow")
         let handler = LoginHandler()
         let view = LoginView(handler: handler)
-        DispatchQueue.main.async {
-            let host = UIHostingController(rootView: view)
-            self.picsVc.present(host, animated: true, completion: nil)
-        }
+        presentView(view, from: picsVc)
         return handler
     }
     
@@ -67,6 +64,13 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
         log.info("Starting new password flow")
         present(newPassVc, from: picsVc)
         return newPassVc
+    }
+    
+    func presentView<T: View>(_ dest: T, from: UIViewController) {
+        DispatchQueue.main.async {
+            let host = UIHostingController(rootView: dest)
+            from.present(host, animated: true, completion: nil)
+        }
     }
     
     func present(_ dest: UIViewController, from: UIViewController) {

@@ -138,8 +138,7 @@ struct PicsView<T>: View where T: PicsVMLike {
         }
         .sheet(isPresented: $showHelp) {
             NavigationView {
-//                HelpView(isPrivate: user.isPrivate)
-                LoginView(handler: LoginHandler())
+                HelpView(isPrivate: user.isPrivate)
             }
         }
         .sheet(isPresented: $showProfile) {

@@ -66,6 +66,7 @@
 		7DA4A016289BEFB5005FD842 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A015289BEFB5005FD842 /* ImagePicker.swift */; };
 		7DA4A018289E6B2C005FD842 /* CachedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A017289E6B2C005FD842 /* CachedImage.swift */; };
 		B0ECFFB228C37D4900CFA757 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB128C37D4900CFA757 /* LoginView.swift */; };
+		B0ECFFB428C3BE0100CFA757 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB328C3BE0100CFA757 /* SignupView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -148,6 +149,7 @@
 		7DA4A015289BEFB5005FD842 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		7DA4A017289E6B2C005FD842 /* CachedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedImage.swift; sourceTree = "<group>"; };
 		B0ECFFB128C37D4900CFA757 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		B0ECFFB328C3BE0100CFA757 /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -319,6 +321,7 @@
 				615647F4201E16F1000E3BBD /* EulaVC.swift */,
 				7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */,
 				7DA4A015289BEFB5005FD842 /* ImagePicker.swift */,
+				B0ECFFB128C37D4900CFA757 /* LoginView.swift */,
 				61D214B71FD2DF1400781DC7 /* NewPassVC.swift */,
 				61D214C11FD4570500781DC7 /* OneLinerVC.swift */,
 				61A9C4BF1FF271D30085BA25 /* PicPagingVC.swift */,
@@ -327,7 +330,7 @@
 				7D6BF6E5280F48FD007C5FD5 /* PicView.swift */,
 				615647F0201C9EEA000E3BBD /* ProfilePopover.swift */,
 				61D214B91FD339A100781DC7 /* SignupVC.swift */,
-				B0ECFFB128C37D4900CFA757 /* LoginView.swift */,
+				B0ECFFB328C3BE0100CFA757 /* SignupView.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -534,6 +537,7 @@
 				61A702E21FCB21A600814051 /* PicsCell.swift in Sources */,
 				615339C72061B02E00106B48 /* Utils.swift in Sources */,
 				61D214C81FD488DD00781DC7 /* ConfirmVC.swift in Sources */,
+				B0ECFFB428C3BE0100CFA757 /* SignupView.swift in Sources */,
 				61A9C4C21FF28E280085BA25 /* EnvConf.swift in Sources */,
 				61A702D81FCAD7DE00814051 /* HttpClient.swift in Sources */,
 				7D6BF6E6280F48FD007C5FD5 /* PicView.swift in Sources */,
