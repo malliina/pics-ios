@@ -94,11 +94,11 @@ class ProfilePopover: UITableViewController, UIPopoverPresentationControllerDele
             delegate.onPublic()
             break
         case 1:
-            let _ = Tokens.shared.retrieveUserInfo().subscribe { event in
-                switch event {
-                case .success(let userInfo):
+            Task {
+                do {
+                    let userInfo = try await Tokens.shared.retrieveUserInfoAsync()
                     self.delegate.onPrivate(user: userInfo.username)
-                case .failure(let error):
+                } catch let error {
                     self.log.error("Failed to retrieve user info. No network? \(error)")
                 }
             }

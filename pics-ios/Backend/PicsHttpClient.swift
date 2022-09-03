@@ -8,7 +8,6 @@
 
 import Foundation
 import AWSCognitoIdentityProvider
-import RxSwift
 
 class PicsHttpClient: HttpClient {
     private let log = LoggerFactory.shared.network(PicsHttpClient.self)
@@ -50,44 +49,38 @@ class PicsHttpClient: HttpClient {
         "Bearer \(forToken.tokenString)"
     }
     
-    func pingAuth() -> Single<Version> {
-        picsGetParsed("/ping", Version.self)
+    func pingAuth() async throws -> Version {
+        try await picsGetParsed("/ping", Version.self)
     }
     
-    func picsGetParsed<T: Decodable>(_ resource: String, _ to: T.Type) -> Single<T> {
-        picsGet(resource).flatMap { (response) -> Single<T> in
-            self.parseAs(response: response, to)
-        }
+    func picsGetParsed<T: Decodable>(_ resource: String, _ to: T.Type) async throws -> T {
+        let response = try await picsGet(resource)
+        return try parseAs(response: response, to)
     }
     
-    func picsPostParsed<T: Decodable>(_ resource: String, data: Data, clientKey: ClientKey, _ to: T.Type) -> Single<T> {
-        return picsPost(resource, payload: data, clientKey: clientKey).flatMap { (response) -> Single<T> in
-            return self.parseAs(response: response, to)
-        }
+    func picsPostParsed<T: Decodable>(_ resource: String, data: Data, clientKey: ClientKey, _ to: T.Type) async throws -> T {
+        let response = try await picsPost(resource, payload: data, clientKey: clientKey)
+        return try self.parseAs(response: response, to)
     }
     
-    private func parseAs<T: Decodable>(response: HttpResponse, _ to: T.Type) -> Single<T> {
+    private func parseAs<T: Decodable>(response: HttpResponse, _ to: T.Type) throws -> T {
         let decoder = JSONDecoder()
-        do {
-            return Single.just(try decoder.decode(to, from: response.data))
-        } catch let err {
-            return Single.error(err)
-        }
+        return try decoder.decode(to, from: response.data)
     }
     
-    func picsGet(_ resource: String) -> Single<HttpResponse> {
+    func picsGet(_ resource: String) async throws -> HttpResponse {
         let url = urlFor(resource: resource)
-        return statusChecked(resource, response: self.get(url, headers: defaultHeaders))
+        return try await statusChecked(resource, response: self.get(url, headers: defaultHeaders))
     }
     
-    func picsPost(_ resource: String, payload: Data, clientKey: ClientKey) -> Single<HttpResponse> {
+    func picsPost(_ resource: String, payload: Data, clientKey: ClientKey) async throws -> HttpResponse {
         let url = urlFor(resource: resource)
-        return statusChecked(resource, response: self.postData(url, headers: headersFor(clientKey: clientKey), payload: payload))
+        return try await statusChecked(resource, response: self.postData(url, headers: headersFor(clientKey: clientKey), payload: payload))
     }
     
-    func picsDelete(_ resource: String) -> Single<HttpResponse> {
+    func picsDelete(_ resource: String) async throws -> HttpResponse {
         let url = URL(string: resource, relativeTo: baseURL)!
-        return statusChecked(resource, response: self.delete(url, headers: defaultHeaders))
+        return try await statusChecked(resource, response: self.delete(url, headers: defaultHeaders))
     }
     
     func urlFor(resource: String) -> URL {
@@ -98,31 +91,27 @@ class PicsHttpClient: HttpClient {
         postHeaders.merging([PicsHttpClient.ClientPicHeader: clientKey.key]) { (current, _) in current }
     }
     
-    func statusChecked(_ resource: String, response: Single<HttpResponse>) -> Single<HttpResponse> {
-        response.flatMap { (response) -> Single<HttpResponse> in
-            if response.isStatusOK {
-                return Single.just(response)
-            } else {
-                self.log.error("Request to '\(resource)' failed with status '\(response.statusCode)'.")
-                let details = ResponseDetails(resource: resource, code: response.statusCode, message: response.errors.first?.message)
-                return Single.error(AppError.responseFailure(details))
-            }
+    func statusChecked(_ resource: String, response: HttpResponse) throws -> HttpResponse {
+        if response.isStatusOK {
+            return response
+        } else {
+            self.log.error("Request to '\(resource)' failed with status '\(response.statusCode)'.")
+            let details = ResponseDetails(resource: resource, code: response.statusCode, message: response.errors.first?.message)
+            throw AppError.responseFailure(details)
         }
     }
     
-    override func executeHttp(_ req: URLRequest, retryCount: Int = 0) -> Single<HttpResponse> {
+    override func executeHttp(_ req: URLRequest, retryCount: Int = 0) async throws -> HttpResponse {
         var r = req
         r.addValue("\(retryCount)", forHTTPHeaderField: "X-Retry")
-        return super.executeHttp(r).flatMap { (response) -> Single<HttpResponse> in
-            if retryCount == 0 && response.statusCode == 401 && response.isTokenExpired {
-                return Tokens.shared.retrieveUserInfo().flatMap { (userInfo) -> Single<HttpResponse> in
-                    self.updateToken(token: userInfo.token)
-                    r.setValue(PicsHttpClient.authValueFor(forToken: userInfo.token), forHTTPHeaderField: HttpClient.authorization)
-                    return self.executeHttp(r, retryCount: retryCount + 1)
-                }
-            } else {
-                return Single.just(response)
-            }
+        let response = try await super.executeHttp(r)
+        if retryCount == 0 && response.statusCode == 401 && response.isTokenExpired {
+            let userInfo = try await Tokens.shared.retrieveUserInfoAsync()
+            self.updateToken(token: userInfo.token)
+            r.setValue(PicsHttpClient.authValueFor(forToken: userInfo.token), forHTTPHeaderField: HttpClient.authorization)
+            return try await self.executeHttp(r, retryCount: retryCount + 1)
+        } else {
+            return response
         }
     }
     

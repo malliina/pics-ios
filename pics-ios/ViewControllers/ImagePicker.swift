@@ -92,7 +92,9 @@ struct ImagePicker: UIViewControllerRepresentable {
                 // Copies the picture to a staging folder
                 let _ = try LocalPics.shared.saveUserPic(data: data, owner: user, key: clientKey)
                 // Attempts to obtain a token and upload the pic
-                let _ = library.syncPicsForLatestUser()
+                Task {
+                    let _ = await library.syncPicsForLatestUser()
+                }
             } else {
                 // Anonymous upload
                 let url = try LocalPics.shared.saveAsJpg(data: data, key: clientKey)

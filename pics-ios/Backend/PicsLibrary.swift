@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RxSwift
 
 class PicsLibrary {
     let log = LoggerFactory.shared.network(PicsLibrary.self)
@@ -25,39 +24,39 @@ class PicsLibrary {
         }
     }
     
-    func load(from: Int, limit: Int) -> Single<[PicMeta]> {
-        http.picsGetParsed("/pics?offset=\(from)&limit=\(limit)", PicsResponse.self).map { $0.pics }
+    func load(from: Int, limit: Int) async throws -> [PicMeta] {
+        let response = try await http.picsGetParsed("/pics?offset=\(from)&limit=\(limit)", PicsResponse.self)
+        return response.pics
     }
     
     func loadAsync(from: Int, limit: Int) async throws -> [PicMeta] {
-        try await Async.async(from: load(from: from, limit: limit))
+        try await load(from: from, limit: limit)
     }
     
-    func save(picture: Data, clientKey: ClientKey) -> Single<PicMeta> {
-        http.picsPostParsed("/pics", data: picture, clientKey: clientKey, PicResponse.self).map { $0.pic }
+    func save(picture: Data, clientKey: ClientKey) async throws -> PicMeta {
+        let response = try await http.picsPostParsed("/pics", data: picture, clientKey: clientKey, PicResponse.self)
+        return response.pic
     }
     
     func saveAsync(picture: Data, clientKey: ClientKey) async throws -> PicMeta {
-        try await Async.async(from: save(picture: picture, clientKey: clientKey))
+        try await save(picture: picture, clientKey: clientKey)
     }
     
-    func delete(key: ClientKey) -> Single<HttpResponse> {
-        http.picsDelete("/pics/\(key)")
+    func delete(key: ClientKey) async throws -> HttpResponse {
+        try await http.picsDelete("/pics/\(key)")
     }
     
     func deleteAsync(key: ClientKey) async throws -> HttpResponse {
-        try await Async.async(from: http.picsDelete("/pics/\(key)"))
+        try await http.picsDelete("/pics/\(key)")
     }
     
-    func syncPicsForLatestUser() {
-        let _ = Tokens.shared.retrieveUserInfo().subscribe { event in
-            switch event {
-            case .success(let userInfo):
-                Backend.shared.updateToken(new: userInfo.token)
-                self.syncOffline(for: userInfo.username)
-            case .failure(let error):
-                self.log.error("Failed to obtain user info. No network? \(error)")
-            }
+    func syncPicsForLatestUser() async {
+        do {
+            let userInfo = try await Tokens.shared.retrieveUserInfoAsync()
+            Backend.shared.updateToken(new: userInfo.token)
+            self.syncOffline(for: userInfo.username)
+        } catch let error {
+            self.log.error("Failed to obtain user info. No network? \(error)")
         }
     }
     
@@ -106,29 +105,5 @@ class PicsLibrary {
         let url = http.urlFor(resource: "/pics")
         let headers = http.headersFor(clientKey: clientKey)
         BackgroundTransfers.uploader.upload(url, headers: headers, file: picture, deleteOnComplete: deleteOnComplete)
-    }
-    
-    func handle<T: Decodable>(result: TransferResult, to: T.Type) -> Single<T> {
-        if let error = result.error {
-            return Single.error(AppError.networkFailure(RequestFailure(url: result.url, code: error._code, data: result.data)))
-        } else if let httpResponse = result.httpResponse {
-            let decoder = JSONDecoder()
-            if httpResponse.isStatusOK {
-                do {
-                    return Single.just(try decoder.decode(to, from: httpResponse.data))
-                } catch let error as JsonError {
-                    self.log.error("Parse error.")
-                    return Single.error(AppError.parseError(error))
-                } catch _ {
-                    return Single.error(AppError.simple("Unknown parse error."))
-                }
-            } else {
-                log.error("Request to '\(result.url.absoluteString)' failed with status '\(httpResponse.statusCode)'.")
-                let details = ResponseDetails(resource: result.url.absoluteString, code: httpResponse.statusCode, message: httpResponse.errors.first?.message)
-                return Single.error(AppError.responseFailure(details))
-            }
-        } else {
-            return Single.error(AppError.simpleError(ErrorMessage("Unknown HTTP response.")))
-        }
     }
 }

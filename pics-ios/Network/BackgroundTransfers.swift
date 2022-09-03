@@ -198,18 +198,20 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
     func removeTask(_ taskID: Int, deleteFile: Bool) {
         synchronized {
             self.downloads.removeValue(forKey: taskID)
-            self.removeUploadedAndUploadNext(id: taskID, deleteFile: deleteFile)
+            Task {
+                await self.removeUploadedAndUploadNext(id: taskID, deleteFile: deleteFile)
+            }
         }
     }
     
-    private func removeUploadedAndUploadNext(id: Int, deleteFile: Bool) {
+    private func removeUploadedAndUploadNext(id: Int, deleteFile: Bool) async {
         if let removed = PicsSettings.shared.removeUpload(id: id) {
             let file = LocalPics.shared.computeUrl(folder: removed.folder, filename: removed.filename)
             do {
                 if deleteFile {
                     try fileManager.removeItem(at: file)
                     log.info("Removed \(file) of task \(id).")
-                    Backend.shared.library.syncPicsForLatestUser()
+                    await Backend.shared.library.syncPicsForLatestUser()
                 } else {
                     log.info("Not deleting \(file) of task \(id).")
                 }
@@ -218,7 +220,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
                     log.error("Failed to remove \(file) of task \(id). \(err)")
                 } else {
                     log.error("Failed to remove \(file) of task \(id). The file does not exist.")
-                    Backend.shared.library.syncPicsForLatestUser()
+                    await Backend.shared.library.syncPicsForLatestUser()
                 }
             }
         } else {

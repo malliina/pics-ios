@@ -7,8 +7,6 @@
 //
 
 import Foundation
-import RxSwift
-import RxCocoa
 
 class HttpClient {
     private let log = LoggerFactory.shared.network(HttpClient.self)
@@ -35,35 +33,33 @@ class HttpClient {
         self.session = URLSession.shared
     }
     
-    func get(_ url: URL, headers: [String: String] = [:]) -> Single<HttpResponse> {
+    func get(_ url: URL, headers: [String: String] = [:]) async throws -> HttpResponse {
         let req = buildRequest(url: url, httpMethod: HttpClient.get, headers: headers)
-        return executeHttp(req)
+        return try await executeHttp(req)
     }
     
-    func postJSON<T: Encodable>(_ url: URL, headers: [String: String] = [:], payload: T) -> Single<HttpResponse> {
-        do {
-            let encoder = JSONEncoder()
-            let data = try encoder.encode(payload)
-            return postData(url, headers: headers, payload: data)
-        } catch let err {
-            return Single.error(err)
-        }
+    func postJSON<T: Encodable>(_ url: URL, headers: [String: String] = [:], payload: T) async throws -> HttpResponse {
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(payload)
+        return try await postData(url, headers: headers, payload: data)
     }
     
-    func postData(_ url: URL, headers: [String: String] = [:], payload: Data) -> Single<HttpResponse> {
+    func postData(_ url: URL, headers: [String: String] = [:], payload: Data) async throws -> HttpResponse {
         let req = buildRequestWithBody(url: url, httpMethod: HttpClient.post, headers: headers, body: payload)
-        return executeHttp(req)
+        return try await executeHttp(req)
     }
     
-    func delete(_ url: URL, headers: [String: String] = [:]) -> Single<HttpResponse> {
+    func delete(_ url: URL, headers: [String: String] = [:]) async throws -> HttpResponse {
         let req = buildRequest(url: url, httpMethod: HttpClient.delete, headers: headers)
-        return executeHttp(req)
+        return try await executeHttp(req)
     }
     
-    func executeHttp(_ req: URLRequest, retryCount: Int = 0) -> Single<HttpResponse> {
-        return session.rx.response(request: req).asSingle().flatMap { (result) -> Single<HttpResponse> in
-            let (response, data) = result
-            return Single.just(HttpResponse(http: response, data: data))
+    func executeHttp(_ req: URLRequest, retryCount: Int = 0) async throws -> HttpResponse {
+        let (data, response) = try await session.data(for: req)
+        if let httpResponse = response as? HTTPURLResponse {
+            return HttpResponse(http: httpResponse, data: data)
+        } else {
+            throw AppError.simple("Non-HTTP response from \(req.url?.absoluteString ?? "no url").")
         }
     }
     
@@ -86,10 +82,10 @@ class HttpClient {
         return req
     }
     
-    func executeRequest(_ req: URLRequest, completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
-        let task = session.dataTask(with: req, completionHandler: completionHandler)
-        task.resume()
-    }
+//    func executeRequest(_ req: URLRequest, completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
+//        let task = session.dataTask(with: req, completionHandler: completionHandler)
+//        task.resume()
+//    }
 }
 
 extension URLRequest {

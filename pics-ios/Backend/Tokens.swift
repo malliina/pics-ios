@@ -8,8 +8,6 @@
 
 import Foundation
 import AWSCognitoIdentityProvider
-import RxSwift
-import RxCocoa
 
 protocol TokenDelegate {
     func onAccessToken(_ token: AWSCognitoIdentityUserSessionToken)
@@ -24,7 +22,8 @@ class Tokens {
     private let log = LoggerFactory.shared.system(Tokens.self)
     
     static let shared = Tokens()
-    let pool = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)!
+    let poolOpt = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
+    var pool: AWSCognitoIdentityUserPool { poolOpt! }
     
     private var delegates: [TokenDelegate] = []
     
@@ -37,37 +36,31 @@ class Tokens {
     }
     
     func retrieveUserInfoAsync(cancellationToken: AWSCancellationTokenSource? = nil) async throws -> UserInfo {
-        return try await Async.async(from: retrieveUserInfo(cancellationToken: cancellationToken))
-    }
-    
-    func retrieveUserInfo(cancellationToken: AWSCancellationTokenSource? = nil) -> Single<UserInfo> {
         log.info("Retrieving token...")
-        guard let user = pool.currentUser() else { return Single.error(AppError.simple("Unknown user.")) }
-        return Single<UserInfo>.create { (single) -> Disposable in
-            user.getSession().continueWith(block: { (task) -> Any? in
+        
+        return try await withCheckedThrowingContinuation { cont in
+            guard let user = poolOpt?.currentUser() else { return cont.resume(throwing: AppError.simple("Unknown user.")) }
+            user.getSession().continueWith( block: { (task) in
                 if let error = task.error as NSError? {
                     let appError = error.localizedDescription == AppError.noInternetMessage ? AppError.noInternet(error) : AppError.tokenError(error)
                     self.log.warn("Failed to get session with \(error)")
-                    single(.failure(appError))
+                    cont.resume(throwing: appError)
                 } else {
                     if let accessToken = task.result?.accessToken {
                         //                log.info("Got token \(accessToken.tokenString)")
                         self.delegates.forEach { $0.onAccessToken(accessToken) }
                         if let username = user.username {
-                            single(.success(UserInfo(username: Username(username), token: accessToken)))
+                            cont.resume(returning: UserInfo(username: Username(username), token: accessToken))
                         } else {
-                            single(.failure(AppError.simple("Missing username.")))
+                            cont.resume(throwing: AppError.simple("Missing username."))
                         }
                     } else {
                         self.log.warn("Missing access token in session")
-                        single(.failure(AppError.simple("Missing access token in session")))
+                        cont.resume(throwing: AppError.simple("Missing access token in session"))
                     }
                 }
                 return nil
             }, cancellationToken: cancellationToken?.token)
-            return Disposables.create {
-                cancellationToken?.cancel()
-            }
         }
     }
 }

@@ -32,8 +32,8 @@ class CognitoConf {
             let userPoolId = try CognitoConf.readOrThrow(key: "CognitoUserPoolId", dict: dict)
             return CognitoConf(clientId: clientId, userPoolId: userPoolId)
         } else {
-            return CognitoConf(clientId: "your_client_id", userPoolId: "your_pool_id")
-//            throw CognitoError.invalidConf(message: "Missing or invalid Credentials.plist")
+//            return CognitoConf(clientId: "your_client_id", userPoolId: "your_pool_id")
+            throw CognitoError.invalidConf(message: "Missing or invalid Credentials.plist")
         }
     }
 }
