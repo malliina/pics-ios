@@ -37,6 +37,7 @@ struct PicsView<T>: View where T: PicsVMLike {
     @State private var showHelp = false
     @State private var showCamera = false
     
+    @State private var showLogin = false
     
     var backgroundColor: Color { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var titleColor: Color { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
@@ -48,36 +49,58 @@ struct PicsView<T>: View where T: PicsVMLike {
         self.viewModel = viewModel
     }
     
+    private var cameraButton: some View {
+        Button {
+            showCamera.toggle()
+        } label: {
+            HStack {
+                Image(systemName: "camera")
+                    .renderingMode(.template)
+                Text("Take pic")
+                    .fontWeight(.semibold)
+                    .font(.title)
+                Image(systemName: "camera")
+                    .renderingMode(.template)
+                    .opacity(0)
+            }
+            .padding()
+            .frame(minWidth: 220)
+            .background(PicsColors.almostBlack)
+            .cornerRadius(40)
+        }
+    }
+    
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                grid(geometry: geometry).task {
-                    await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
-                }.overlay(alignment: .bottom) {
-                    Button {
-                        showCamera.toggle()
-                    } label: {
-                        HStack {
-                            Image(systemName: "camera")
-                                .renderingMode(.template)
-                            Text("Take pic")
-                                .fontWeight(.semibold)
-                                .font(.title)
-                            Image(systemName: "camera")
-                                .renderingMode(.template)
-                                .opacity(0)
-                        }
-                        .padding()
-                        .frame(minWidth: 220)
-                        .background(PicsColors.almostBlack)
-                        .cornerRadius(40)
+//        let isEmpty = viewModel.isOnline && viewModel.pics.isEmpty
+//        if isEmpty {
+//            emptyView()
+//        } else {
+            GeometryReader { geometry in
+                ZStack {
+                    grid(geometry: geometry).task {
+                        await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
+                    }.overlay(alignment: .bottom) {
+                        cameraButton
                     }
                 }
+            }
+//        }
+    }
+    
+    private func emptyView() -> some View {
+        ZStack {
+            PicsColors.background
+                .edgesIgnoringSafeArea(.all)
+            VStack(alignment: .center) {
+                Text("Take a pic when ready!").scaledToFill()
+                    .foregroundColor(PicsColors.blueish2)
+                Spacer()
+                cameraButton
             }
         }
     }
     
-    func grid(geometry: GeometryProxy) -> some View {
+    private func nonEmptyView(geometry: GeometryProxy) -> some View {
         let sizeInfo = PicsCell.sizeForItem(minWidthPerItem: PicsVM.preferredItemSize, totalWidth: geometry.size.width)
         let columns: [GridItem] = Array(repeating: .init(.fixed(sizeInfo.sizePerItem.width)), count: sizeInfo.itemsPerRow)
         return ScrollView {
@@ -104,6 +127,10 @@ struct PicsView<T>: View where T: PicsVMLike {
                 }
             }.font(.largeTitle)
         }
+    }
+    
+    func grid(geometry: GeometryProxy) -> some View {
+        return nonEmptyView(geometry: geometry)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarLeading) {
                 Button {

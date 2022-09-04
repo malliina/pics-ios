@@ -10,21 +10,26 @@ import Foundation
 import SwiftUI
 import AWSCognitoIdentityProvider
 
+struct AuthUser: Identifiable {
+    let username: String
+    var id: String { username }
+}
+
 class SignupHandler: ObservableObject {
     let log = LoggerFactory.shared.vc(SignupHandler.self)
     
+    @Published var signUpError: SignupError? = nil
     @Published var isSignUpError: Bool = false
     
     var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
-    var passwordAuthenticationCompletion: AWSTaskCompletionSource<AWSCognitoIdentityPasswordAuthenticationDetails>?
+    var loginHandler: LoginHandler
     
-    static func build(completion: AWSTaskCompletionSource<AWSCognitoIdentityPasswordAuthenticationDetails>?) -> SignupHandler {
-        let h = SignupHandler()
-        h.passwordAuthenticationCompletion = completion
-        return h
+    init(loginHandler: LoginHandler) {
+        self.loginHandler = loginHandler
     }
     
     func signUp(creds: PasswordCredentials) {
+        loginHandler.creds = creds
         let username = creds.username
         let attributes = [
             AWSCognitoIdentityUserAttributeType(name: "email", value: username)
@@ -37,18 +42,22 @@ class SignupHandler: ObservableObject {
     
     func handleSignupResult(creds: PasswordCredentials, task: AWSTask<AWSCognitoIdentityUserPoolSignUpResponse>) {
         if let error = SignupError.check(user: creds.username, error: task.error) {
+            log.info("\(error)")
             DispatchQueue.main.async {
+                self.signUpError = error
                 self.isSignUpError = true
             }
         } else {
             if let response = task.result, let name = response.user.username {
                 self.log.info("Created \(name).")
                 if response.user.confirmedStatus == .confirmed {
-                    // dismiss sheet here, then run this after dismissal
-                    self.passwordAuthenticationCompletion?.set(result: creds.toCognito())
+                    loginHandler.submit(credentials: creds)
                 } else {
                     self.log.info("Going to confirm page for \(name)...")
-//                    self.presentModally(vc: ConfirmVC(user: name, onSuccess: self.onSignupDone))
+                    DispatchQueue.main.async {
+                        self.loginHandler.showSignUp = false
+                        self.loginHandler.showConfirm = true
+                    }
                 }
             }
         }
@@ -74,6 +83,7 @@ struct SignupView: View {
                     .foregroundColor(PicsColors.almostLight)
                 TextField("Email", text: $username)
                     .autocapitalization(.none)
+                    .disableAutocorrection(true)
                     .padding()
                     .background(PicsColors.inputBackground2)
                     .padding()
@@ -118,9 +128,13 @@ struct SignupView: View {
                     }
                 }
             }
-            .alert(isPresented: $handler.isSignUpError) {
-                Alert(title: Text("Authentication error"), message: Text("Failed to sign up."), dismissButton: .default(Text("Ok")))
-            }
+            .alert("Sign up error", isPresented: $handler.isSignUpError, presenting: handler.signUpError, actions: { t in
+                Button("Ok") {
+                    
+                }
+            }, message: { err in
+                Text(err.message)
+            })
             .environment(\.colorScheme, .dark)
         }
     }
@@ -129,7 +143,7 @@ struct SignupView: View {
 struct SignupView_Previews: PreviewProvider {
     static var previews: some View {
         ForEach(["iPhone 12 mini", "iPad Pro (11-inch) (3rd generation)"], id: \.self) { deviceName in
-            SignupView(handler: SignupHandler())
+            SignupView(handler: SignupHandler(loginHandler: LoginHandler()))
             .previewDevice(PreviewDevice(rawValue: deviceName))
             .previewDisplayName(deviceName)
         }

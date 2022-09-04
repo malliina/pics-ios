@@ -55,7 +55,9 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     func startPasswordAuthentication() -> AWSCognitoIdentityPasswordAuthentication {
         log.info("Start authentication flow")
         let handler = LoginHandler()
-        let view = LoginView(handler: handler)
+        let view = NavigationView {
+            LoginView(handler: handler)
+        }
         presentView(view, from: picsVc)
         return handler
     }

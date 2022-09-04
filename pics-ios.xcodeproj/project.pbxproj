@@ -67,6 +67,7 @@
 		7DA4A018289E6B2C005FD842 /* CachedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A017289E6B2C005FD842 /* CachedImage.swift */; };
 		B0ECFFB228C37D4900CFA757 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB128C37D4900CFA757 /* LoginView.swift */; };
 		B0ECFFB428C3BE0100CFA757 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB328C3BE0100CFA757 /* SignupView.swift */; };
+		B0FA092428C4A6C400F6356E /* ConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FA092328C4A6C400F6356E /* ConfirmView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -150,6 +151,7 @@
 		7DA4A017289E6B2C005FD842 /* CachedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedImage.swift; sourceTree = "<group>"; };
 		B0ECFFB128C37D4900CFA757 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		B0ECFFB328C3BE0100CFA757 /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
+		B0FA092328C4A6C400F6356E /* ConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -318,6 +320,7 @@
 				61D214B51FD2ABB300781DC7 /* AuthVC.swift */,
 				61D214C31FD4571B00781DC7 /* BaseVC.swift */,
 				61D214C71FD488DD00781DC7 /* ConfirmVC.swift */,
+				B0FA092328C4A6C400F6356E /* ConfirmView.swift */,
 				615647F4201E16F1000E3BBD /* EulaVC.swift */,
 				7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */,
 				7DA4A015289BEFB5005FD842 /* ImagePicker.swift */,
@@ -553,6 +556,7 @@
 				61A9C4CF200693510085BA25 /* Backend.swift in Sources */,
 				61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */,
 				7D6BF6E4280DE3C5007C5FD5 /* HelpView.swift in Sources */,
+				B0FA092428C4A6C400F6356E /* ConfirmView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
