@@ -252,6 +252,8 @@ class PicsVM: PicsVMLike {
             Tokens.shared.clearDelegates()
             self.isOnline = false
             self.savePics(newPics: [])
+            self.isInitial = true
+            self.isPrivate = false
             Task {
                 await self.loadPicsAsync(for: nil, initialOnly: true)
             }

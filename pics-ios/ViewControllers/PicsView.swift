@@ -199,10 +199,6 @@ class ProfileViewDelegate <T> : ProfileDelegate where T: PicsVMLike {
     }
     
     func onLogout() {
-        signOut()
-    }
-    
-    func signOut() {
         viewModel.signOut()
     }
 }

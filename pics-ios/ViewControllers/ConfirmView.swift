@@ -16,6 +16,8 @@ class ConfirmHandler: ObservableObject {
     
     @Published var confirmError: SignupError? = nil
     @Published var isConfirmError: Bool = false
+    @Published var feedback: String? = nil
+    @Published var isFeedback: Bool = false
     
     private let loginHandler: LoginHandler
     var creds: PasswordCredentials? { loginHandler.creds }
@@ -44,7 +46,18 @@ class ConfirmHandler: ObservableObject {
     }
     
     func resendCode() {
-        
+        log.info("Resending code for user \(username)...")
+        pool.getUser(username).resendConfirmationCode().continueWith { (task) -> Any? in
+            DispatchQueue.main.async {
+                if let error = SignupError.check(user: self.username, error: task.error) {
+                    self.confirmError = error
+                } else {
+                    self.feedback = "A new confirmation code was sent."
+                    self.isFeedback = true
+                }
+            }
+            return nil
+        }
     }
 }
 
@@ -96,6 +109,13 @@ struct ConfirmView: View {
             Button("Ok") { }
         }, message: { err in
             Text(err.message)
+        })
+        .alert("Code sent", isPresented: $handler.isFeedback, presenting: handler.feedback, actions: { message in
+            Button("Continue") {
+                
+            }
+        }, message: { msg in
+            Text(msg)
         })
     }
 }
