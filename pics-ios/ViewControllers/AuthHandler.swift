@@ -15,12 +15,13 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     let log = LoggerFactory.shared.vc(AuthHandler.self)
     
     let picsVc: UINavigationController
-    let authVc: AuthVC
     let newPassVc: NewPassVC
     let rememberMe: RememberMe
     let active: UIViewController
     
     let window: UIWindow
+    
+    private var loginHandler: LoginHandler? = nil
     
     init(window: UIWindow) {
         self.window = window
@@ -32,7 +33,6 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
         let pics = UIHostingController(rootView: PicsView(viewModel: picsViewModel))
         nav.pushViewController(pics, animated: false)
         picsVc = nav
-        authVc = AuthVC(root: picsViewModel)
         newPassVc = NewPassVC(root: picsViewModel)
         rememberMe = RememberMe()
         active = picsVc
@@ -55,6 +55,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     func startPasswordAuthentication() -> AWSCognitoIdentityPasswordAuthentication {
         log.info("Start authentication flow")
         let handler = LoginHandler()
+        loginHandler = handler
         let view = NavigationView {
             LoginView(handler: handler)
         }
@@ -64,22 +65,17 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     
     func startNewPasswordRequired() -> AWSCognitoIdentityNewPasswordRequired {
         log.info("Starting new password flow")
-        present(newPassVc, from: picsVc)
-        return newPassVc
+        let view = NavigationView {
+            NewPassView(handler: loginHandler!)
+        }
+        presentView(view, from: picsVc)
+        return loginHandler!
     }
     
     func presentView<T: View>(_ dest: T, from: UIViewController) {
         DispatchQueue.main.async {
             let host = UIHostingController(rootView: dest)
             from.present(host, animated: true, completion: nil)
-        }
-    }
-    
-    func present(_ dest: UIViewController, from: UIViewController) {
-        DispatchQueue.main.async {
-            let navCtrl = UINavigationController(rootViewController: dest)
-            navCtrl.navigationBar.prefersLargeTitles = true
-            from.present(navCtrl, animated: true, completion: nil)
         }
     }
     

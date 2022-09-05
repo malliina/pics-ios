@@ -68,6 +68,7 @@
 		B0ECFFB228C37D4900CFA757 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB128C37D4900CFA757 /* LoginView.swift */; };
 		B0ECFFB428C3BE0100CFA757 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB328C3BE0100CFA757 /* SignupView.swift */; };
 		B0FA092428C4A6C400F6356E /* ConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FA092328C4A6C400F6356E /* ConfirmView.swift */; };
+		B0FA092628C66A1200F6356E /* NewPassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FA092528C66A1200F6356E /* NewPassView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -152,6 +153,7 @@
 		B0ECFFB128C37D4900CFA757 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		B0ECFFB328C3BE0100CFA757 /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
 		B0FA092328C4A6C400F6356E /* ConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmView.swift; sourceTree = "<group>"; };
+		B0FA092528C66A1200F6356E /* NewPassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPassView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -334,6 +336,7 @@
 				615647F0201C9EEA000E3BBD /* ProfilePopover.swift */,
 				61D214B91FD339A100781DC7 /* SignupVC.swift */,
 				B0ECFFB328C3BE0100CFA757 /* SignupView.swift */,
+				B0FA092528C66A1200F6356E /* NewPassView.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -534,6 +537,7 @@
 				614230471FC1891E00CD4173 /* DataExtensions.swift in Sources */,
 				61D214BA1FD339A100781DC7 /* SignupVC.swift in Sources */,
 				61A702D41FCAC7F900814051 /* AppError.swift in Sources */,
+				B0FA092628C66A1200F6356E /* NewPassView.swift in Sources */,
 				7DA4A016289BEFB5005FD842 /* ImagePicker.swift in Sources */,
 				61D214B61FD2ABB300781DC7 /* AuthVC.swift in Sources */,
 				61A702D21FCAC6C200814051 /* Log.swift in Sources */,
