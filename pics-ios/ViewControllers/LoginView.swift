@@ -39,6 +39,7 @@ class LoginHandler: NSObject, ObservableObject, AWSCognitoIdentityPasswordAuthen
         passwordAuthenticationCompletion = passwordAuthenticationCompletionSource
     }
     
+    // so if error == nil, it's successful, except when a new pass is required, it's also nil
     func didCompleteStepWithError(_ error: Error?) {
         if let authError = SignupError.check(user: creds?.username ?? "", error: error) {
             if case .userNotConfirmed(let user) = authError {

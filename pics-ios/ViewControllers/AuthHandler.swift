@@ -15,7 +15,6 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     let log = LoggerFactory.shared.vc(AuthHandler.self)
     
     let picsVc: UINavigationController
-    let newPassVc: NewPassVC
     let rememberMe: RememberMe
     let active: UIViewController
     
@@ -33,7 +32,6 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
         let pics = UIHostingController(rootView: PicsView(viewModel: picsViewModel))
         nav.pushViewController(pics, animated: false)
         picsVc = nav
-        newPassVc = NewPassVC(root: picsViewModel)
         rememberMe = RememberMe()
         active = picsVc
         super.init()
