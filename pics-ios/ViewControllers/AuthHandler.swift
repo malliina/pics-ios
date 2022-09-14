@@ -22,9 +22,8 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     
     private var loginHandler: LoginHandler? = nil
     
-    init(window: UIWindow) {
+    private init(window: UIWindow) {
         self.window = window
-        let pool = Tokens.shared.pool
         let nav = UINavigationController()
         let picsViewModel = PicsVM { user in
             nav.navigationBar.barStyle = user != nil ? UIBarStyle.black : .default
@@ -35,7 +34,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
         rememberMe = RememberMe()
         active = picsVc
         super.init()
-        pool.delegate = self
+        Tokens.shared.pool.delegate = self
     }
     
     static func configure(window: UIWindow) throws -> AuthHandler {
@@ -46,7 +45,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
                                                                         clientSecret: nil,
                                                                         poolId: conf.userPoolId)
         // initialize user pool client
-        AWSCognitoIdentityUserPool.register(with: serviceConfiguration, userPoolConfiguration: poolConfiguration, forKey: AuthVC.PoolKey)
+        AWSCognitoIdentityUserPool.register(with: serviceConfiguration, userPoolConfiguration: poolConfiguration, forKey: CognitoConf.PoolKey)
         return AuthHandler(window: window)
     }
     

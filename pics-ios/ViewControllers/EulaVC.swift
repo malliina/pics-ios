@@ -53,7 +53,6 @@ class EulaVC: BaseVC {
             // https://stackoverflow.com/a/63797982/1863674
             active.modalPresentationStyle = .overFullScreen
             active.modalTransitionStyle = .crossDissolve
-            // present(auths.active, animated: false, completion: nil)
             show(active, sender: self)
         } catch {
             present(OneLinerVC(text: "Unable to initialize app."), animated: true, completion: nil)

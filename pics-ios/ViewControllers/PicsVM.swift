@@ -151,8 +151,10 @@ class PicsVM: PicsVMLike {
         if !initialOnly || isInitial {
             isInitial = false
             if initialOnly {
-                self.pics = []
-                log.info("Offline count \(pics.count)")
+                onUiThread {
+                    self.pics = []
+                    self.log.info("Offline count \(self.pics.count)")
+                }
             }
             do {
                 if let user = user {
@@ -264,7 +266,6 @@ class PicsVM: PicsVMLike {
         picsSettings.activeUser = nil
         onUiThread {
             self.isPrivate = false
-//            self.pics = self.picsSettings.localPictures(for: Username.anon)
             self.savePics(newPics: self.picsSettings.localPictures(for: Username.anon))
             self.hasMore = false
             self.userChanged(nil)
