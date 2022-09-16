@@ -62,12 +62,29 @@ class EulaVC: BaseVC {
 }
 
 struct EulaView: View {
+    @State private var isPresented = false
+    @State private var userDisagrees = false
+    
     var body: some View {
-        Text("Hej")
-//        Text("Hej").alert(LocalizedStringKey, isPresented: Binding<Bool>) {
-//            <#code#>
-//        } message: {
-//            <#code#>
-//        }
+        Button("Toggle") {
+            isPresented.toggle()
+        }
+        .alert("Terms of Usage", isPresented: $isPresented) {
+            Button("I Disagree") {
+                isPresented = false
+                userDisagrees = true
+            }
+            Button("I Agree") {
+                isPresented = false
+            }
+        } message: {
+            Text("There is no tolerance for objectionable content or abusive users. Violators will be blocked from the app. The developers of this app assume all rights to images added to this app. Images may be added or removed at the discretion of the app developers at any time. You must agree to these terms in order to continue using this app.")
+        }
+        .alert("Agreement Required", isPresented: $userDisagrees) {
+            Button("OK") {
+                userDisagrees = false
+                isPresented = true
+            }
+        }
     }
 }

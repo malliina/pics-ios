@@ -159,7 +159,8 @@ struct PicsView<T>: View where T: PicsVMLike {
         }
         .sheet(isPresented: $showHelp) {
             NavigationView {
-                HelpView(isPrivate: user.isPrivate)
+                // HelpView(isPrivate: user.isPrivate)
+                EulaView()
             }
         }
         .sheet(isPresented: $showProfile) {

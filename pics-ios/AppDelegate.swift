@@ -11,6 +11,7 @@ import AWSCognitoIdentityProvider
 import AppCenter
 import AppCenterAnalytics
 import AppCenterCrashes
+import SwiftUI
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -46,6 +47,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 return OneLinerVC(text: "Unable to initialize app.")
             }
         } else {
+            // return UIHostingController(rootView: EulaView())
             return EulaVC(w: w)
         }
     }
