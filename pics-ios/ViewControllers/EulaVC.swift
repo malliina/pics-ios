@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import SwiftUI
 
 class EulaVC: BaseVC {
     let w: UIWindow
@@ -57,5 +58,16 @@ class EulaVC: BaseVC {
         } catch {
             present(OneLinerVC(text: "Unable to initialize app."), animated: true, completion: nil)
         }
+    }
+}
+
+struct EulaView: View {
+    var body: some View {
+        Text("Hej")
+//        Text("Hej").alert(LocalizedStringKey, isPresented: Binding<Bool>) {
+//            <#code#>
+//        } message: {
+//            <#code#>
+//        }
     }
 }

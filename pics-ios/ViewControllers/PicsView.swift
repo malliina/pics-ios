@@ -71,20 +71,15 @@ struct PicsView<T>: View where T: PicsVMLike {
     }
     
     var body: some View {
-//        let isEmpty = viewModel.isOnline && viewModel.pics.isEmpty
-//        if isEmpty {
-//            emptyView()
-//        } else {
-            GeometryReader { geometry in
-                ZStack {
-                    grid(geometry: geometry).task {
-                        await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
-                    }.overlay(alignment: .bottom) {
-                        cameraButton
-                    }
+        GeometryReader { geometry in
+            ZStack {
+                grid(geometry: geometry).task {
+                    await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
+                }.overlay(alignment: .bottom) {
+                    cameraButton
                 }
             }
-//        }
+        }
     }
     
     private func emptyView() -> some View {
@@ -142,7 +137,6 @@ struct PicsView<T>: View where T: PicsVMLike {
                 Button {
                     showHelp = !showHelp
                 } label: {
-//                    Image(systemName: "questionmark.circle")
                     Image(uiImage: #imageLiteral(resourceName: "HelpIcon"))
                         .renderingMode(.template)
                 }

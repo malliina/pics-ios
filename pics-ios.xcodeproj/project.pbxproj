@@ -36,7 +36,7 @@
 		61A9C4C92003ECC20085BA25 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4C82003ECC20085BA25 /* Strings.swift */; };
 		61A9C4CB2003EDFA0085BA25 /* Arrays.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4CA2003EDFA0085BA25 /* Arrays.swift */; };
 		61A9C4CF200693510085BA25 /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4CE200693510085BA25 /* Backend.swift */; };
-		61D214B61FD2ABB300781DC7 /* AuthVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B51FD2ABB300781DC7 /* AuthVC.swift */; };
+		61D214B61FD2ABB300781DC7 /* RememberMe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B51FD2ABB300781DC7 /* RememberMe.swift */; };
 		61D214BC1FD34C9C00781DC7 /* PicsTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214BB1FD34C9C00781DC7 /* PicsTextField.swift */; };
 		61D214BE1FD34D8900781DC7 /* PicsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214BD1FD34D8900781DC7 /* PicsButton.swift */; };
 		61D214C01FD34E6D00781DC7 /* PicsColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214BF1FD34E6D00781DC7 /* PicsColors.swift */; };
@@ -122,7 +122,7 @@
 		61A9C4C82003ECC20085BA25 /* Strings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strings.swift; sourceTree = "<group>"; };
 		61A9C4CA2003EDFA0085BA25 /* Arrays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Arrays.swift; sourceTree = "<group>"; };
 		61A9C4CE200693510085BA25 /* Backend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend.swift; sourceTree = "<group>"; };
-		61D214B51FD2ABB300781DC7 /* AuthVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthVC.swift; sourceTree = "<group>"; };
+		61D214B51FD2ABB300781DC7 /* RememberMe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RememberMe.swift; sourceTree = "<group>"; };
 		61D214BB1FD34C9C00781DC7 /* PicsTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsTextField.swift; sourceTree = "<group>"; };
 		61D214BD1FD34D8900781DC7 /* PicsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsButton.swift; sourceTree = "<group>"; };
 		61D214BF1FD34E6D00781DC7 /* PicsColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsColors.swift; sourceTree = "<group>"; };
@@ -313,7 +313,7 @@
 			isa = PBXGroup;
 			children = (
 				61D214C51FD464B800781DC7 /* AuthHandler.swift */,
-				61D214B51FD2ABB300781DC7 /* AuthVC.swift */,
+				61D214B51FD2ABB300781DC7 /* RememberMe.swift */,
 				61D214C31FD4571B00781DC7 /* BaseVC.swift */,
 				B0FA092328C4A6C400F6356E /* ConfirmView.swift */,
 				615647F4201E16F1000E3BBD /* EulaVC.swift */,
@@ -454,8 +454,8 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */,
-				7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */,
+				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */,
+				7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -528,7 +528,7 @@
 				61A702D41FCAC7F900814051 /* AppError.swift in Sources */,
 				B0FA092628C66A1200F6356E /* NewPassView.swift in Sources */,
 				7DA4A016289BEFB5005FD842 /* ImagePicker.swift in Sources */,
-				61D214B61FD2ABB300781DC7 /* AuthVC.swift in Sources */,
+				61D214B61FD2ABB300781DC7 /* RememberMe.swift in Sources */,
 				61A702D21FCAC6C200814051 /* Log.swift in Sources */,
 				61A702E21FCB21A600814051 /* PicsCell.swift in Sources */,
 				615339C72061B02E00106B48 /* Utils.swift in Sources */,
@@ -1021,7 +1021,7 @@
 				version = 2.27.1;
 			};
 		};
-		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */ = {
+		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
 			requirement = {
@@ -1029,7 +1029,7 @@
 				version = 5.0.1;
 			};
 		};
-		7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */ = {
+		7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/microsoft/appcenter-sdk-apple.git";
 			requirement = {
@@ -1052,17 +1052,17 @@
 		};
 		7D175C5A27C018E50050E29B /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */;
+			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
 		};
 		7D175C6227C0195A0050E29B /* AppCenterAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterAnalytics;
 		};
 		7D175C6427C0195A0050E29B /* AppCenterCrashes */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = 7D175C6127C019590050E29B /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterCrashes;
 		};
 /* End XCSwiftPackageProductDependency section */
