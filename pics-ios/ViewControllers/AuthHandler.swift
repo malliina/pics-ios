@@ -18,12 +18,9 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
     let rememberMe: RememberMe
     let active: UIViewController
     
-    let window: UIWindow
-    
     private var loginHandler: LoginHandler? = nil
     
-    private init(window: UIWindow) {
-        self.window = window
+    private override init() {
         let nav = UINavigationController()
         let picsViewModel = PicsVM { user in
             nav.navigationBar.barStyle = user != nil ? UIBarStyle.black : .default
@@ -37,7 +34,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
         Tokens.shared.pool.delegate = self
     }
     
-    static func configure(window: UIWindow) throws -> AuthHandler {
+    static func configure() throws -> AuthHandler {
         let conf = try CognitoConf.read()
         let serviceConfiguration = AWSServiceConfiguration(region: .EUWest1, credentialsProvider: nil)
         // create pool configuration
@@ -46,7 +43,7 @@ class AuthHandler: NSObject, AWSCognitoIdentityInteractiveAuthenticationDelegate
                                                                         poolId: conf.userPoolId)
         // initialize user pool client
         AWSCognitoIdentityUserPool.register(with: serviceConfiguration, userPoolConfiguration: poolConfiguration, forKey: CognitoConf.PoolKey)
-        return AuthHandler(window: window)
+        return AuthHandler()
     }
     
     func startPasswordAuthentication() -> AWSCognitoIdentityPasswordAuthentication {

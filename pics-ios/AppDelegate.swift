@@ -8,9 +8,6 @@
 
 import UIKit
 import AWSCognitoIdentityProvider
-import AppCenter
-import AppCenterAnalytics
-import AppCenterCrashes
 import SwiftUI
 
 @UIApplicationMain
@@ -34,21 +31,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let w = UIWindow(frame: UIScreen.main.bounds)
         window = w
         w.makeKeyAndVisible()
-        w.rootViewController = initialView(w: w)
+        w.rootViewController = initialView()
         return true
     }
     
-    func initialView(w: UIWindow) -> UIViewController {
+    func initialView() -> UIViewController {
         if PicsSettings.shared.isEulaAccepted {
-            do {
-                let authHandler = try AuthHandler.configure(window: w)
-                return authHandler.active
-            } catch {
-                return OneLinerVC(text: "Unable to initialize app.")
-            }
+            return eulaAcceptedView()
         } else {
-            // return UIHostingController(rootView: EulaView())
-            return EulaVC(w: w)
+            let eula = EulaView {
+                let acceptedView = self.eulaAcceptedView()
+                self.log.info("EULA accepted, changing root view...")
+                self.window?.rootViewController = acceptedView
+            }
+            return UIHostingController(rootView: eula)
+        }
+    }
+    
+    private func eulaAcceptedView() -> UIViewController {
+        do {
+            let authHandler = try AuthHandler.configure()
+            return authHandler.active
+        } catch {
+            return UIHostingController(rootView: OneLinerView(text: "Unable to initialize app."))
         }
     }
     

@@ -1,30 +1,12 @@
 {
   "pins" : [
     {
-      "identity" : "appcenter-sdk-apple",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/microsoft/appcenter-sdk-apple.git",
-      "state" : {
-        "revision" : "b84bc8a39ff04bc8d5ae7b4d230c171c562891aa",
-        "version" : "4.4.1"
-      }
-    },
-    {
       "identity" : "aws-sdk-ios-spm",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/aws-amplify/aws-sdk-ios-spm",
       "state" : {
         "revision" : "2fbb2199cee0124c584e58c5753c05e10e7d7348",
         "version" : "2.27.1"
-      }
-    },
-    {
-      "identity" : "plcrashreporter",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/microsoft/PLCrashReporter.git",
-      "state" : {
-        "revision" : "81cdec2b3827feb03286cb297f4c501a8eb98df1",
-        "version" : "1.10.2"
       }
     },
     {
