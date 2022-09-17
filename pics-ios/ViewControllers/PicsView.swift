@@ -37,7 +37,8 @@ struct PicsView<T>: View where T: PicsVMLike {
     @State private var showHelp = false
     @State private var showCamera = false
     
-    @State private var showLogin = false
+    @State var showLogin = false
+    @State var showNewPass = false
     
     var backgroundColor: Color { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var titleColor: Color { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
@@ -157,6 +158,8 @@ struct PicsView<T>: View where T: PicsVMLike {
                 }
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
+//        .toolbarColorScheme(.dark, for: .navigationBar)
         .sheet(isPresented: $showHelp) {
             NavigationView {
                 HelpView(isPrivate: user.isPrivate)
@@ -164,6 +167,16 @@ struct PicsView<T>: View where T: PicsVMLike {
         }
         .sheet(isPresented: $showProfile) {
             ProfilePopoverView(user: user.activeUser, delegate: ProfileViewDelegate(viewModel: viewModel))
+        }
+        .sheet(isPresented: $viewModel.showLogin) {
+            NavigationView {
+                LoginView(handler: viewModel.loginHandler)
+            }
+        }
+        .sheet(isPresented: $viewModel.showNewPass) {
+            NavigationView {
+                NewPassView(handler: viewModel.loginHandler)
+            }
         }
         .fullScreenCover(isPresented: $showCamera) {
             ImagePicker { image in

@@ -10,7 +10,51 @@ import UIKit
 import AWSCognitoIdentityProvider
 import SwiftUI
 
-@UIApplicationMain
+@main
+struct PicsApp: App {
+    @State var isError = false
+    
+    init() {
+        do {
+            try CognitoDelegate.configure()
+        } catch {
+            isError = true
+        }
+    }
+    
+    var body: some Scene {
+        WindowGroup {
+            if isError {
+                OneLinerView(text: "Unable to initialize app.")
+            } else {
+                let picsViewModel = PicsVM { user in
+//                    nav.navigationBar.barStyle = user != nil ? UIBarStyle.black : .default
+                }
+                NavigationView {
+                    PicsView(viewModel: picsViewModel)
+                }
+            }
+        }
+    }
+    
+//    private func eulaAcceptedView() -> UIViewController {
+//        do {
+//            try CognitoDelegate.configure()
+//            let nav = UINavigationController()
+//            let picsViewModel = PicsVM { user in
+//                nav.navigationBar.barStyle = user != nil ? UIBarStyle.black : .default
+//            }
+//            let picsView = PicsView(viewModel: picsViewModel)
+//            let picsVc = UIHostingController(rootView: picsView)
+//            nav.pushViewController(picsVc, animated: false)
+//            return nav
+//        } catch {
+//            return UIHostingController(rootView: OneLinerView(text: "Unable to initialize app."))
+//        }
+//    }
+}
+
+//@UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     let log = LoggerFactory.shared.system(AppDelegate.self)
 
@@ -40,9 +84,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return eulaAcceptedView()
         } else {
             let eula = EulaView {
-                let acceptedView = self.eulaAcceptedView()
                 self.log.info("EULA accepted, changing root view...")
-                self.window?.rootViewController = acceptedView
+                self.window?.rootViewController = self.eulaAcceptedView()
             }
             return UIHostingController(rootView: eula)
         }
@@ -50,8 +93,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private func eulaAcceptedView() -> UIViewController {
         do {
-            let authHandler = try AuthHandler.configure()
-            return authHandler.active
+            try CognitoDelegate.configure()
+            let nav = UINavigationController()
+            let picsViewModel = PicsVM { user in
+                nav.navigationBar.barStyle = user != nil ? UIBarStyle.black : .default
+            }
+            let picsView = PicsView(viewModel: picsViewModel)
+            let picsVc = UIHostingController(rootView: picsView)
+            nav.pushViewController(picsVc, animated: false)
+            return nav
         } catch {
             return UIHostingController(rootView: OneLinerView(text: "Unable to initialize app."))
         }
