@@ -9,39 +9,50 @@
 import SwiftUI
 
 struct PicView: View {
+    private let log = LoggerFactory.shared.vc(PicView.self)
     let pic: Picture
     let isPrivate: Bool
     
     let smalls: DataCache
     let larges: DataCache
     var backgroundColor: Color { isPrivate ? PicsColors.background : PicsColors.lightBackground }
-    
+    var downloader: Downloader { Downloader.shared }
     @State var data: Data? = nil
     
     @MainActor
     func loadImage() async {
-        let key = pic.meta.key
+        let meta = pic.meta
+        let key = meta.key
         if let large = larges.search(key: key) {
             data = large
         } else {
             data = smalls.search(key: key)
-            if let result = try? await Downloader.shared.downloadAsync(url: pic.meta.large) {
+            do {
+                if data == nil {
+                    let smallResult = try await downloader.downloadAsync(url: meta.small)
+                    data = smallResult
+                }
+                let result = try await downloader.downloadAsync(url: meta.large)
                 data = result
+            } catch let error {
+                log.error("Failed to download image \(error)")
             }
         }
     }
     
     var body: some View {
-        if let data = data, let uiImage = UIImage(data: data) {
-            ZStack {
-                backgroundColor
-                    .edgesIgnoringSafeArea(.all)
-                Image(uiImage: uiImage).resizable().scaledToFit().background(backgroundColor)
+        ZStack {
+            backgroundColor
+                .edgesIgnoringSafeArea(.all)
+            if let data = data, let uiImage = UIImage(data: data) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                ProgressView().task {
+                    await loadImage()
+                }
             }
-        } else {
-            ProgressView().scaledToFill().task {
-                await loadImage()
-            }.background(backgroundColor)
         }
     }
 }
