@@ -17,10 +17,18 @@ class LoginHandler: NSObject, ObservableObject, AWSCognitoIdentityPasswordAuthen
     @Published var isAuthError: Bool = false
     @Published var showSignUp: Bool = false
     @Published var showConfirm: Bool = false
+    
+    @Published var showNewPass: Bool = false
+    @Published var newPassError: SignupError? = nil
+    @Published var isNewPassError: Bool = false
+    
     @Published var isComplete: Bool = false
+    @Published var isNewPassComplete: Bool = false
+    
     var creds: PasswordCredentials? = nil
     
     var passwordAuthenticationCompletion: AWSTaskCompletionSource<AWSCognitoIdentityPasswordAuthenticationDetails>?
+    var newPassCompletion: AWSTaskCompletionSource<AWSCognitoIdentityNewPasswordRequiredDetails>? = nil
     
     func submit(credentials: PasswordCredentials) {
         creds = credentials
@@ -31,6 +39,7 @@ class LoginHandler: NSObject, ObservableObject, AWSCognitoIdentityPasswordAuthen
         passwordAuthenticationCompletion = passwordAuthenticationCompletionSource
     }
     
+    // so if error == nil, it's successful, except when a new pass is required, it's also nil
     func didCompleteStepWithError(_ error: Error?) {
         if let authError = SignupError.check(user: creds?.username ?? "", error: error) {
             if case .userNotConfirmed(let user) = authError {
@@ -55,6 +64,29 @@ class LoginHandler: NSObject, ObservableObject, AWSCognitoIdentityPasswordAuthen
     }
 }
 
+extension LoginHandler: AWSCognitoIdentityNewPasswordRequired {
+    func getNewPasswordDetails(_ newPasswordRequiredInput: AWSCognitoIdentityNewPasswordRequiredInput, newPasswordRequiredCompletionSource: AWSTaskCompletionSource<AWSCognitoIdentityNewPasswordRequiredDetails>) {
+        self.newPassCompletion = newPasswordRequiredCompletionSource
+    }
+    
+    func save(password: String) {
+        let newPassDetails = AWSCognitoIdentityNewPasswordRequiredDetails(proposedPassword: password, userAttributes: [:])
+        // triggers didCompleteNewPasswordStepWithError
+        newPassCompletion?.set(result: newPassDetails)
+    }
+    
+    func didCompleteNewPasswordStepWithError(_ error: Error?) {
+        DispatchQueue.main.async {
+            if let error = SignupError.check(user: self.creds?.username ?? "", error: error) {
+                self.newPassError = error
+                self.isNewPassError = true
+            } else {
+                self.isNewPassComplete = true
+            }
+        }
+    }
+}
+
 struct LoginView: View {
     let log = LoggerFactory.shared.vc(LoginView.self)
     @Environment(\.dismiss) private var dismiss
@@ -66,18 +98,8 @@ struct LoginView: View {
     
     var body: some View {
         if handler.isComplete {
-            Button {
+            ProgressView().onAppear {
                 dismiss()
-            } label: {
-                ZStack {
-                    PicsColors.background
-                        .edgesIgnoringSafeArea(.all)
-                    Text("Welcome!")
-                        .foregroundColor(PicsColors.blueish2)
-                        .onAppear {
-                            dismiss()
-                        }
-                }
             }
         } else {
             ZStack {
@@ -149,6 +171,11 @@ struct LoginView: View {
                         ConfirmView(handler: ConfirmHandler(loginHandler: handler))
                     }
                 }
+//                .sheet(isPresented: $handler.showNewPass) {
+//                    NavigationView {
+//                        NewPassView(handler: handler)
+//                    }
+//                }
             }
         }
     }

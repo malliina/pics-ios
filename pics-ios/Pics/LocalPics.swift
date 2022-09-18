@@ -119,7 +119,7 @@ class LocalPics {
     }
     
     func readSmall(key: ClientKey) -> Data? {
-        log.info("Reading small \(key)")
+//        log.debug("Reading small \(key)")
         return findSmallUrl(key: key).flatMap { try? Data(contentsOf: $0) }
     }
     

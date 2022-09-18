@@ -22,7 +22,7 @@ class Tokens {
     private let log = LoggerFactory.shared.system(Tokens.self)
     
     static let shared = Tokens()
-    let poolOpt = AWSCognitoIdentityUserPool(forKey: AuthVC.PoolKey)
+    lazy var poolOpt = AWSCognitoIdentityUserPool(forKey: CognitoConf.PoolKey)
     var pool: AWSCognitoIdentityUserPool { poolOpt! }
     
     private var delegates: [TokenDelegate] = []

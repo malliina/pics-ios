@@ -9,13 +9,13 @@
 import Foundation
 
 class CognitoConf {
+    static let PoolKey = "PicsPool"
+    
     let clientId: String
-//    let clientSecret: String
     let userPoolId: String
     
     init(clientId: String, userPoolId: String) {
         self.clientId = clientId
-//        self.clientSecret = clientSecret
         self.userPoolId = userPoolId
     }
     

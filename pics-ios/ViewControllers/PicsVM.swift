@@ -23,7 +23,9 @@ protocol PicsVMLike: ObservableObject, AuthInit {
     var pics: [Picture] { get }
     var hasMore: Bool { get }
     var isPrivate: Bool { get }
-    
+    var showLogin: Bool { get set }
+    var showNewPass: Bool { get set }
+    var loginHandler: LoginHandler { get }
     func loadMore() async
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async
     func display(newPics: [Picture])
@@ -114,10 +116,16 @@ class PicsVM: PicsVMLike {
     @Published private(set) var hasMore = false
     private var isInitial = true
     
+    @Published var showLogin = false
+    @Published var showNewPass = false
+    
     private var library: PicsLibrary { Backend.shared.library }
     private var picsSettings: PicsSettings { PicsSettings.shared }
     var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     private var authCancellation: AWSCancellationTokenSource? = nil
+
+    var cognito: CognitoDelegate? = nil
+    var loginHandler: LoginHandler { cognito!.handler }
     
     var socket: PicsSocket { Backend.shared.socket }
     
@@ -126,6 +134,17 @@ class PicsVM: PicsVMLike {
     init(userChanged: @escaping (Username?) -> Void) {
         self.userChanged = userChanged
         socket.delegate = self
+        let cognitoDelegate = CognitoDelegate(onShowLogin: {
+            DispatchQueue.main.async {
+                self.showLogin = true
+            }
+        }, onShowNewPass: {
+            DispatchQueue.main.async {
+                self.showNewPass = true
+            }
+        })
+        cognito = cognitoDelegate
+        Tokens.shared.pool.delegate = cognitoDelegate
     }
     
     func connect() {
@@ -151,8 +170,10 @@ class PicsVM: PicsVMLike {
         if !initialOnly || isInitial {
             isInitial = false
             if initialOnly {
-                self.pics = []
-                log.info("Offline count \(pics.count)")
+                onUiThread {
+                    self.pics = []
+                    self.log.info("Offline count \(self.pics.count)")
+                }
             }
             do {
                 if let user = user {
@@ -196,6 +217,7 @@ class PicsVM: PicsVMLike {
     private func appendPics(limit: Int = PicsVM.itemsPerLoad) async throws {
         let beforeCount = pics.count
         let batch = try await library.loadAsync(from: beforeCount, limit: limit)
+        log.info("Got batch of \(batch.count) pics from index \(beforeCount) with limit \(limit).")
         let syncedBatch: [PicMeta] = batch.map { meta in
             let key = meta.key
             guard let url = LocalPics.shared.findLocal(key: key) else {
@@ -264,7 +286,6 @@ class PicsVM: PicsVMLike {
         picsSettings.activeUser = nil
         onUiThread {
             self.isPrivate = false
-//            self.pics = self.picsSettings.localPictures(for: Username.anon)
             self.savePics(newPics: self.picsSettings.localPictures(for: Username.anon))
             self.hasMore = false
             self.userChanged(nil)
@@ -297,6 +318,7 @@ class PicsVM: PicsVMLike {
         picsSettings.activeUser = nil
         resetData()
         adjustTitleTextColor(PicsColors.uiAlmostBlack)
+        loginHandler.isComplete = false
     }
     
     private func adjustTitleTextColor(_ color: UIColor) {
@@ -315,6 +337,9 @@ class PreviewPicsVM: PicsVMLike {
     var pics: [Picture] = []
     var hasMore: Bool = false
     var isPrivate: Bool = false
+    var showLogin: Bool = false
+    var showNewPass: Bool = false
+    var loginHandler: LoginHandler = LoginHandler()
     func loadMore() async { }
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async { }
     func resetData() { }

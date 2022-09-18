@@ -29,6 +29,8 @@ class PicViewDelegate <T> : PicDelegate where T: PicsVMLike {
 struct PicsView<T>: View where T: PicsVMLike {
     let log = LoggerFactory.shared.vc(PicsView.self)
     
+    @Environment(\.scenePhase) private var scenePhase
+    
     @ObservedObject var viewModel: T
     
     @State private var picsNavigationBarHidden = false
@@ -37,7 +39,8 @@ struct PicsView<T>: View where T: PicsVMLike {
     @State private var showHelp = false
     @State private var showCamera = false
     
-    @State private var showLogin = false
+    @State var showLogin = false
+    @State var showNewPass = false
     
     var backgroundColor: Color { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var titleColor: Color { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
@@ -71,20 +74,24 @@ struct PicsView<T>: View where T: PicsVMLike {
     }
     
     var body: some View {
-//        let isEmpty = viewModel.isOnline && viewModel.pics.isEmpty
-//        if isEmpty {
-//            emptyView()
-//        } else {
-            GeometryReader { geometry in
-                ZStack {
-                    grid(geometry: geometry).task {
-                        await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
-                    }.overlay(alignment: .bottom) {
-                        cameraButton
-                    }
+        GeometryReader { geometry in
+            ZStack {
+                grid(geometry: geometry).task {
+                    await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
+                }.overlay(alignment: .bottom) {
+                    cameraButton
                 }
             }
-//        }
+        }.onChange(of: scenePhase) { phase in
+            if phase == .inactive {
+                // when resuming app, the resume scenes are:
+                // background -> inactive -> active
+                viewModel.disconnect()
+            }
+            if phase == .active {
+                viewModel.connect()
+            }
+        }
     }
     
     private func emptyView() -> some View {
@@ -142,7 +149,6 @@ struct PicsView<T>: View where T: PicsVMLike {
                 Button {
                     showHelp = !showHelp
                 } label: {
-//                    Image(systemName: "questionmark.circle")
                     Image(uiImage: #imageLiteral(resourceName: "HelpIcon"))
                         .renderingMode(.template)
                 }
@@ -163,6 +169,10 @@ struct PicsView<T>: View where T: PicsVMLike {
                 }
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
+//        .toolbarBackground(.visible, for: .navigationBar)
+//        .toolbarColorScheme(viewModel.isPrivate ? .dark : .light, for: .navigationBar)
+//        .navigationBarColo
         .sheet(isPresented: $showHelp) {
             NavigationView {
                 HelpView(isPrivate: user.isPrivate)
@@ -170,6 +180,16 @@ struct PicsView<T>: View where T: PicsVMLike {
         }
         .sheet(isPresented: $showProfile) {
             ProfilePopoverView(user: user.activeUser, delegate: ProfileViewDelegate(viewModel: viewModel))
+        }
+        .sheet(isPresented: $viewModel.showLogin) {
+            NavigationView {
+                LoginView(handler: viewModel.loginHandler)
+            }
+        }
+        .sheet(isPresented: $viewModel.showNewPass) {
+            NavigationView {
+                NewPassView(handler: viewModel.loginHandler)
+            }
         }
         .fullScreenCover(isPresented: $showCamera) {
             ImagePicker { image in
