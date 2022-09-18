@@ -293,30 +293,11 @@ class PicsVM: PicsVMLike {
     
     func onPublic() {
         changeUser(to: nil)
-//        onUiThread {
-//            self.isPrivate = false
-//            self.savePics(newPics: self.picsSettings.localPictures(for: Username.anon))
-//            self.hasMore = false
-//            Task {
-//                try await self.loadAnonymousPics()
-//            }
-//        }
-        log.info("Current user is \(user.currentUsernameOrAnon)")
+        
     }
     
     func onPrivate(user: Username) {
         changeUser(to: user)
-//        onUiThread {
-//            if changed {
-//                self.userChanged(user)
-//            }
-//            self.savePics(newPics: [])
-//            self.isPrivate = true
-//            self.hasMore = false
-//            Task {
-//                try await self.loadPrivatePics(for: user)
-//            }
-//        }
     }
     
     private func changeUser(to user: Username?) {
@@ -325,6 +306,7 @@ class PicsVM: PicsVMLike {
             picsSettings.activeUser = user
             // This triggers a change in AppDelegate, recreating the view
             self.userChanged(user)
+            log.info("Current user is \(self.user.currentUsernameOrAnon)")
         }
     }
     
