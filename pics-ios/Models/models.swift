@@ -24,7 +24,7 @@ class PasswordCredentials {
     }
 }
 
-enum SignupError {
+enum SignupError: Error {
     case userNotFound(String)
     case invalidCredentials(String)
     case userAlreadyExists(String)

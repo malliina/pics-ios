@@ -15,6 +15,27 @@ struct AuthUser: Identifiable {
     var id: String { username }
 }
 
+extension AWSCognitoIdentityUserPool {
+    func signUpAsync(_ creds: PasswordCredentials) async throws -> AWSCognitoIdentityUser {
+        let username = creds.username
+        let attributes = [
+            AWSCognitoIdentityUserAttributeType(name: "email", value: username)
+        ]
+        return try await withCheckedThrowingContinuation { cont in
+            signUp(username, password: creds.password, userAttributes: attributes, validationData: nil).continueWith { task in
+                if let error = SignupError.check(user: username, error: task.error) {
+                    cont.resume(throwing: error)
+                } else if let user = task.result?.user {
+                    cont.resume(returning: user)
+                } else {
+                    cont.resume(throwing: SignupError.unknown)
+                }
+                return nil
+            }
+        }
+    }
+}
+
 class SignupHandler: ObservableObject {
     let log = LoggerFactory.shared.vc(SignupHandler.self)
     
@@ -30,34 +51,29 @@ class SignupHandler: ObservableObject {
     
     func signUp(creds: PasswordCredentials) {
         loginHandler.creds = creds
-        let username = creds.username
-        let attributes = [
-            AWSCognitoIdentityUserAttributeType(name: "email", value: username)
-        ]
-        pool.signUp(username, password: creds.password, userAttributes: attributes, validationData: nil).continueWith { (task) -> Any? in
-            self.handleSignupResult(creds: creds, task: task)
-            return nil
-        }
-    }
-    
-    func handleSignupResult(creds: PasswordCredentials, task: AWSTask<AWSCognitoIdentityUserPoolSignUpResponse>) {
-        if let error = SignupError.check(user: creds.username, error: task.error) {
-            log.info("\(error)")
-            DispatchQueue.main.async {
-                self.signUpError = error
-                self.isSignUpError = true
-            }
-        } else {
-            if let response = task.result, let name = response.user.username {
-                self.log.info("Created \(name).")
-                if response.user.confirmedStatus == .confirmed {
-                    loginHandler.submit(credentials: creds)
-                } else {
-                    self.log.info("Going to confirm page for \(name)...")
-                    DispatchQueue.main.async {
-                        self.loginHandler.showSignUp = false
-                        self.loginHandler.showConfirm = true
+        Task {
+            do {
+                let user = try await self.pool.signUpAsync(creds)
+                if let name = user.username {
+                    self.log.info("Created \(name).")
+                    if user.confirmedStatus == .confirmed {
+                        loginHandler.submit(credentials: creds)
+                    } else {
+                        self.log.info("Going to confirm page for \(name)...")
+                        DispatchQueue.main.async {
+                            self.loginHandler.showSignUp = false
+                            self.loginHandler.showConfirm = true
+                        }
                     }
+                } else {
+                    throw SignupError.unknown
+                }
+            } catch let error {
+                log.info("\(error)")
+                let signupFailure = error as? SignupError ?? SignupError.unknown
+                DispatchQueue.main.async {
+                    self.signUpError = signupFailure
+                    self.isSignUpError = true
                 }
             }
         }

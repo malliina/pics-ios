@@ -70,6 +70,7 @@ extension PicsVM: PicsDelegate {
         }.map { meta in
             Picture(meta: meta)
         }
+        log.info("Adding \(picsToAdd.count) new pics.")
         let updated = picsToAdd.reversed() + self.pics
         savePics(newPics: updated)
     }
@@ -161,8 +162,11 @@ class PicsVM: PicsVMLike {
     }
     
     private func savePics(newPics: [Picture]) {
-        isOnline = true
-        self.pics = newPics
+        DispatchQueue.main.async {
+            self.isOnline = true
+            self.pics = newPics
+        }
+        
         let _ = self.picsSettings.save(pics: newPics, for: self.currentUsernameOrAnon)
     }
     

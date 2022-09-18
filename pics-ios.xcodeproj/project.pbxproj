@@ -14,7 +14,6 @@
 		6142304F1FC1891E00CD4173 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6142304D1FC1891E00CD4173 /* LaunchScreen.storyboard */; };
 		6142305A1FC1891E00CD4173 /* pics_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614230591FC1891E00CD4173 /* pics_iosTests.swift */; };
 		614230651FC1891E00CD4173 /* pics_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614230641FC1891E00CD4173 /* pics_iosUITests.swift */; };
-		615339C72061B02E00106B48 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615339C62061B02E00106B48 /* Utils.swift */; };
 		615339C92061B5AF00106B48 /* Outcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615339C82061B5AF00106B48 /* Outcome.swift */; };
 		615647F1201C9EEA000E3BBD /* ProfilePopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615647F0201C9EEA000E3BBD /* ProfilePopover.swift */; };
 		615647F3201CA633000E3BBD /* PicsSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615647F2201CA633000E3BBD /* PicsSettings.swift */; };
@@ -97,7 +96,6 @@
 		614230601FC1891E00CD4173 /* pics-iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "pics-iosUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		614230641FC1891E00CD4173 /* pics_iosUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pics_iosUITests.swift; sourceTree = "<group>"; };
 		614230661FC1891F00CD4173 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		615339C62061B02E00106B48 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		615339C82061B5AF00106B48 /* Outcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Outcome.swift; sourceTree = "<group>"; };
 		615647F0201C9EEA000E3BBD /* ProfilePopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePopover.swift; sourceTree = "<group>"; };
 		615647F2201CA633000E3BBD /* PicsSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsSettings.swift; sourceTree = "<group>"; };
@@ -334,7 +332,6 @@
 				61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */,
 				615339C82061B5AF00106B48 /* Outcome.swift */,
 				615647F2201CA633000E3BBD /* PicsSettings.swift */,
-				615339C62061B02E00106B48 /* Utils.swift */,
 			);
 			path = Pics;
 			sourceTree = "<group>";
@@ -448,7 +445,7 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */,
+				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -524,7 +521,6 @@
 				61D214B61FD2ABB300781DC7 /* RememberMe.swift in Sources */,
 				61A702D21FCAC6C200814051 /* Log.swift in Sources */,
 				61A702E21FCB21A600814051 /* PicsCell.swift in Sources */,
-				615339C72061B02E00106B48 /* Utils.swift in Sources */,
 				B0ECFFB428C3BE0100CFA757 /* SignupView.swift in Sources */,
 				61A9C4C21FF28E280085BA25 /* EnvConf.swift in Sources */,
 				61A702D81FCAD7DE00814051 /* HttpClient.swift in Sources */,
@@ -1017,7 +1013,7 @@
 				version = 2.27.1;
 			};
 		};
-		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */ = {
+		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
 			requirement = {
@@ -1040,7 +1036,7 @@
 		};
 		7D175C5A27C018E50050E29B /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */;
+			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
 		};
 /* End XCSwiftPackageProductDependency section */

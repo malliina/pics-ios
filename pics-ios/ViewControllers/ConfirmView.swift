@@ -10,6 +10,23 @@ import Foundation
 import SwiftUI
 import AWSCognitoIdentityProvider
 
+extension AWSCognitoIdentityUser {
+    func confirmSignUpAsync(username: String, code: String) async throws -> AWSCognitoIdentityUserConfirmSignUpResponse {
+        return try await withCheckedThrowingContinuation { cont in
+            confirmSignUp(code, forceAliasCreation: true).continueWith { task in
+                if let error = SignupError.check(user: username, error: task.error) {
+                    cont.resume(throwing: error)
+                } else if let result = task.result {
+                    cont.resume(returning: result)
+                } else {
+                    cont.resume(throwing: SignupError.unknown)
+                }
+                return nil
+            }
+        }
+    }
+}
+
 class ConfirmHandler: ObservableObject {
     let log = LoggerFactory.shared.vc(ConfirmHandler.self)
     var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
@@ -28,20 +45,21 @@ class ConfirmHandler: ObservableObject {
     }
     
     func submit(code: String) {
-        pool.getUser(username).confirmSignUp(code, forceAliasCreation: true).continueWith { (task) -> Any? in
-            if let error = SignupError.check(user: self.username, error: task.error) {
-                DispatchQueue.main.async {
-                    self.confirmError = error
-                    self.isConfirmError = true
-                }
-            } else {
+        Task {
+            do {
+                let _ = try await pool.getUser(username).confirmSignUpAsync(username: username, code: code)
                 if let creds = self.creds {
                     self.loginHandler.submit(credentials: creds)
                 } else {
                     self.log.info("Code confirmed, but no creds available.")
                 }
+            } catch let error {
+                let signupError = error as? SignupError ?? SignupError.unknown
+                DispatchQueue.main.async {
+                    self.confirmError = signupError
+                    self.isConfirmError = true
+                }
             }
-            return nil
         }
     }
     
