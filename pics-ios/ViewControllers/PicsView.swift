@@ -29,6 +29,8 @@ class PicViewDelegate <T> : PicDelegate where T: PicsVMLike {
 struct PicsView<T>: View where T: PicsVMLike {
     let log = LoggerFactory.shared.vc(PicsView.self)
     
+    @Environment(\.scenePhase) private var scenePhase
+    
     @ObservedObject var viewModel: T
     
     @State private var picsNavigationBarHidden = false
@@ -79,6 +81,15 @@ struct PicsView<T>: View where T: PicsVMLike {
                 }.overlay(alignment: .bottom) {
                     cameraButton
                 }
+            }
+        }.onChange(of: scenePhase) { phase in
+            if phase == .inactive {
+                // when resuming app, the resume scenes are:
+                // background -> inactive -> active
+                viewModel.disconnect()
+            }
+            if phase == .active {
+                viewModel.connect()
             }
         }
     }
@@ -159,7 +170,9 @@ struct PicsView<T>: View where T: PicsVMLike {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-//        .toolbarColorScheme(.dark, for: .navigationBar)
+//        .toolbarBackground(.visible, for: .navigationBar)
+//        .toolbarColorScheme(viewModel.isPrivate ? .dark : .light, for: .navigationBar)
+//        .navigationBarColo
         .sheet(isPresented: $showHelp) {
             NavigationView {
                 HelpView(isPrivate: user.isPrivate)

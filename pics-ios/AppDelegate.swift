@@ -12,7 +12,10 @@ import SwiftUI
 
 @main
 struct PicsApp: App {
+    private let log = LoggerFactory.shared.vc(PicsVM.self)
     @State var isError = false
+    
+    @State var username: Username? = nil
     
     init() {
         do {
@@ -20,6 +23,7 @@ struct PicsApp: App {
         } catch {
             isError = true
         }
+        log.info("App initialized.")
     }
     
     var body: some Scene {
@@ -27,31 +31,23 @@ struct PicsApp: App {
             if isError {
                 OneLinerView(text: "Unable to initialize app.")
             } else {
-                let picsViewModel = PicsVM { user in
-//                    nav.navigationBar.barStyle = user != nil ? UIBarStyle.black : .default
-                }
                 NavigationView {
-                    PicsView(viewModel: picsViewModel)
+                    PicsView(viewModel: PicsVM { user in
+                        updateNav(user: user)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            username = user
+                        }
+                    })
                 }
+                .id(username) // https://stackoverflow.com/a/64828640
             }
         }
     }
     
-//    private func eulaAcceptedView() -> UIViewController {
-//        do {
-//            try CognitoDelegate.configure()
-//            let nav = UINavigationController()
-//            let picsViewModel = PicsVM { user in
-//                nav.navigationBar.barStyle = user != nil ? UIBarStyle.black : .default
-//            }
-//            let picsView = PicsView(viewModel: picsViewModel)
-//            let picsVc = UIHostingController(rootView: picsView)
-//            nav.pushViewController(picsVc, animated: false)
-//            return nav
-//        } catch {
-//            return UIHostingController(rootView: OneLinerView(text: "Unable to initialize app."))
-//        }
-//    }
+    private func updateNav(user: Username?) {
+        UINavigationBar.appearance().barStyle = user != nil ? .black : .default
+        log.info("Update nav for \(user)")
+    }
 }
 
 //@UIApplicationMain

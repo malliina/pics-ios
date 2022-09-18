@@ -308,9 +308,8 @@
 		61D214B41FD2AB9900781DC7 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				61D214C51FD464B800781DC7 /* CognitoDelegate.swift */,
-				61D214B51FD2ABB300781DC7 /* RememberMe.swift */,
 				61D214C31FD4571B00781DC7 /* BaseVC.swift */,
+				61D214C51FD464B800781DC7 /* CognitoDelegate.swift */,
 				B0FA092328C4A6C400F6356E /* ConfirmView.swift */,
 				615647F4201E16F1000E3BBD /* EulaView.swift */,
 				7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */,
@@ -323,6 +322,7 @@
 				7D20883E2835684F005C0BBA /* PicsVM.swift */,
 				7D6BF6E5280F48FD007C5FD5 /* PicView.swift */,
 				615647F0201C9EEA000E3BBD /* ProfilePopover.swift */,
+				61D214B51FD2ABB300781DC7 /* RememberMe.swift */,
 				B0ECFFB328C3BE0100CFA757 /* SignupView.swift */,
 			);
 			path = ViewControllers;
@@ -711,6 +711,7 @@
 				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -735,6 +736,7 @@
 				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -904,6 +906,7 @@
 				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

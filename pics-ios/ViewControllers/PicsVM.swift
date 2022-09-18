@@ -217,6 +217,7 @@ class PicsVM: PicsVMLike {
     private func appendPics(limit: Int = PicsVM.itemsPerLoad) async throws {
         let beforeCount = pics.count
         let batch = try await library.loadAsync(from: beforeCount, limit: limit)
+        log.info("Got batch of \(batch.count) pics from index \(beforeCount) with limit \(limit).")
         let syncedBatch: [PicMeta] = batch.map { meta in
             let key = meta.key
             guard let url = LocalPics.shared.findLocal(key: key) else {

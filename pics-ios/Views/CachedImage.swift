@@ -15,7 +15,10 @@ class DataCache {
     
     private var cache: [ClientKey: Data] = [:]
     
-    func search(key: ClientKey) -> Data? { cache[key] }
+    func search(key: ClientKey) -> Data? {
+//        cache[key]
+        return nil
+    }
     
     func put(key: ClientKey, data: Data) { cache[key] = data }
 }
@@ -52,7 +55,7 @@ struct CachedImage: View {
             return imageData
         }
         if let localData = localStorage.readSmall(key: key) {
-            log.info("Using local pic for '\(key)'.")
+//            log.debug("Using local pic for '\(key)'.")
             return localData
         }
         if let data = try? await Downloader.shared.downloadAsync(url: pic.meta.small) {
