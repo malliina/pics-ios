@@ -445,7 +445,7 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */,
+				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -704,7 +704,7 @@
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -712,7 +712,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.17;
+				MARKETING_VERSION = 1.12.18;
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -729,7 +729,7 @@
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -737,7 +737,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.17;
+				MARKETING_VERSION = 1.12.18;
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = PicsDistProfile2022;
@@ -759,7 +759,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.17;
+				MARKETING_VERSION = 1.12.18;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -781,7 +781,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.17;
+				MARKETING_VERSION = 1.12.18;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -802,7 +802,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.17;
+				MARKETING_VERSION = 1.12.18;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -823,7 +823,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.17;
+				MARKETING_VERSION = 1.12.18;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -899,7 +899,7 @@
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -907,7 +907,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.17;
+				MARKETING_VERSION = 1.12.18;
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -929,7 +929,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.17;
+				MARKETING_VERSION = 1.12.18;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -950,7 +950,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.17;
+				MARKETING_VERSION = 1.12.18;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1013,7 +1013,7 @@
 				version = 2.27.1;
 			};
 		};
-		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
 			requirement = {
@@ -1036,7 +1036,7 @@
 		};
 		7D175C5A27C018E50050E29B /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */;
+			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */;
 			productName = SnapKit;
 		};
 /* End XCSwiftPackageProductDependency section */
