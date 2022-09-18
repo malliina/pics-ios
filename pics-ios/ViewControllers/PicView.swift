@@ -12,8 +12,8 @@ struct PicView: View {
     let pic: Picture
     let isPrivate: Bool
     
-    var smalls: DataCache { DataCache.small }
-    var larges: DataCache { DataCache.large }
+    let smalls: DataCache
+    let larges: DataCache
     var backgroundColor: Color { isPrivate ? PicsColors.background : PicsColors.lightBackground }
     
     @State var data: Data? = nil

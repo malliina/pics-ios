@@ -26,6 +26,8 @@ protocol PicsVMLike: ObservableObject, AuthInit {
     var showLogin: Bool { get set }
     var showNewPass: Bool { get set }
     var loginHandler: LoginHandler { get }
+    var cacheSmall: DataCache { get }
+    var cacheLarge: DataCache { get }
     func loadMore() async
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async
     func display(newPics: [Picture])
@@ -131,6 +133,9 @@ class PicsVM: PicsVMLike {
     
     let userChanged: (Username?) -> Void
     
+    let cacheSmall = DataCache.small()
+    let cacheLarge = DataCache.large()
+    
     init(userChanged: @escaping (Username?) -> Void) {
         self.userChanged = userChanged
         socket.delegate = self
@@ -181,11 +186,11 @@ class PicsVM: PicsVMLike {
                 } else {
                     try await loadAnonymousPics()
                 }
-                onUiThread {
-                    if initialOnly {
-                        self.userChanged(user)
-                    }
-                }
+//                onUiThread {
+//                    if initialOnly {
+//                        self.userChanged(user)
+//                    }
+//                }
             } catch let error {
                 onLoadError(error: error)
             }
@@ -283,31 +288,39 @@ class PicsVM: PicsVMLike {
     }
     
     func onPublic() {
-        picsSettings.activeUser = nil
-        onUiThread {
-            self.isPrivate = false
-            self.savePics(newPics: self.picsSettings.localPictures(for: Username.anon))
-            self.hasMore = false
-            self.userChanged(nil)
-            
-            Task {
-                try await self.loadAnonymousPics()
-            }
-        }
+        changeUser(to: nil)
+//        onUiThread {
+//            self.isPrivate = false
+//            self.savePics(newPics: self.picsSettings.localPictures(for: Username.anon))
+//            self.hasMore = false
+//            Task {
+//                try await self.loadAnonymousPics()
+//            }
+//        }
         log.info("Current user is \(user.currentUsernameOrAnon)")
     }
     
     func onPrivate(user: Username) {
-        picsSettings.activeUser = user
-        onUiThread {
-//            self.pics = []
-            self.savePics(newPics: [])
-            self.isPrivate = true
-            self.hasMore = false
+        changeUser(to: user)
+//        onUiThread {
+//            if changed {
+//                self.userChanged(user)
+//            }
+//            self.savePics(newPics: [])
+//            self.isPrivate = true
+//            self.hasMore = false
+//            Task {
+//                try await self.loadPrivatePics(for: user)
+//            }
+//        }
+    }
+    
+    private func changeUser(to user: Username?) {
+        let changed = picsSettings.activeUser != user
+        if changed {
+            picsSettings.activeUser = user
+            // This triggers a change in AppDelegate, recreating the view
             self.userChanged(user)
-            Task {
-                try await self.loadPrivatePics(for: user)
-            }
         }
     }
     
@@ -331,8 +344,6 @@ class PicsVM: PicsVMLike {
 }
 
 class PreviewPicsVM: PicsVMLike {
-    func connect() {}
-    func disconnect() {}
     var isOnline: Bool = false
     var pics: [Picture] = []
     var hasMore: Bool = false
@@ -340,6 +351,10 @@ class PreviewPicsVM: PicsVMLike {
     var showLogin: Bool = false
     var showNewPass: Bool = false
     var loginHandler: LoginHandler = LoginHandler()
+    var cacheSmall: DataCache = DataCache()
+    var cacheLarge: DataCache = DataCache()
+    func connect() {}
+    func disconnect() {}
     func loadMore() async { }
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async { }
     func resetData() { }

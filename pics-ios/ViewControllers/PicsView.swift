@@ -114,7 +114,7 @@ struct PicsView<T>: View where T: PicsVMLike {
             LazyVGrid(columns: columns) {
                 ForEach(Array(viewModel.pics.enumerated()), id: \.element.meta.key) { index, pic in
                     NavigationLink {
-                        PicPagingView(pics: viewModel.pics, startIndex: index, isPrivate: user.isPrivate, delegate: PicViewDelegate(viewModel: viewModel))
+                        PicPagingView(pics: viewModel.pics, startIndex: index, isPrivate: user.isPrivate, delegate: PicViewDelegate(viewModel: viewModel), smalls: viewModel.cacheSmall, larges: viewModel.cacheLarge)
                             .background(backgroundColor)
                             .navigationBarHidden(picNavigationBarHidden)
                             .onTapGesture {
@@ -123,7 +123,7 @@ struct PicsView<T>: View where T: PicsVMLike {
                     } label: {
                         // SwiftUI comes with AsyncImage, but not sure how to cache resources (URLs)
                         // it fetches, so it's not used.
-                        CachedImage(pic: pic, size: sizeInfo.sizePerItem)
+                        CachedImage(pic: pic, size: sizeInfo.sizePerItem, cache: viewModel.cacheSmall)
 //                        AsyncImage(url: pic.meta.small)
                     }
                 }
@@ -170,9 +170,6 @@ struct PicsView<T>: View where T: PicsVMLike {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-//        .toolbarBackground(.visible, for: .navigationBar)
-//        .toolbarColorScheme(viewModel.isPrivate ? .dark : .light, for: .navigationBar)
-//        .navigationBarColo
         .sheet(isPresented: $showHelp) {
             NavigationView {
                 HelpView(isPrivate: user.isPrivate)

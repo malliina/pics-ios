@@ -24,12 +24,14 @@ struct PicPagingView: UIViewControllerRepresentable {
     let startIndex: Int
     let isPrivate: Bool
     let delegate: PicDelegate
+    let smalls: DataCache
+    let larges: DataCache
     
     var titleTextColor: UIColor { isPrivate ? PicsColors.uiAlmostLight : PicsColors.uiAlmostBlack }
     
     func makeUIViewController(context: Context) -> PicPagingVC {
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: titleTextColor]
-        return PicPagingVC(pics: pics, startIndex: startIndex, isPrivate: isPrivate, delegate: delegate)
+        return PicPagingVC(pics: pics, startIndex: startIndex, isPrivate: isPrivate, delegate: delegate, smalls: smalls, larges: larges)
     }
     
     func updateUIViewController(_ uiViewController: PicPagingVC, context: Context) {
@@ -51,13 +53,17 @@ class PicPagingVC: BaseVC {
     var idx: Int { index }
     let isPrivate: Bool
     let delegate: PicDelegate
+    let smalls: DataCache
+    let larges: DataCache
     var titleTextColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
-    init(pics: [Picture], startIndex: Int, isPrivate: Bool, delegate: PicDelegate) {
+    init(pics: [Picture], startIndex: Int, isPrivate: Bool, delegate: PicDelegate, smalls: DataCache, larges: DataCache) {
         self.pics = pics
         self.index = startIndex
         self.isPrivate = isPrivate
         self.delegate = delegate
+        self.smalls = smalls
+        self.larges = larges
         super.init(nibName: nil, bundle: nil)
         self.edgesForExtendedLayout = []
     }
@@ -69,7 +75,7 @@ class PicPagingVC: BaseVC {
     override func initUI() {
         updateNavBar(vc: self)
         navigationController?.setNavigationBarHidden(true, animated: true)
-        let vc = UIHostingController(rootView: PicView(pic: pics[index], isPrivate: isPrivate))
+        let vc = UIHostingController(rootView: PicView(pic: pics[index], isPrivate: isPrivate, smalls: smalls, larges: larges))
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
@@ -219,7 +225,7 @@ extension PicPagingVC: UIPageViewControllerDataSource {
     
     private func go(to newIndex: Int) -> UIViewController? {
         if newIndex >= 0 && newIndex < pics.count {
-            return UIHostingController(rootView: PicView(pic: pics[newIndex], isPrivate: isPrivate))
+            return UIHostingController(rootView: PicView(pic: pics[newIndex], isPrivate: isPrivate, smalls: smalls, larges: larges))
         } else {
             return nil
         }

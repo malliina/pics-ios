@@ -150,7 +150,7 @@ struct ClientKeys: Codable {
 
 struct ClientKey: Equatable, Hashable, CustomStringConvertible, ValueCodable {
     let key: String
-    var value: String { return key }
+    var value: String { key }
     
     init(_ value: String) {
         self.key = value

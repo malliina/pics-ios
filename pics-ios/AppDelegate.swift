@@ -15,14 +15,17 @@ struct PicsApp: App {
     private let log = LoggerFactory.shared.vc(PicsVM.self)
     @State var isError = false
     
-    @State var username: Username? = nil
+    @State var username: Username? = PicsSettings.shared.activeUser
     
     init() {
         do {
+            // Sets up folders, cleans up old pics
+            let _ = LocalPics.shared
             try CognitoDelegate.configure()
         } catch {
             isError = true
         }
+        updateNav(user: username)
         log.info("App initialized.")
     }
     
@@ -33,9 +36,11 @@ struct PicsApp: App {
             } else {
                 NavigationView {
                     PicsView(viewModel: PicsVM { user in
-                        updateNav(user: user)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                            username = user
+                        DispatchQueue.main.async {
+                            updateNav(user: user)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                username = user
+                            }
                         }
                     })
                 }
@@ -46,7 +51,6 @@ struct PicsApp: App {
     
     private func updateNav(user: Username?) {
         UINavigationBar.appearance().barStyle = user != nil ? .black : .default
-        log.info("Update nav for \(user)")
     }
 }
 
@@ -66,7 +70,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //            Crashes.self
 //        ])
 
-        // Cleans up old pics
+        
         let _ = LocalPics.shared
         let w = UIWindow(frame: UIScreen.main.bounds)
         window = w

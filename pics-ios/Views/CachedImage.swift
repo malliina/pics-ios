@@ -10,17 +10,18 @@ import Foundation
 import SwiftUI
 
 class DataCache {
-    static let small = DataCache()
-    static let large = DataCache()
+    static func small() -> DataCache { DataCache() }
+    static func large() -> DataCache { DataCache() }
     
     private var cache: [ClientKey: Data] = [:]
     
     func search(key: ClientKey) -> Data? {
-//        cache[key]
-        return nil
+        cache[key]
     }
     
-    func put(key: ClientKey, data: Data) { cache[key] = data }
+    func put(key: ClientKey, data: Data) {
+        cache[key] = data
+    }
 }
 
 struct CachedImage: View {
@@ -29,9 +30,10 @@ struct CachedImage: View {
     
     var pic: Picture
     let size: CGSize
+    let cache: DataCache
     
     var localStorage: LocalPics { LocalPics.shared }
-    var cache: DataCache { DataCache.small }
+    
     
     @State var data: Data? = nil
     
@@ -39,7 +41,7 @@ struct CachedImage: View {
     func loadImage() async {
         data = await picData()
         if let data = data {
-            DataCache.small.put(key: pic.meta.key, data: data)
+            cache.put(key: pic.meta.key, data: data)
         }
     }
     
