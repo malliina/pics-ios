@@ -60,10 +60,13 @@ struct CachedImage: View {
 //            log.debug("Using local pic for '\(key)'.")
             return localData
         }
-        if let data = try? await Downloader.shared.downloadAsync(url: pic.meta.small) {
+        let url = pic.meta.small
+        do {
+            let data = try await Downloader.shared.download(url: url)
             let _ = localStorage.saveSmall(data: data, key: key)
             return data
-        } else {
+        } catch let error {
+            log.error("Failed to download \(url). \(error)")
             return nil
         }
     }

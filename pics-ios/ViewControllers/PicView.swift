@@ -29,10 +29,10 @@ struct PicView: View {
             data = smalls.search(key: key)
             do {
                 if data == nil {
-                    let smallResult = try await downloader.downloadAsync(url: meta.small)
+                    let smallResult = try await downloader.download(url: meta.small)
                     data = smallResult
                 }
-                let result = try await downloader.downloadAsync(url: meta.large)
+                let result = try await downloader.download(url: meta.large)
                 data = result
             } catch let error {
                 log.error("Failed to download image \(error)")

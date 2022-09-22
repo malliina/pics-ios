@@ -225,7 +225,7 @@ class PicsVM: PicsVMLike {
     
     private func appendPics(limit: Int = PicsVM.itemsPerLoad) async throws {
         let beforeCount = pics.count
-        let batch = try await library.loadAsync(from: beforeCount, limit: limit)
+        let batch = try await library.load(from: beforeCount, limit: limit)
         log.info("Got batch of \(batch.count) pics from index \(beforeCount) with limit \(limit).")
         let syncedBatch: [PicMeta] = batch.map { meta in
             let key = meta.key
@@ -250,7 +250,7 @@ class PicsVM: PicsVMLike {
         removeLocally(keys: [key])
         Task {
             do {
-                let _ = try await library.deleteAsync(key: key)
+                let _ = try await library.delete(key: key)
             } catch let err {
                 self.log.error("Failed to delete \(key). \(err)")
             }

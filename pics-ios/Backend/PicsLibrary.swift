@@ -29,24 +29,12 @@ class PicsLibrary {
         return response.pics
     }
     
-    func loadAsync(from: Int, limit: Int) async throws -> [PicMeta] {
-        try await load(from: from, limit: limit)
-    }
-    
     func save(picture: Data, clientKey: ClientKey) async throws -> PicMeta {
         let response = try await http.picsPostParsed("/pics", data: picture, clientKey: clientKey, PicResponse.self)
         return response.pic
     }
     
-    func saveAsync(picture: Data, clientKey: ClientKey) async throws -> PicMeta {
-        try await save(picture: picture, clientKey: clientKey)
-    }
-    
     func delete(key: ClientKey) async throws -> HttpResponse {
-        try await http.picsDelete("/pics/\(key)")
-    }
-    
-    func deleteAsync(key: ClientKey) async throws -> HttpResponse {
         try await http.picsDelete("/pics/\(key)")
     }
     
