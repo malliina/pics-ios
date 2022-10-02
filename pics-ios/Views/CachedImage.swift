@@ -56,7 +56,6 @@ struct CachedImage: View {
             return imageData
         }
         if let localData = localStorage.readSmall(key: key) {
-//            log.debug("Using local pic for '\(key)'.")
             return localData
         }
         let url = pic.meta.small
