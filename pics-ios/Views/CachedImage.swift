@@ -34,11 +34,11 @@ struct CachedImage: View {
     
     var localStorage: LocalPics { LocalPics.shared }
     
-    
     @State var data: Data? = nil
     
     @MainActor
     func loadImage() async {
+        guard data == nil else { return }
         data = await picData()
         if let data = data {
             cache.put(key: pic.meta.key, data: data)
@@ -47,7 +47,6 @@ struct CachedImage: View {
     
     func picData() async -> Data? {
         let key = pic.meta.key
-//        log.info("Loading \(pic.meta.key)...")
         if let cache = cache.search(key: key) {
             return cache
         }
@@ -79,8 +78,11 @@ struct CachedImage: View {
                 .frame(width: size.width, height: size.height)
                 .clipped()
         } else {
-            ProgressView().frame(width: size.width, height: size.height).task {
-                await loadImage()
+            ProgressView().frame(width: size.width, height: size.height).onAppear {
+                // Not using .task, since it's cancelled when this view disappears
+                Task {
+                    await loadImage()
+                }
             }
         }
     }

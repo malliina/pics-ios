@@ -79,7 +79,7 @@ struct PicsView<T>: View where T: PicsVMLike {
                 grid(geometry: geometry).task {
                     await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
                 }.overlay(alignment: .bottom) {
-                    cameraButton
+                    cameraButton.padding(.bottom, Devices.isIpad ? 24 : 0)
                 }
             }
         }.onChange(of: scenePhase) { phase in

@@ -36,20 +36,5 @@ class Downloader {
         log.info("Submitting download of \(url)")
         let (data, _) = try await URLSession.shared.data(for: request)
         return data
-//        do {
-//            let (data, _) = try await URLSession.shared.data(for: request)
-//            return DownloadResult.data(data: data)
-//        } catch let error {
-//            return DownloadResult.failure(error: error)
-//        }
     }
-    
-//    func cancelDownload(forUrl url: URL) {
-//        guard let taskIndex = tasks.firstIndex(where: { $0.originalRequest?.url == url }) else {
-//            return
-//        }
-//        let task = tasks[taskIndex]
-//        task.cancel()
-//        tasks.remove(at: taskIndex)
-//    }
 }

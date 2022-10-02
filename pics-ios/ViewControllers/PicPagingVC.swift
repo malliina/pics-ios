@@ -105,7 +105,6 @@ class PicPagingVC: BaseVC {
             UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareClicked(_:))),
             UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(actionsClicked(_:)))
         ]
-        log.info("Updated nav bar with idx \(index)")
     }
     
     @objc func shareClicked(_ button: UIBarButtonItem) {

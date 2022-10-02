@@ -190,11 +190,6 @@ class PicsVM: PicsVMLike {
                 } else {
                     try await loadAnonymousPics()
                 }
-//                onUiThread {
-//                    if initialOnly {
-//                        self.userChanged(user)
-//                    }
-//                }
             } catch let error {
                 onLoadError(error: error)
             }
@@ -219,7 +214,7 @@ class PicsVM: PicsVMLike {
     
     func load(with token: AWSCognitoIdentityUserSessionToken?) async throws {
         Backend.shared.updateToken(new: token)
-        socket.reconnect()
+        // socket.reconnect()
         try await appendPics()
     }
     

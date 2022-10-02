@@ -21,6 +21,7 @@ struct PicView: View {
     
     @MainActor
     func loadImage() async {
+        guard data == nil else { return }
         let meta = pic.meta
         let key = meta.key
         if let large = larges.search(key: key) {
@@ -43,15 +44,15 @@ struct PicView: View {
     var body: some View {
         ZStack {
             backgroundColor
-                .edgesIgnoringSafeArea(.all)
+                .edgesIgnoringSafeArea(.all).task {
+                    await loadImage()
+                }
             if let data = data, let uiImage = UIImage(data: data) {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFit()
             } else {
-                ProgressView().task {
-                    await loadImage()
-                }
+                ProgressView()
             }
         }
     }

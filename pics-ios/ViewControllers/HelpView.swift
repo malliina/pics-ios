@@ -13,7 +13,7 @@ struct HelpView: View {
     @Environment(\.dismiss) private var dismiss
     var uiTextColor: UIColor { isPrivate ? .lightText : .darkText }
     var textColor: Color { Color(uiTextColor) }
-    var titleColor: UIColor { isPrivate ? PicsColors.uiAlmostLight : PicsColors.uiAlmostBlack }
+    var titleColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     var backgroundColor: Color { isPrivate ? PicsColors.background : PicsColors.lightBackground }
     let bundleMeta = Bundle.main.infoDictionary
     
@@ -37,11 +37,20 @@ struct HelpView: View {
                         .font(.system(size: 14))
                 }
             }
-            .navigationTitle("Information")
-            .navigationBarTitleTextColor(titleColor)
-            .navigationBarItems(trailing: Button("Done") {
-                dismiss()
-            })
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Information")
+                        .font(.headline)
+                        .foregroundColor(titleColor)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Text("Done").font(.body.bold())
+                    }
+                }
+            }
             .padding()
         }
     }
@@ -59,9 +68,16 @@ extension View {
 struct HelpView_Previews: PreviewProvider {
     static var previews: some View {
         ForEach(["iPhone 12 mini", "iPad Pro (11-inch) (3rd generation)"], id: \.self) { deviceName in
-            HelpView(isPrivate: true)
-            .previewDevice(PreviewDevice(rawValue: deviceName))
-            .previewDisplayName(deviceName)
+            NavigationView {
+                HelpView(isPrivate: true)
+                .previewDevice(PreviewDevice(rawValue: deviceName))
+                .previewDisplayName(deviceName)
+            }
+            NavigationView {
+                HelpView(isPrivate: false)
+                .previewDevice(PreviewDevice(rawValue: deviceName))
+                .previewDisplayName(deviceName)
+            }
         }
     }
 }
