@@ -82,7 +82,8 @@ struct PicsView<T>: View where T: PicsVMLike {
                     cameraButton.padding(.bottom, Devices.isIpad ? 24 : 0)
                 }
             }
-        }.onChange(of: scenePhase) { phase in
+        }
+        .onChange(of: scenePhase) { phase in
             if phase == .inactive {
                 // when resuming app, the resume scenes are:
                 // background -> inactive -> active
@@ -141,13 +142,13 @@ struct PicsView<T>: View where T: PicsVMLike {
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarLeading) {
                 Button {
-                    showProfile = !showProfile
+                    showProfile.toggle()
                 } label: {
                     Image(uiImage: #imageLiteral(resourceName: "ProfileIcon"))
                         .renderingMode(.template)
                 }
                 Button {
-                    showHelp = !showHelp
+                    showHelp.toggle()
                 } label: {
                     Image(uiImage: #imageLiteral(resourceName: "HelpIcon"))
                         .renderingMode(.template)
@@ -161,7 +162,7 @@ struct PicsView<T>: View where T: PicsVMLike {
             ToolbarItem(placement: .navigationBarTrailing) {
                 if isCameraAvailable {
                     Button {
-                        showCamera = !showCamera
+                        showCamera.toggle()
                     } label: {
                         Image(systemName: "camera")
                             .renderingMode(.template)

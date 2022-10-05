@@ -42,6 +42,7 @@ class PicsSocket: TokenDelegate, WebSocketMessageDelegate {
     }
     
     func reconnect() {
+//        let token = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: nil)
         socket.connect()
     }
     

@@ -81,11 +81,6 @@ class HttpClient {
         req.httpBody = body
         return req
     }
-    
-//    func executeRequest(_ req: URLRequest, completionHandler: @escaping ((Data?, URLResponse?, Error?) -> Void)) {
-//        let task = session.dataTask(with: req, completionHandler: completionHandler)
-//        task.resume()
-//    }
 }
 
 extension URLRequest {

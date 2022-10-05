@@ -154,11 +154,41 @@ class PicsVM: PicsVMLike {
     }
     
     func connect() {
-        socket.reconnect()
+        Task {
+            await connectAsync()
+        }
+    }
+    
+    func connectAsync() async {
+        do {
+            if isPrivate {
+                let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: nil)
+                let authValue = PicsHttpClient.authValueFor(forToken: userInfo.token)
+                socket.updateAuthHeader(with: authValue)
+            }
+            socket.reconnect()
+            let batch = try await library.load(from: 0, limit: 100)
+            log.info("Loaded batch of \(batch.count), syncing...")
+            merge(pics: batch)
+        } catch let error {
+            log.error("Failed to sync. \(error)")
+        }
     }
     
     func disconnect() {
         socket.disconnect()
+    }
+    
+    private func merge(pics: [PicMeta]) {
+        let picsToAdd = pics.filter { meta in
+            !isBlocked(pic: meta) && !contains(pic: meta)
+        }.map { meta in
+            Picture(meta: meta)
+        }
+        if !picsToAdd.isEmpty {
+            log.info("Prepending \(picsToAdd.count) new pics.")
+            savePics(newPics: picsToAdd + self.pics)
+        }
     }
     
     private func savePics(newPics: [Picture]) {
@@ -186,26 +216,18 @@ class PicsVM: PicsVMLike {
             }
             do {
                 if let user = user {
-                    try await loadPrivatePics(for: user)
+                    log.info("Loading pics for \(user)...")
+                    authCancellation = AWSCancellationTokenSource()
+                    let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: authCancellation)
+                    try await load(with: userInfo.token)
                 } else {
-                    try await loadAnonymousPics()
+                    log.info("Loading anon pics...")
+                    try await load(with: nil)
                 }
             } catch let error {
                 onLoadError(error: error)
             }
         }
-    }
-    
-    private func loadPrivatePics(for user: Username) async throws {
-        log.info("Loading pics for \(user)...")
-        authCancellation = AWSCancellationTokenSource()
-        let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: authCancellation)
-        try await load(with: userInfo.token)
-    }
-    
-    private func loadAnonymousPics() async throws {
-        log.info("Loading anon pics...")
-        try await load(with: nil)
     }
     
     private func onLoadError(error: Error) {
@@ -214,7 +236,6 @@ class PicsVM: PicsVMLike {
     
     func load(with token: AWSCognitoIdentityUserSessionToken?) async throws {
         Backend.shared.updateToken(new: token)
-        // socket.reconnect()
         try await appendPics()
     }
     

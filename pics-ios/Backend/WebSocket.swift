@@ -49,7 +49,9 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
     
     func connect() {
         prepTask()
-        log.info("Connecting to \(urlString)...")
+        let hasToken = request.value(forHTTPHeaderField: HttpClient.authorization) != nil
+        let describe = hasToken ? "with token" : "without token"
+        log.info("Connecting to \(urlString) \(describe)...")
         task?.resume()
     }
     

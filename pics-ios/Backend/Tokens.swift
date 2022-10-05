@@ -47,7 +47,7 @@ class Tokens {
                     cont.resume(throwing: appError)
                 } else {
                     if let accessToken = task.result?.accessToken {
-                        //                log.info("Got token \(accessToken.tokenString)")
+//                        self.log.info("Got token \(accessToken.tokenString)")
                         self.delegates.forEach { $0.onAccessToken(accessToken) }
                         if let username = user.username {
                             cont.resume(returning: UserInfo(username: Username(username), token: accessToken))
