@@ -215,16 +215,11 @@ struct PicMeta: Codable, Hashable {
     func withUrl(url: URL) -> PicMeta {
         PicMeta.oneUrl(key: key, url: url, added: added, clientKey: clientKey)
     }
-    
-    static func random() -> PicMeta {
-        PicMeta.oneUrl(key: ClientKey.random(), url: Picture.TempFakeUrl, added: Picture.nowMillis(), clientKey: nil)
-    }
 }
 
 typealias Timestamp = UInt64
 
 struct Picture {
-    static let TempFakeUrl = URL(string: "https://pics.malliina.com")!
     let meta: PicMeta
     
     var url: UIImage? = nil
@@ -232,13 +227,13 @@ struct Picture {
     var medium: UIImage? = nil
     var large: UIImage? = nil
     
-    init(image: UIImage, clientKey: ClientKey) {
+    init(url: URL, image: UIImage, clientKey: ClientKey) {
         let millis = Picture.nowMillis()
-        self.init(url: Picture.TempFakeUrl, image: image, clientKey: clientKey, added: millis)
+        self.init(url: url, image: image, clientKey: clientKey, added: millis)
     }
     
-    init(image: UIImage, added: Timestamp) {
-        self.init(url: Picture.TempFakeUrl, image: image, clientKey: ClientKey.random(), added: added)
+    init(url: URL, image: UIImage, added: Timestamp) {
+        self.init(url: url, image: image, clientKey: ClientKey.random(), added: added)
     }
     
     init(url: URL, image: UIImage, clientKey: ClientKey, added: Timestamp) {

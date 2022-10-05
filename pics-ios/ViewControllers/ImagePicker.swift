@@ -80,7 +80,6 @@ struct ImagePicker: UIViewControllerRepresentable {
             }
             
             let clientKey = ClientKey.random()
-            let pic = Picture(image: originalImage, clientKey: clientKey)
             guard let data = originalImage.jpegData(compressionQuality: 1) else {
                 log.error("Taken image is not in JPEG format")
                 return
@@ -90,7 +89,10 @@ struct ImagePicker: UIViewControllerRepresentable {
             if let user = user.activeUser {
                 log.info("Staging then uploading image taken by \(user)...")
                 // Copies the picture to a staging folder
-                let _ = try LocalPics.shared.saveUserPic(data: data, owner: user, key: clientKey)
+                let _ = try LocalPics.shared.saveUserPicToStaging(data: data, owner: user, key: clientKey)
+                let originalUrl = try LocalPics.shared.saveOriginal(data: data, owner: user, key: clientKey)
+                let pic = Picture(url: originalUrl, image: originalImage, clientKey: clientKey)
+                parent.onImage(pic)
                 // Attempts to obtain a token and upload the pic
                 Task {
                     let _ = await library.syncPicsForLatestUser()
@@ -98,9 +100,10 @@ struct ImagePicker: UIViewControllerRepresentable {
             } else {
                 // Anonymous upload
                 let url = try LocalPics.shared.saveAsJpg(data: data, key: clientKey)
+                let pic = Picture(url: url, image: originalImage, clientKey: clientKey)
+                parent.onImage(pic)
                 library.uploadPic(picture: url, clientKey: clientKey)
             }
-            parent.onImage(pic)
             dismissPicker()
         }
     }

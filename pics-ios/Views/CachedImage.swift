@@ -13,14 +13,22 @@ class DataCache {
     static func small() -> DataCache { DataCache() }
     static func large() -> DataCache { DataCache() }
     
+    private let q = DispatchQueue(label: "com.skogberglabs.pics", attributes: .concurrent)
+    private let l = NSLock()
     private var cache: [ClientKey: Data] = [:]
     
     func search(key: ClientKey) -> Data? {
-        cache[key]
+        var data: Data? = nil
+        l.lock()
+        data = cache[key]
+        l.unlock()
+        return data
     }
     
     func put(key: ClientKey, data: Data) {
+        l.lock()
         cache[key] = data
+        l.unlock()
     }
 }
 
@@ -59,13 +67,17 @@ struct CachedImage: View {
             return localData
         }
         let url = pic.meta.small
-        do {
-            let data = try await Downloader.shared.download(url: url)
-            let _ = localStorage.saveSmall(data: data, key: key)
-            return data
-        } catch let error {
-            log.error("Failed to download \(url). \(error)")
+        if url.isFileURL {
             return nil
+        } else {
+            do {
+                let data = try await Downloader.shared.download(url: url)
+                let _ = localStorage.saveSmall(data: data, key: key)
+                return data
+            } catch let error {
+                log.error("Failed to download \(url). \(error)")
+                return nil
+            }
         }
     }
     

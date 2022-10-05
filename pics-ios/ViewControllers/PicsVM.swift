@@ -84,7 +84,7 @@ extension PicsVM: PicsDelegate {
     }
     
     private func updateMeta(pic: PicMeta) {
-        log.info("Metadata update not supported currently (\(pic.key).")
+        log.info("Metadata update not supported currently for \(pic.key).")
 //        if let clientKey = pic.clientKey, let idx = indexFor(clientKey) {
 //          self.pics[idx] = self.pics[idx].withMeta(meta: pic)
 //        } else {

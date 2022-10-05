@@ -14,6 +14,7 @@ class LocalPics {
     let uploadingSubFolder = "uploading"
     let stagingSubFolder = "staging"
     let uploadedFolder = "uploaded"
+    let originalSubFolder = "originals"
     
     init() {
         let dirString = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] + "/pics"
@@ -26,13 +27,6 @@ class LocalPics {
         let sorted = smallFiles.filter { $0.isFile }.sorted { (file1, file2) -> Bool in
             file1.created > file2.created
         }
-//        sorted.forEach { (url) in
-//            let values = try? url.resourceValues(forKeys: [URLResourceKey.fileSizeKey])
-//            if let values = values, let size = values.fileSize {
-//                log.info("Size: \(size)")
-////                log.info("Created: \(created.timeIntervalSince1970)")
-//            }
-//        }
         let removed = maintenance(smallFiles: sorted.drop(1000))
         if removed.count > 0 {
             let removedString = removed.map { $0.path }.mkString(", ")
@@ -44,9 +38,18 @@ class LocalPics {
         baseDirectory(folder: folder, sub: uploadingSubFolder).appendingPathComponent(filename)
     }
     
-    func saveUserPic(data: Data, owner: Username, key: ClientKey) throws -> URL {
+    func saveOriginal(data: Data, owner: Username, key: ClientKey) throws -> URL {
+        let userDirectory = originalDirectory(for: owner)
+        return try saveAsJpgBase(data: data, base: userDirectory, key: key)
+    }
+    
+    func saveUserPicToStaging(data: Data, owner: Username, key: ClientKey) throws -> URL {
         let userDirectory = stagingDirectory(for: owner)
         return try saveAsJpgBase(data: data, base: userDirectory, key: key)
+    }
+    
+    func originalDirectory(for owner: Username) -> URL {
+        directory(for: owner, sub: originalSubFolder)
     }
     
     func stagingDirectory(for owner: Username) -> URL {
@@ -119,8 +122,7 @@ class LocalPics {
     }
     
     func readSmall(key: ClientKey) -> Data? {
-//        log.debug("Reading small \(key)")
-        return findSmallUrl(key: key).flatMap { try? Data(contentsOf: $0) }
+        findSmallUrl(key: key).flatMap { try? Data(contentsOf: $0) }
     }
     
     func saveSmall(data: Data, key: ClientKey) -> URL? {
