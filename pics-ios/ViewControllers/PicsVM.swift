@@ -167,9 +167,9 @@ class PicsVM: PicsVMLike {
                 socket.updateAuthHeader(with: authValue)
             }
             socket.reconnect()
-            let batch = try await library.load(from: 0, limit: 100)
+            let batch = try await library.load(from: 0, limit: self.pics.count)
             log.info("Loaded batch of \(batch.count), syncing...")
-            merge(pics: batch)
+            merge(onlinePics: batch)
         } catch let error {
             log.error("Failed to sync. \(error)")
         }
@@ -179,15 +179,18 @@ class PicsVM: PicsVMLike {
         socket.disconnect()
     }
     
-    private func merge(pics: [PicMeta]) {
-        let picsToAdd = pics.filter { meta in
+    private func merge(onlinePics: [PicMeta]) {
+        let added = onlinePics.filter { meta in
             !isBlocked(pic: meta) && !contains(pic: meta)
-        }.map { meta in
-            Picture(meta: meta)
         }
-        if !picsToAdd.isEmpty {
-            log.info("Prepending \(picsToAdd.count) new pics.")
-            savePics(newPics: picsToAdd + self.pics)
+        let removed = self.pics.filter { old in
+            !onlinePics.contains { pic in
+                pic.key == old.meta.key
+            }
+        }
+        if !added.isEmpty || !removed.isEmpty {
+            log.info("Replacing gallery with \(onlinePics.count) pics. Added \(added.count) and removed \(removed.count) pics.")
+            savePics(newPics: onlinePics.map { p in Picture(meta: p) })
         }
     }
     
