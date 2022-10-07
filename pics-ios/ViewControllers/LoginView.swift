@@ -1,11 +1,3 @@
-//
-//  LoginView.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 3.9.2022.
-//  Copyright © 2022 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 import SwiftUI
 import AWSCognitoIdentityProvider
@@ -41,25 +33,26 @@ class LoginHandler: NSObject, ObservableObject, AWSCognitoIdentityPasswordAuthen
     
     // so if error == nil, it's successful, except when a new pass is required, it's also nil
     func didCompleteStepWithError(_ error: Error?) {
+        Task {
+            await stepComplete(error: error)
+        }
+    }
+    
+    @MainActor
+    func stepComplete(error: Error?) {
         if let authError = SignupError.check(user: creds?.username ?? "", error: error) {
             if case .userNotConfirmed(let user) = authError {
                 log.info("User \(user) not confirmed.")
-                DispatchQueue.main.async {
-                    self.showConfirm = true
-                }
+                showConfirm = true
             } else {
                 log.info("Auth failed.")
-                DispatchQueue.main.async {
-                    self.isAuthError = true
-                }
+                isAuthError = true
             }
         } else {
             log.info("Login completed without error.")
-            DispatchQueue.main.async {
-                self.showSignUp = false
-                self.showConfirm = false
-                self.isComplete = true
-            }
+            showSignUp = false
+            showConfirm = false
+            isComplete = true
         }
     }
 }
@@ -76,13 +69,17 @@ extension LoginHandler: AWSCognitoIdentityNewPasswordRequired {
     }
     
     func didCompleteNewPasswordStepWithError(_ error: Error?) {
-        DispatchQueue.main.async {
-            if let error = SignupError.check(user: self.creds?.username ?? "", error: error) {
-                self.newPassError = error
-                self.isNewPassError = true
-            } else {
-                self.isNewPassComplete = true
-            }
+        Task {
+            await newPasswordComplete(error: error)
+        }
+    }
+    
+    @MainActor func newPasswordComplete(error: Error?) {
+        if let error = SignupError.check(user: self.creds?.username ?? "", error: error) {
+            self.newPassError = error
+            self.isNewPassError = true
+        } else {
+            self.isNewPassComplete = true
         }
     }
 }

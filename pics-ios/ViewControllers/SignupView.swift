@@ -60,10 +60,7 @@ class SignupHandler: ObservableObject {
                         loginHandler.submit(credentials: creds)
                     } else {
                         self.log.info("Going to confirm page for \(name)...")
-                        DispatchQueue.main.async {
-                            self.loginHandler.showSignUp = false
-                            self.loginHandler.showConfirm = true
-                        }
+                        await onConfirm()
                     }
                 } else {
                     throw SignupError.unknown
@@ -71,12 +68,19 @@ class SignupHandler: ObservableObject {
             } catch let error {
                 log.info("\(error)")
                 let signupFailure = error as? SignupError ?? SignupError.unknown
-                DispatchQueue.main.async {
-                    self.signUpError = signupFailure
-                    self.isSignUpError = true
-                }
+                await onFailure(signupFailure)
             }
         }
+    }
+    
+    @MainActor func onConfirm() {
+        loginHandler.showSignUp = false
+        loginHandler.showConfirm = true
+    }
+    
+    @MainActor func onFailure(_ error: SignupError) {
+        signUpError = error
+        isSignUpError = true
     }
 }
 

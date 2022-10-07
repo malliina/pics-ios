@@ -12,7 +12,7 @@ import SwiftUI
 protocol ProfileDelegate {
     func onPublic()
     func onPrivate(user: Username)
-    func onLogout()
+    func onLogout() async
 }
 
 struct ProfilePopoverView: View {
@@ -60,7 +60,9 @@ struct ProfilePopoverView: View {
                     Spacer()
                 }.contentShape(Rectangle()).onTapGesture {
                     dismiss()
-                    delegate.onLogout()
+                    Task {
+                        await delegate.onLogout()
+                    }
                 }
             }
         }

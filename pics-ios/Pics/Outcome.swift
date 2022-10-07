@@ -1,11 +1,3 @@
-//
-//  Outcome.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 20/03/2018.
-//  Copyright © 2018 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 
 enum Outcome<T> {

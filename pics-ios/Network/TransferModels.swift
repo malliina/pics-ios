@@ -1,11 +1,3 @@
-//
-//  TransferModels.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 15/01/2019.
-//  Copyright © 2019 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 
 struct TransferResult {

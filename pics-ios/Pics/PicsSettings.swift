@@ -1,11 +1,3 @@
-//
-//  PicsSettings.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 27/01/2018.
-//  Copyright © 2018 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 
 // Hack because Encodable can't encode a String

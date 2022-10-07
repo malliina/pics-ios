@@ -30,13 +30,13 @@ protocol PicsVMLike: ObservableObject, AuthInit {
     var cacheLarge: DataCache { get }
     func loadMore() async
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async
-    func display(newPics: [Picture])
-    func remove(key: ClientKey)
-    func block(key: ClientKey)
-    func resetData()
+    func display(newPics: [Picture]) async
+    func remove(key: ClientKey) async
+    func block(key: ClientKey) async
+    func resetData() async
     func onPublic()
     func onPrivate(user: Username)
-    func signOut()
+    func signOut() async
     
     func connect()
     func disconnect()
@@ -60,7 +60,7 @@ extension PicsVM: AuthInit {
 }
 
 extension PicsVM: PicsDelegate {
-    func onPics(pics: [PicMeta]) {
+    func onPics(pics: [PicMeta]) async {
         let (existingPics, newPics) = pics.partition(contains)
         existingPics.forEach { meta in
             updateMeta(pic: meta)
@@ -72,14 +72,14 @@ extension PicsVM: PicsDelegate {
         }
         log.info("Adding \(picsToAdd.count) new pics.")
         let updated = picsToAdd.reversed() + self.pics
-        savePics(newPics: updated)
+        await savePics(newPics: updated)
     }
     
-    func onPicsRemoved(keys: [ClientKey]) {
-        removeLocally(keys: keys)
+    func onPicsRemoved(keys: [ClientKey]) async {
+        await removeLocally(keys: keys)
     }
     
-    func onProfile(info: ProfileInfo) {
+    func onProfile(info: ProfileInfo) async {
         
     }
     
@@ -169,7 +169,7 @@ class PicsVM: PicsVMLike {
             socket.reconnect()
             let batch = try await library.load(from: 0, limit: self.pics.count)
             log.info("Loaded batch of \(batch.count), syncing...")
-            merge(onlinePics: batch)
+            await merge(onlinePics: batch)
         } catch let error {
             log.error("Failed to sync. \(error)")
         }
@@ -179,7 +179,7 @@ class PicsVM: PicsVMLike {
         socket.disconnect()
     }
     
-    private func merge(onlinePics: [PicMeta]) {
+    private func merge(onlinePics: [PicMeta]) async {
         let added = onlinePics.filter { meta in
             !isBlocked(pic: meta) && !contains(pic: meta)
         }
@@ -190,17 +190,23 @@ class PicsVM: PicsVMLike {
         }
         if !added.isEmpty || !removed.isEmpty {
             log.info("Replacing gallery with \(onlinePics.count) pics. Added \(added.count) and removed \(removed.count) pics.")
-            savePics(newPics: onlinePics.map { p in Picture(meta: p) })
+            await savePics(newPics: onlinePics.map { p in Picture(meta: p) })
         }
     }
     
-    private func savePics(newPics: [Picture]) {
-        DispatchQueue.main.async {
-            self.isOnline = true
-            self.pics = newPics
-        }
+    private func savePics(newPics: [Picture], more: Bool? = nil) async {
+        await saveOnlinePics(newPics: newPics, more: more)
         
         let _ = self.picsSettings.save(pics: newPics, for: self.currentUsernameOrAnon)
+    }
+    
+    @MainActor
+    private func saveOnlinePics(newPics: [Picture], more: Bool?) {
+        isOnline = true
+        pics = newPics
+        if let more = more {
+            hasMore = more
+        }
     }
     
     func loadMore() async {
@@ -208,14 +214,13 @@ class PicsVM: PicsVMLike {
         await loadPicsAsync(for: user.activeUser, initialOnly: false)
     }
     
+    @MainActor
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async {
         if !initialOnly || isInitial {
             isInitial = false
             if initialOnly {
-                onUiThread {
-                    self.pics = []
-                    self.log.info("Offline count \(self.pics.count)")
-                }
+                pics = []
+                log.info("Offline count \(self.pics.count)")
             }
             do {
                 if let user = user {
@@ -255,59 +260,47 @@ class PicsVM: PicsVMLike {
             log.info("Found local URL '\(url)' for '\(key)'.")
             return meta.withUrl(url: url)
         }
-        onUiThread {
-            self.savePics(newPics: self.pics + syncedBatch.map { p in Picture(meta: p) })
-            self.hasMore = batch.count == limit
-        }
+        await savePics(newPics: self.pics + syncedBatch.map { p in Picture(meta: p) }, more: batch.count == limit)
     }
     
     private func isBlocked(pic: PicMeta) -> Bool {
         return PicsSettings.shared.blockedImageKeys.contains { $0 == pic.key }
     }
     
-    func remove(key: ClientKey) {
-        removeLocally(keys: [key])
-        Task {
-            do {
-                let _ = try await library.delete(key: key)
-            } catch let err {
-                self.log.error("Failed to delete \(key). \(err)")
-            }
+    func remove(key: ClientKey) async {
+        await removeLocally(keys: [key])
+        do {
+            let _ = try await library.delete(key: key)
+        } catch let err {
+            self.log.error("Failed to delete \(key). \(err)")
         }
     }
     
-    func block(key: ClientKey) {
+    func block(key: ClientKey) async {
         PicsSettings.shared.block(key: key)
-        removeLocally(keys: [key])
+        await removeLocally(keys: [key])
     }
     
-    func display(newPics: [Picture]) {
+    func display(newPics: [Picture]) async {
         let newPicsNewestFirst: [Picture] = newPics.reversed()
         let prepended = newPicsNewestFirst + self.pics
-        DispatchQueue.main.async {
-            self.savePics(newPics: prepended)
-        }
+        await savePics(newPics: prepended)
     }
     
-    private func removeLocally(keys: [ClientKey]) {
-        DispatchQueue.main.async {
-            self.savePics(newPics: self.pics.filter { pic in !keys.contains { key in
-                pic.meta.key == key
-            }})
-        }
+    private func removeLocally(keys: [ClientKey]) async {
+        await savePics(newPics: self.pics.filter { pic in !keys.contains { key in
+            pic.meta.key == key
+        }})
     }
     
-    func resetData() {
-        onUiThread {
-            Tokens.shared.clearDelegates()
-            self.isOnline = false
-            self.savePics(newPics: [])
-            self.isInitial = true
-            self.isPrivate = false
-            Task {
-                await self.loadPicsAsync(for: nil, initialOnly: true)
-            }
-        }
+    @MainActor
+    func resetData() async {
+        Tokens.shared.clearDelegates()
+        isOnline = false
+        await savePics(newPics: [])
+        isInitial = true
+        isPrivate = false
+        await self.loadPicsAsync(for: nil, initialOnly: true)
     }
     
     func onPublic() {
@@ -329,22 +322,19 @@ class PicsVM: PicsVMLike {
         }
     }
     
-    func signOut() {
+    @MainActor
+    func signOut() async {
         log.info("Signing out...")
         pool.currentUser()?.signOut()
         pool.clearLastKnownUser()
         picsSettings.activeUser = nil
-        resetData()
+        await resetData()
         adjustTitleTextColor(PicsColors.uiAlmostBlack)
         loginHandler.isComplete = false
     }
     
     private func adjustTitleTextColor(_ color: UIColor) {
         log.info("Adjusting title color")
-    }
-    
-    func onUiThread(_ f: @escaping () -> Void) {
-        DispatchQueue.main.async(execute: f)
     }
 }
 

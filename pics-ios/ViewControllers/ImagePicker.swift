@@ -1,11 +1,3 @@
-//
-//  ImagePicker.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 4.8.2022.
-//  Copyright © 2022 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 import UIKit
 import SwiftUI
@@ -13,7 +5,6 @@ import Photos
 
 struct ImagePicker: UIViewControllerRepresentable {
     typealias UIViewControllerType = UIImagePickerController
-//    @Environment(\.presentationMode) private var presentationMode
     @Environment(\.dismiss) private var dismiss
     
     let onImage: (Picture) -> Void

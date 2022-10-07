@@ -1,11 +1,3 @@
-//
-//  BackgroundTransfers.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 08/01/2018.
-//  Copyright © 2018 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 import UIKit
 
@@ -57,6 +49,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         case .running: return "Running"
         case .canceling: return "Canceling"
         case .suspended: return "Suspended"
+        default: return "Unknown"
         }
     }
     

@@ -12,8 +12,8 @@ import MessageUI
 import SwiftUI
 
 protocol PicDelegate {
-    func remove(key: ClientKey)
-    func block(key: ClientKey)
+    func remove(key: ClientKey) async
+    func block(key: ClientKey) async
 }
 
 struct PicPagingView: UIViewControllerRepresentable {
@@ -128,7 +128,9 @@ class PicPagingVC: BaseVC {
             if isPrivate {
                 content.addAction(UIAlertAction(title: "Delete image", style: .destructive) { action in
                     self.goToPics()
-                    self.delegate.remove(key: key)
+                    Task {
+                        await self.delegate.remove(key: key)
+                    }
                 })
             }
             content.addAction(UIAlertAction(title: "Copy link URL", style: .default) { action in
@@ -146,7 +148,9 @@ class PicPagingVC: BaseVC {
             })
             content.addAction(UIAlertAction(title: "Hide from this device", style: .default) { action in
                 self.goToPics()
-                self.delegate.block(key: key)
+                Task {
+                    await self.delegate.block(key: key)
+                }
             })
             content.addAction(UIAlertAction(title: "Cancel", style: .cancel) { action in
                 
@@ -158,7 +162,9 @@ class PicPagingVC: BaseVC {
     @objc func onRemoveClicked(_ sender: UIBarButtonItem) {
         goToPics()
         if index < pics.count {
-            delegate.remove(key: pics[index].meta.key)
+            Task {
+                await delegate.remove(key: pics[index].meta.key)
+            }
         }
     }
     
@@ -215,11 +221,11 @@ extension PicPagingVC: UIPageViewControllerDelegate {
 
 extension PicPagingVC: UIPageViewControllerDataSource {
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        return go(to: index - 1)
+        go(to: index - 1)
     }
     
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        return go(to: index + 1)
+        go(to: index + 1)
     }
     
     private func go(to newIndex: Int) -> UIViewController? {
@@ -231,12 +237,6 @@ extension PicPagingVC: UIPageViewControllerDataSource {
     }
     
     func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        return pics.count
+        pics.count
     }
-    
-    // If uncommented, shows the paging indicator (dots highlighting the current index)
-    // This is only an annoyance in this app, IMO, so it remains commented
-//    func presentationIndex(for pageViewController: UIPageViewController) -> Int {
-//        return index
-//    }
 }

@@ -1,11 +1,3 @@
-//
-//  Arrays.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 08/01/2018.
-//  Copyright © 2018 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 
 class Arrays {
@@ -18,38 +10,6 @@ class Arrays {
 }
 
 extension Array {
-    //
-    // [1, 2, 3].foldRight(0)((e, acc) -> e + acc)
-    // 1 + [2, 3].foldRight(0)((e, acc) -> e + acc)
-    // 1 + (2 + [3].foldRight(0)((e, acc) -> e + acc))
-    // 1 + (2 + (3 + [].foldRight(0)((e, acc) -> e + acc)))
-    // 1 + (2 + (3 + (0)))
-    // 6
-    //
-    func foldRight<U>(_ initial: U, f: (Element, U) -> U) -> U {
-        if let head = self.headOption() {
-            return f(head, self.tail().foldRight(initial, f: f))
-        } else {
-            return initial
-        }
-    }
-    
-    //
-    // [1, 2, 3].foldLeft(0)((acc, e) -> acc + e)
-    // [2, 3].foldLeft(1)((acc, e) -> acc + e)
-    // [3].foldLeft(3)((acc, e) -> acc + e)
-    // [].foldLeft(6)((acc, e) -> acc + e)
-    // 6
-    //
-    func foldLeft<U>(_ initial: U, f: (U, Element) -> U) -> U {
-        if let head = self.headOption() {
-            let newAcc = f(initial, head)
-            return self.tail().foldLeft(newAcc, f: f)
-        } else {
-            return initial
-        }
-    }
-    
     func headOption() -> Element? {
         return self.first
     }

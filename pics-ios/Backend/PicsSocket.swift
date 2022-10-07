@@ -1,18 +1,10 @@
-//
-//  PicsSocket.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 25/12/2017.
-//  Copyright © 2017 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 import AWSCognitoIdentityProvider
 
 protocol PicsDelegate {
-    func onPics(pics: [PicMeta])
-    func onPicsRemoved(keys: [ClientKey])
-    func onProfile(info: ProfileInfo)
+    func onPics(pics: [PicMeta]) async
+    func onPicsRemoved(keys: [ClientKey]) async
+    func onProfile(info: ProfileInfo) async
 }
 
 class PicsSocket: TokenDelegate, WebSocketMessageDelegate {
@@ -42,7 +34,6 @@ class PicsSocket: TokenDelegate, WebSocketMessageDelegate {
     }
     
     func reconnect() {
-//        let token = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: nil)
         socket.connect()
     }
     
@@ -63,7 +54,7 @@ class PicsSocket: TokenDelegate, WebSocketMessageDelegate {
         return ErrorMessage(message)
     }
     
-    func on(message: String) {
+    func on(message: String) async {
         guard let data = message.data(using: String.Encoding.utf8, allowLossyConversion: false) else {
             log.error("Cannot read message data from: '\(message)'.")
             return
@@ -71,18 +62,19 @@ class PicsSocket: TokenDelegate, WebSocketMessageDelegate {
         let decoder = JSONDecoder()
         log.info("Got message \(message)")
         do {
+            guard let delegate = delegate else { return }
             let event = try decoder.decode(KeyedEvent.self, from: data)
             switch event.event {
             case "ping":
                 return
             case "added":
-                delegate?.onPics(pics: try decoder.decode(PicsResponse.self, from: data).pics)
+                await delegate.onPics(pics: try decoder.decode(PicsResponse.self, from: data).pics)
                 break
             case "removed":
-                delegate?.onPicsRemoved(keys: try decoder.decode(ClientKeys.self, from: data).keys)
+                await delegate.onPicsRemoved(keys: try decoder.decode(ClientKeys.self, from: data).keys)
                 break
             case "welcome":
-                delegate?.onProfile(info: try decoder.decode(ProfileInfo.self, from: data))
+                await delegate.onProfile(info: try decoder.decode(ProfileInfo.self, from: data))
                 break
             default:
                 throw JsonError.invalid("Unknown event: '\(event)'.", message)

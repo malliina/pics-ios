@@ -17,12 +17,12 @@ class PicViewDelegate <T> : PicDelegate where T: PicsVMLike {
         self.viewModel = viewModel
     }
     
-    func remove(key: ClientKey) {
-        viewModel.remove(key: key)
+    func remove(key: ClientKey) async {
+        await viewModel.remove(key: key)
     }
     
-    func block(key: ClientKey) {
-        viewModel.block(key: key)
+    func block(key: ClientKey) async {
+        await viewModel.block(key: key)
     }
 }
 
@@ -191,7 +191,9 @@ struct PicsView<T>: View where T: PicsVMLike {
         }
         .fullScreenCover(isPresented: $showCamera) {
             ImagePicker { image in
-                viewModel.display(newPics: [image])
+                Task {
+                    await viewModel.display(newPics: [image])
+                }
             }
             .edgesIgnoringSafeArea(.all)
             .background(backgroundColor)
@@ -216,8 +218,8 @@ class ProfileViewDelegate <T> : ProfileDelegate where T: PicsVMLike {
         viewModel.onPrivate(user: user)
     }
     
-    func onLogout() {
-        viewModel.signOut()
+    func onLogout() async {
+        await viewModel.signOut()
     }
 }
 

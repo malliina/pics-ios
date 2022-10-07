@@ -1,11 +1,3 @@
-//
-//  HelpView.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 18.4.2022.
-//  Copyright © 2022 Michael Skogberg. All rights reserved.
-//
-
 import SwiftUI
 
 struct HelpView: View {

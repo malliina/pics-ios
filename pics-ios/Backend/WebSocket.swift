@@ -9,7 +9,7 @@
 import Foundation
 
 protocol WebSocketMessageDelegate {
-    func on(message: String)
+    func on(message: String) async
 }
 
 class WebSocket: NSObject, URLSessionWebSocketDelegate {
@@ -78,6 +78,7 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
         isConnected = false
     }
     
+    // TODO serialize async calls
     private func receive() {
       task?.receive { result in
         switch result {
@@ -87,8 +88,12 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
             self.log.info("Data received \(data)")
           case .string(let text):
             self.log.info("Text received \(text)")
-            self.delegate?.on(message: text)
+            Task {
+                await self.delegate?.on(message: text)
+            }
             self.receive()
+          default:
+              ()
           }
         case .failure(let error):
             self.log.error("Error when receiving \(error)")
