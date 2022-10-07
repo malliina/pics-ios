@@ -1,11 +1,3 @@
-//
-//  PicsView.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 15.5.2022.
-//  Copyright © 2022 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 import SwiftUI
 import AWSCognitoIdentityProvider
@@ -109,7 +101,7 @@ struct PicsView<T>: View where T: PicsVMLike {
     }
     
     private func nonEmptyView(geometry: GeometryProxy) -> some View {
-        let sizeInfo = PicsCell.sizeForItem(minWidthPerItem: PicsVM.preferredItemSize, totalWidth: geometry.size.width)
+        let sizeInfo = SizeInfo.forItem(minWidthPerItem: PicsVM.preferredItemSize, totalWidth: geometry.size.width)
         let columns: [GridItem] = Array(repeating: .init(.fixed(sizeInfo.sizePerItem.width)), count: sizeInfo.itemsPerRow)
         return ScrollView {
             LazyVGrid(columns: columns) {

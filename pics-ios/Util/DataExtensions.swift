@@ -1,10 +1,3 @@
-//
-//  ViewController.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 19/11/2017.
-//  Copyright © 2017 Michael Skogberg. All rights reserved.
-//
 import SnapKit
 import UIKit
 import AWSCognitoIdentityProvider

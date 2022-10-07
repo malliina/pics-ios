@@ -6,7 +6,7 @@ struct TransferResult {
     let response: URLResponse?
     let error: Error?
     
-    var isError: Bool { return error != nil }
+    var isError: Bool { error != nil }
     var httpResponse: HttpResponse? {
         get {
             if let r = response as? HTTPURLResponse, let d = data {
@@ -24,10 +24,10 @@ struct DownloadProgressUpdate: Codable {
     let written: StorageSize
     let totalExpected: StorageSize?
     
-    var relativePath: String { return info.relativePath }
-    var destinationURL: URL { return info.destinationURL }
+    var relativePath: String { info.relativePath }
+    var destinationURL: URL { info.destinationURL }
     
-    var isComplete: Bool? { get { return written == totalExpected } }
+    var isComplete: Bool? { written == totalExpected }
     
     func copy(_ newTotalExpected: StorageSize) -> DownloadProgressUpdate {
         return DownloadProgressUpdate(info: info, writtenDelta: writtenDelta, written: written, totalExpected: newTotalExpected)

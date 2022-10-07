@@ -5,11 +5,11 @@ enum Outcome<T> {
     case success(T)
     
     static func fail<T>(_ l: AppError) -> Outcome<T> {
-        return .failure(l)
+        .failure(l)
     }
     
     static func succeed<T>(_ r: T) -> Outcome<T> {
-        return .success(r)
+        .success(r)
     }
 }
 

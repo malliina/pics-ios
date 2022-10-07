@@ -1,11 +1,3 @@
-//
-//  pics_iosTests.swift
-//  pics-iosTests
-//
-//  Created by Michael Skogberg on 19/11/2017.
-//  Copyright © 2017 Michael Skogberg. All rights reserved.
-//
-
 import XCTest
 @testable import pics_ios
 

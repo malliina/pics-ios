@@ -36,13 +36,10 @@
 		61A9C4CB2003EDFA0085BA25 /* Arrays.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4CA2003EDFA0085BA25 /* Arrays.swift */; };
 		61A9C4CF200693510085BA25 /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4CE200693510085BA25 /* Backend.swift */; };
 		61D214B61FD2ABB300781DC7 /* RememberMe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214B51FD2ABB300781DC7 /* RememberMe.swift */; };
-		61D214BC1FD34C9C00781DC7 /* PicsTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214BB1FD34C9C00781DC7 /* PicsTextField.swift */; };
-		61D214BE1FD34D8900781DC7 /* PicsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214BD1FD34D8900781DC7 /* PicsButton.swift */; };
 		61D214C01FD34E6D00781DC7 /* PicsColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214BF1FD34E6D00781DC7 /* PicsColors.swift */; };
 		61D214C21FD4570500781DC7 /* OneLinerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C11FD4570500781DC7 /* OneLinerView.swift */; };
 		61D214C41FD4571B00781DC7 /* BaseVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C31FD4571B00781DC7 /* BaseVC.swift */; };
 		61D214C61FD464B800781DC7 /* CognitoDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C51FD464B800781DC7 /* CognitoDelegate.swift */; };
-		61D214CA1FD499C200781DC7 /* PicsLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D214C91FD499C200781DC7 /* PicsLabel.swift */; };
 		61E9FBEE20167F3800FA4F42 /* Credentials.plist in Resources */ = {isa = PBXBuildFile; fileRef = 618623CD1FD71DB60009345E /* Credentials.plist */; };
 		61EB2D861FDD517500A27F1A /* Devices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D851FDD517500A27F1A /* Devices.swift */; };
 		61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */; };
@@ -119,13 +116,10 @@
 		61A9C4CA2003EDFA0085BA25 /* Arrays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Arrays.swift; sourceTree = "<group>"; };
 		61A9C4CE200693510085BA25 /* Backend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backend.swift; sourceTree = "<group>"; };
 		61D214B51FD2ABB300781DC7 /* RememberMe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RememberMe.swift; sourceTree = "<group>"; };
-		61D214BB1FD34C9C00781DC7 /* PicsTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsTextField.swift; sourceTree = "<group>"; };
-		61D214BD1FD34D8900781DC7 /* PicsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsButton.swift; sourceTree = "<group>"; };
 		61D214BF1FD34E6D00781DC7 /* PicsColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsColors.swift; sourceTree = "<group>"; };
 		61D214C11FD4570500781DC7 /* OneLinerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneLinerView.swift; sourceTree = "<group>"; };
 		61D214C31FD4571B00781DC7 /* BaseVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseVC.swift; sourceTree = "<group>"; };
 		61D214C51FD464B800781DC7 /* CognitoDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CognitoDelegate.swift; sourceTree = "<group>"; };
-		61D214C91FD499C200781DC7 /* PicsLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsLabel.swift; sourceTree = "<group>"; };
 		61E9FBE2201666BD00FA4F42 /* AWSCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AWSCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61E9FBE62016677F00FA4F42 /* AWSCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = AWSCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61EB2D851FDD517500A27F1A /* Devices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Devices.swift; sourceTree = "<group>"; };
@@ -295,10 +289,7 @@
 			isa = PBXGroup;
 			children = (
 				7DA4A017289E6B2C005FD842 /* CachedImage.swift */,
-				61D214BD1FD34D8900781DC7 /* PicsButton.swift */,
 				61A702E11FCB21A600814051 /* PicsCell.swift */,
-				61D214C91FD499C200781DC7 /* PicsLabel.swift */,
-				61D214BB1FD34C9C00781DC7 /* PicsTextField.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -445,7 +436,7 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */,
+				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -493,7 +484,6 @@
 				61A702CE1FC5E54300814051 /* PicsLibrary.swift in Sources */,
 				7DA4A018289E6B2C005FD842 /* CachedImage.swift in Sources */,
 				61A9C4C62003EB5A0085BA25 /* BackgroundTransfers.swift in Sources */,
-				61D214BC1FD34C9C00781DC7 /* PicsTextField.swift in Sources */,
 				615339C92061B5AF00106B48 /* Outcome.swift in Sources */,
 				61EB2D8F1FF1855500A27F1A /* PicsSocket.swift in Sources */,
 				61D214C41FD4571B00781DC7 /* BaseVC.swift in Sources */,
@@ -509,10 +499,8 @@
 				61A702DD1FCAD8D000814051 /* models.swift in Sources */,
 				7D20883D28318FC9005C0BBA /* PicsView.swift in Sources */,
 				61A9C4C42003EADA0085BA25 /* StorageSize.swift in Sources */,
-				61D214CA1FD499C200781DC7 /* PicsLabel.swift in Sources */,
 				615647F1201C9EEA000E3BBD /* ProfilePopover.swift in Sources */,
 				61FD20B5223AE69400BAF31B /* codables.swift in Sources */,
-				61D214BE1FD34D8900781DC7 /* PicsButton.swift in Sources */,
 				61A9C4C01FF271D30085BA25 /* PicPagingVC.swift in Sources */,
 				614230471FC1891E00CD4173 /* DataExtensions.swift in Sources */,
 				61A702D41FCAC7F900814051 /* AppError.swift in Sources */,
@@ -1013,7 +1001,7 @@
 				version = 2.27.1;
 			};
 		};
-		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */ = {
+		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
 			requirement = {
@@ -1036,7 +1024,7 @@
 		};
 		7D175C5A27C018E50050E29B /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */;
+			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
 		};
 /* End XCSwiftPackageProductDependency section */
