@@ -1,11 +1,3 @@
-//
-//  models.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 26/11/2017.
-//  Copyright © 2017 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 import UIKit
 import AWSCognitoIdentityProvider
@@ -159,7 +151,7 @@ struct ClientKey: Equatable, Hashable, CustomStringConvertible, ValueCodable {
     static func == (lhs: ClientKey, rhs: ClientKey) -> Bool { lhs.key == rhs.key }
     
     static func random() -> ClientKey {
-        ClientKey(Picture.randomKey())
+        ClientKey(PicMeta.randomKey())
     }
 }
 
@@ -212,43 +204,13 @@ struct PicMeta: Codable, Hashable {
         PicMeta(key: key, url: url, small: url, medium: url, large: url, added: added, clientKey: clientKey)
     }
     
+    static func local(url: URL, key: ClientKey) -> PicMeta {
+        PicMeta.oneUrl(key: key, url: url, added: nowMillis(), clientKey: key)
+    }
+    
     func withUrl(url: URL) -> PicMeta {
         PicMeta.oneUrl(key: key, url: url, added: added, clientKey: clientKey)
     }
-}
-
-typealias Timestamp = UInt64
-
-struct Picture {
-    let meta: PicMeta
-    
-    var url: UIImage? = nil
-    var small: UIImage? = nil
-    var medium: UIImage? = nil
-    var large: UIImage? = nil
-    
-    init(url: URL, image: UIImage, clientKey: ClientKey) {
-        let millis = Picture.nowMillis()
-        self.init(url: url, image: image, clientKey: clientKey, added: millis)
-    }
-    
-    init(url: URL, image: UIImage, added: Timestamp) {
-        self.init(url: url, image: image, clientKey: ClientKey.random(), added: added)
-    }
-    
-    init(url: URL, image: UIImage, clientKey: ClientKey, added: Timestamp) {
-        self.init(meta: PicMeta.oneUrl(key: clientKey, url: url, added: added, clientKey: clientKey))
-        self.url = image
-        small = image
-        medium = image
-        large = image
-    }
-    
-    init(meta: PicMeta) {
-        self.meta = meta
-    }
-    
-    var preferred: UIImage? { url ?? large ?? medium ?? small }
     
     static func nowMillis() -> Timestamp {
         Timestamp(Date().timeIntervalSince1970 * 1000)
@@ -258,6 +220,8 @@ struct Picture {
         String(UUID().uuidString.prefix(7)).lowercased()
     }
 }
+
+typealias Timestamp = UInt64
 
 struct KeyedEvent: Codable {
     let event: String

@@ -1,11 +1,3 @@
-//
-//  PicsVM.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 18.5.2022.
-//  Copyright © 2022 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 import AWSCognitoIdentityProvider
 
@@ -20,7 +12,7 @@ class User {
 
 protocol PicsVMLike: ObservableObject, AuthInit {
     var isOnline: Bool { get }
-    var pics: [Picture] { get }
+    var pics: [PicMeta] { get }
     var hasMore: Bool { get }
     var isPrivate: Bool { get }
     var showLogin: Bool { get set }
@@ -30,7 +22,7 @@ protocol PicsVMLike: ObservableObject, AuthInit {
     var cacheLarge: DataCache { get }
     func loadMore() async
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async
-    func display(newPics: [Picture]) async
+    func display(newPics: [PicMeta]) async
     func remove(key: ClientKey) async
     func block(key: ClientKey) async
     func resetData() async
@@ -67,8 +59,6 @@ extension PicsVM: PicsDelegate {
         }
         let picsToAdd = newPics.filter { pic in
             !isBlocked(pic: pic)
-        }.map { meta in
-            Picture(meta: meta)
         }
         log.info("Adding \(picsToAdd.count) new pics.")
         let updated = picsToAdd.reversed() + self.pics
@@ -94,12 +84,12 @@ extension PicsVM: PicsDelegate {
     
     private func indexFor(_ clientKey: ClientKey) -> Int? {
         self.pics.firstIndex(where: { (p) -> Bool in
-            p.meta.clientKey == clientKey
+            p.clientKey == clientKey
         })
     }
     
     private func contains(pic: PicMeta) -> Bool {
-        self.pics.contains(where: { p -> Bool in (pic.clientKey != nil && p.meta.clientKey == pic.clientKey) || p.meta.key == pic.key })
+        self.pics.contains(where: { p -> Bool in (pic.clientKey != nil && p.clientKey == pic.clientKey) || p.key == pic.key })
     }
 }
 
@@ -114,7 +104,7 @@ class PicsVM: PicsVMLike {
     @Published private(set) var isOnline = false
     var currentUsernameOrAnon: Username { User.shared.activeUser ?? Username.anon }
     
-    @Published var pics: [Picture] = []
+    @Published var pics: [PicMeta] = []
     private(set) var isPrivate = User.shared.isPrivate
     @Published private(set) var hasMore = false
     private var isInitial = true
@@ -185,23 +175,23 @@ class PicsVM: PicsVMLike {
         }
         let removed = self.pics.filter { old in
             !onlinePics.contains { pic in
-                pic.key == old.meta.key
+                pic.key == pic.key
             }
         }
         if !added.isEmpty || !removed.isEmpty {
             log.info("Replacing gallery with \(onlinePics.count) pics. Added \(added.count) and removed \(removed.count) pics.")
-            await savePics(newPics: onlinePics.map { p in Picture(meta: p) })
+            await savePics(newPics: onlinePics)
         }
     }
     
-    private func savePics(newPics: [Picture], more: Bool? = nil) async {
+    private func savePics(newPics: [PicMeta], more: Bool? = nil) async {
         await saveOnlinePics(newPics: newPics, more: more)
         
         let _ = self.picsSettings.save(pics: newPics, for: self.currentUsernameOrAnon)
     }
     
     @MainActor
-    private func saveOnlinePics(newPics: [Picture], more: Bool?) {
+    private func saveOnlinePics(newPics: [PicMeta], more: Bool?) {
         isOnline = true
         pics = newPics
         if let more = more {
@@ -260,7 +250,7 @@ class PicsVM: PicsVMLike {
             log.info("Found local URL '\(url)' for '\(key)'.")
             return meta.withUrl(url: url)
         }
-        await savePics(newPics: self.pics + syncedBatch.map { p in Picture(meta: p) }, more: batch.count == limit)
+        await savePics(newPics: self.pics + syncedBatch, more: batch.count == limit)
     }
     
     private func isBlocked(pic: PicMeta) -> Bool {
@@ -281,15 +271,15 @@ class PicsVM: PicsVMLike {
         await removeLocally(keys: [key])
     }
     
-    func display(newPics: [Picture]) async {
-        let newPicsNewestFirst: [Picture] = newPics.reversed()
+    func display(newPics: [PicMeta]) async {
+        let newPicsNewestFirst: [PicMeta] = newPics.reversed()
         let prepended = newPicsNewestFirst + self.pics
         await savePics(newPics: prepended)
     }
     
     private func removeLocally(keys: [ClientKey]) async {
         await savePics(newPics: self.pics.filter { pic in !keys.contains { key in
-            pic.meta.key == key
+            pic.key == key
         }})
     }
     
@@ -340,7 +330,7 @@ class PicsVM: PicsVMLike {
 
 class PreviewPicsVM: PicsVMLike {
     var isOnline: Bool = false
-    var pics: [Picture] = []
+    var pics: [PicMeta] = []
     var hasMore: Bool = false
     var isPrivate: Bool = false
     var showLogin: Bool = false
@@ -358,7 +348,7 @@ class PreviewPicsVM: PicsVMLike {
     func signOut() { }
     func remove(key: ClientKey) { }
     func block(key: ClientKey) { }
-    func display(newPics: [Picture]) { }
+    func display(newPics: [PicMeta]) { }
     func reInit() { }
     func changeStyle(dark: Bool) { }
 }

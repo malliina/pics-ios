@@ -134,16 +134,16 @@ class PicsSettings {
         blockedImageKeys = blockedList
     }
     
-    func save(pics: [Picture], for user: Username) -> ErrorMessage? {
-        let refs = pics.map { pic in PicRef(filename: pic.meta.url.lastPathComponent, added: pic.meta.added) }
+    func save(pics: [PicMeta], for user: Username) -> ErrorMessage? {
+        let refs = pics.map { pic in PicRef(filename: pic.url.lastPathComponent, added: pic.added) }
         return prefs.save(PicRefs(pics: refs), key: key(for: user ))
     }
     
-    func localPictures(for user: Username) -> [Picture] {
+    func localPictures(for user: Username) -> [PicMeta] {
         let metas = prefs.load(key(for: user), PicRefs.self)?.pics.filter({ ref in
             !ref.filename.isEmpty
         }) ?? []
-        return metas.compactMap { m in PicMeta.ref(m).map { meta in Picture(meta: meta) } }
+        return metas.compactMap { m in PicMeta.ref(m) }
     }
     
     static func loadBlocked() -> [ClientKey] {

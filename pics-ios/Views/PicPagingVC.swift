@@ -13,7 +13,7 @@ struct PicPagingView: UIViewControllerRepresentable {
     private let log = LoggerFactory.shared.vc(PicPagingView.self)
     typealias UIViewControllerType = PicPagingVC
     
-    let pics: [Picture]
+    let pics: [PicMeta]
     let startIndex: Int
     let isPrivate: Bool
     let delegate: PicDelegate
@@ -41,7 +41,7 @@ class PicPagingVC: BaseVC {
     let pager = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
     
     let abuseEmail = "info@skogberglabs.com"
-    let pics: [Picture]
+    let pics: [PicMeta]
     private var index: Int
     var idx: Int { index }
     let isPrivate: Bool
@@ -50,7 +50,7 @@ class PicPagingVC: BaseVC {
     let larges: DataCache
     var titleTextColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
     
-    init(pics: [Picture], startIndex: Int, isPrivate: Bool, delegate: PicDelegate, smalls: DataCache, larges: DataCache) {
+    init(pics: [PicMeta], startIndex: Int, isPrivate: Bool, delegate: PicDelegate, smalls: DataCache, larges: DataCache) {
         self.pics = pics
         self.index = startIndex
         self.isPrivate = isPrivate
@@ -68,7 +68,7 @@ class PicPagingVC: BaseVC {
     override func initUI() {
         updateNavBar(vc: self)
         navigationController?.setNavigationBarHidden(true, animated: true)
-        let vc = UIHostingController(rootView: PicView(pic: pics[index], isPrivate: isPrivate, smalls: smalls, larges: larges))
+        let vc = UIHostingController(rootView: PicView(meta: pics[index], isPrivate: isPrivate, smalls: smalls, larges: larges))
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
@@ -90,7 +90,7 @@ class PicPagingVC: BaseVC {
     
     func updateNavBar(vc: UIViewController) {
         let p = pics[index]
-        let d = Date(timeIntervalSince1970: Double(p.meta.added) / 1000)
+        let d = Date(timeIntervalSince1970: Double(p.added) / 1000)
         let df = DateFormatter()
         df.dateFormat = "y-MM-dd H:mm"
         vc.navigationItem.title = df.string(from: d)
@@ -102,8 +102,13 @@ class PicPagingVC: BaseVC {
     
     @objc func shareClicked(_ button: UIBarButtonItem) {
         if index < pics.count {
-            let image = pics[index].meta.url
-            let vc = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+            let pic = pics[index]
+            let imageUrl = pic.url
+            let image = shareable(pic: pic)
+            if image == nil {
+                log.warn("No image available, so sharing URL \(imageUrl).")
+            }
+            let vc = UIActivityViewController(activityItems: [image ?? imageUrl], applicationActivities: nil)
             vc.popoverPresentationController?.barButtonItem = button
             self.present(vc, animated: true, completion: nil)
         } else {
@@ -111,10 +116,17 @@ class PicPagingVC: BaseVC {
         }
     }
     
+    private func shareable(pic: PicMeta) -> UIImage? {
+        if let cached = larges.search(key: pic.key), let image = UIImage(data: cached) {
+            return image
+        } else {
+            return nil
+        }
+    }
+    
     @objc func actionsClicked(_ button: UIBarButtonItem) {
         if index < pics.count {
-            let pic = pics[index]
-            let meta = pic.meta
+            let meta = pics[index]
             let key = meta.key
             let content = UIAlertController(title: "Actions for this image", message: nil, preferredStyle: .actionSheet)
             content.popoverPresentationController?.barButtonItem = button
@@ -156,7 +168,7 @@ class PicPagingVC: BaseVC {
         goToPics()
         if index < pics.count {
             Task {
-                await delegate.remove(key: pics[index].meta.key)
+                await delegate.remove(key: pics[index].key)
             }
         }
     }
@@ -204,7 +216,7 @@ extension PicPagingVC: UIPageViewControllerDelegate {
                 return
             }
             let current = hosting.rootView
-            guard let newIndex = self.pics.firstIndex(where: { p in p.meta.key == current.pic.meta.key || (p.meta.clientKey != nil && p.meta.clientKey == current.pic.meta.clientKey) }) else { return }
+            guard let newIndex = self.pics.firstIndex(where: { p in p.key == current.meta.key || (p.clientKey != nil && p.clientKey == current.meta.clientKey) }) else { return }
             index = newIndex
             guard let parent = pageViewController.parent?.parent else { return }
             updateNavBar(vc: parent)
@@ -223,7 +235,7 @@ extension PicPagingVC: UIPageViewControllerDataSource {
     
     private func go(to newIndex: Int) -> UIViewController? {
         if newIndex >= 0 && newIndex < pics.count {
-            return UIHostingController(rootView: PicView(pic: pics[newIndex], isPrivate: isPrivate, smalls: smalls, larges: larges))
+            return UIHostingController(rootView: PicView(meta: pics[newIndex], isPrivate: isPrivate, smalls: smalls, larges: larges))
         } else {
             return nil
         }

@@ -1,16 +1,8 @@
-//
-//  PicView.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 19.4.2022.
-//  Copyright © 2022 Michael Skogberg. All rights reserved.
-//
-
 import SwiftUI
 
 struct PicView: View {
     private let log = LoggerFactory.shared.vc(PicView.self)
-    let pic: Picture
+    let meta: PicMeta
     let isPrivate: Bool
     
     let smalls: DataCache
@@ -22,7 +14,6 @@ struct PicView: View {
     @MainActor
     func loadImage() async {
         guard data == nil else { return }
-        let meta = pic.meta
         let key = meta.key
         if let large = larges.search(key: key) {
             data = large
@@ -35,9 +26,11 @@ struct PicView: View {
                     if data == nil {
                         let smallResult = try await downloader.download(url: meta.small)
                         data = smallResult
+                        smalls.put(key: key, data: smallResult)
                     }
                     let result = try await downloader.download(url: meta.large)
                     data = result
+                    larges.put(key: key, data: result)
                 }
             } catch let error {
                 log.error("Failed to download image \(error)")

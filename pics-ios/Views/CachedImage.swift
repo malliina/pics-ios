@@ -24,11 +24,12 @@ class DataCache {
     }
 }
 
+/// Thumbnail sized image view used in gallery. For full-size image view, see PicView
 struct CachedImage: View {
     private static let logger = LoggerFactory.shared.pics(CachedImage.self)
     var log: Logger { CachedImage.logger }
     
-    var pic: Picture
+    let meta: PicMeta
     let size: CGSize
     let cache: DataCache
     
@@ -41,35 +42,30 @@ struct CachedImage: View {
         guard data == nil else { return }
         data = await picData()
         if let data = data {
-            cache.put(key: pic.meta.key, data: data)
+            cache.put(key: meta.key, data: data)
         }
     }
     
     func picData() async -> Data? {
-        let key = pic.meta.key
+        let key = meta.key
         if let cache = cache.search(key: key) {
             return cache
-        }
-        if let uiImage = pic.preferred,
-            let imageData = uiImage.jpegData(compressionQuality: 1) {
-            log.info("Using local image for '\(key)'.")
-            return imageData
         }
         if let localData = localStorage.readSmall(key: key) {
             return localData
         }
-        let url = pic.meta.small
-        if url.isFileURL {
-            return nil
-        } else {
-            do {
+        let url = meta.small
+        do {
+            if url.isFileURL {
+                return try Data(contentsOf: url)
+            } else {
                 let data = try await Downloader.shared.download(url: url)
                 let _ = localStorage.saveSmall(data: data, key: key)
                 return data
-            } catch let error {
-                log.error("Failed to download \(url). \(error)")
-                return nil
             }
+        } catch let error {
+            log.error("Failed to download \(url). \(error)")
+            return nil
         }
     }
     

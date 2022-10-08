@@ -27,7 +27,7 @@
 		61A702D81FCAD7DE00814051 /* HttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702D71FCAD7DE00814051 /* HttpClient.swift */; };
 		61A702DA1FCAD86300814051 /* PicsHttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702D91FCAD86300814051 /* PicsHttpClient.swift */; };
 		61A702DD1FCAD8D000814051 /* models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702DC1FCAD8D000814051 /* models.swift */; };
-		61A702E21FCB21A600814051 /* PicsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702E11FCB21A600814051 /* PicsCell.swift */; };
+		61A702E21FCB21A600814051 /* SizeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A702E11FCB21A600814051 /* SizeInfo.swift */; };
 		61A9C4C01FF271D30085BA25 /* PicPagingVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4BF1FF271D30085BA25 /* PicPagingVC.swift */; };
 		61A9C4C21FF28E280085BA25 /* EnvConf.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4C11FF28E280085BA25 /* EnvConf.swift */; };
 		61A9C4C42003EADA0085BA25 /* StorageSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A9C4C32003EAD90085BA25 /* StorageSize.swift */; };
@@ -107,7 +107,7 @@
 		61A702D71FCAD7DE00814051 /* HttpClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpClient.swift; sourceTree = "<group>"; };
 		61A702D91FCAD86300814051 /* PicsHttpClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsHttpClient.swift; sourceTree = "<group>"; };
 		61A702DC1FCAD8D000814051 /* models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = models.swift; sourceTree = "<group>"; };
-		61A702E11FCB21A600814051 /* PicsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsCell.swift; sourceTree = "<group>"; };
+		61A702E11FCB21A600814051 /* SizeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SizeInfo.swift; sourceTree = "<group>"; };
 		61A9C4BF1FF271D30085BA25 /* PicPagingVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicPagingVC.swift; sourceTree = "<group>"; };
 		61A9C4C11FF28E280085BA25 /* EnvConf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvConf.swift; sourceTree = "<group>"; };
 		61A9C4C32003EAD90085BA25 /* StorageSize.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StorageSize.swift; sourceTree = "<group>"; };
@@ -204,8 +204,7 @@
 				61EB2D871FE5AE6E00A27F1A /* Pics */,
 				61D214BF1FD34E6D00781DC7 /* PicsColors.swift */,
 				61A702D01FCAC6B500814051 /* Util */,
-				61D214B41FD2AB9900781DC7 /* ViewControllers */,
-				61A702E01FCB219800814051 /* Views */,
+				61D214B41FD2AB9900781DC7 /* Views */,
 			);
 			path = "pics-ios";
 			sourceTree = "<group>";
@@ -270,6 +269,7 @@
 				614230461FC1891E00CD4173 /* DataExtensions.swift */,
 				61EB2D851FDD517500A27F1A /* Devices.swift */,
 				61A702D11FCAC6C200814051 /* Log.swift */,
+				61A702E11FCB21A600814051 /* SizeInfo.swift */,
 				61A9C4C32003EAD90085BA25 /* StorageSize.swift */,
 				61A9C4C82003ECC20085BA25 /* Strings.swift */,
 			);
@@ -285,19 +285,11 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
-		61A702E01FCB219800814051 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				7DA4A017289E6B2C005FD842 /* CachedImage.swift */,
-				61A702E11FCB21A600814051 /* PicsCell.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		61D214B41FD2AB9900781DC7 /* ViewControllers */ = {
+		61D214B41FD2AB9900781DC7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				61D214C31FD4571B00781DC7 /* BaseVC.swift */,
+				7DA4A017289E6B2C005FD842 /* CachedImage.swift */,
 				61D214C51FD464B800781DC7 /* CognitoDelegate.swift */,
 				B0FA092328C4A6C400F6356E /* ConfirmView.swift */,
 				615647F4201E16F1000E3BBD /* EulaView.swift */,
@@ -314,7 +306,7 @@
 				61D214B51FD2ABB300781DC7 /* RememberMe.swift */,
 				B0ECFFB328C3BE0100CFA757 /* SignupView.swift */,
 			);
-			path = ViewControllers;
+			path = Views;
 			sourceTree = "<group>";
 		};
 		61EB2D871FE5AE6E00A27F1A /* Pics */ = {
@@ -508,7 +500,7 @@
 				7DA4A016289BEFB5005FD842 /* ImagePicker.swift in Sources */,
 				61D214B61FD2ABB300781DC7 /* RememberMe.swift in Sources */,
 				61A702D21FCAC6C200814051 /* Log.swift in Sources */,
-				61A702E21FCB21A600814051 /* PicsCell.swift in Sources */,
+				61A702E21FCB21A600814051 /* SizeInfo.swift in Sources */,
 				B0ECFFB428C3BE0100CFA757 /* SignupView.swift in Sources */,
 				61A9C4C21FF28E280085BA25 /* EnvConf.swift in Sources */,
 				61A702D81FCAD7DE00814051 /* HttpClient.swift in Sources */,

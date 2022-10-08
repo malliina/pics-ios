@@ -7,7 +7,7 @@ struct ImagePicker: UIViewControllerRepresentable {
     typealias UIViewControllerType = UIImagePickerController
     @Environment(\.dismiss) private var dismiss
     
-    let onImage: (Picture) -> Void
+    let onImage: (PicMeta, UIImage) -> Void
     
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let control = UIImagePickerController()
@@ -82,8 +82,8 @@ struct ImagePicker: UIViewControllerRepresentable {
                 // Copies the picture to a staging folder
                 let _ = try LocalPics.shared.saveUserPicToStaging(data: data, owner: user, key: clientKey)
                 let originalUrl = try LocalPics.shared.saveOriginal(data: data, owner: user, key: clientKey)
-                let pic = Picture(url: originalUrl, image: originalImage, clientKey: clientKey)
-                parent.onImage(pic)
+                let meta = PicMeta.local(url: originalUrl, key: clientKey)
+                parent.onImage(meta, originalImage)
                 // Attempts to obtain a token and upload the pic
                 Task {
                     let _ = await library.syncPicsForLatestUser()
@@ -91,8 +91,8 @@ struct ImagePicker: UIViewControllerRepresentable {
             } else {
                 // Anonymous upload
                 let url = try LocalPics.shared.saveAsJpg(data: data, key: clientKey)
-                let pic = Picture(url: url, image: originalImage, clientKey: clientKey)
-                parent.onImage(pic)
+                let meta = PicMeta.local(url: url, key: clientKey)
+                parent.onImage(meta, originalImage)
                 library.uploadPic(picture: url, clientKey: clientKey)
             }
             dismissPicker()
