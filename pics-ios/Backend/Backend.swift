@@ -3,7 +3,7 @@ import AWSCognitoIdentityProvider
 
 class Backend {
     static let shared = Backend(EnvConf.shared.baseUrl)
-    
+    private let log = LoggerFactory.shared.system(Backend.self)
     let library: PicsLibrary
     let socket: PicsSocket
     

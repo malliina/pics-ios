@@ -10,8 +10,8 @@ import Foundation
 import SwiftUI
 
 protocol ProfileDelegate {
-    func onPublic()
-    func onPrivate(user: Username)
+    func onPublic() async
+    func onPrivate(user: Username) async
     func onLogout() async
 }
 
@@ -34,7 +34,9 @@ struct ProfilePopoverView: View {
                 }
             }.contentShape(Rectangle()).onTapGesture {
                 dismiss()
-                delegate.onPublic()
+                Task {
+                    await delegate.onPublic()
+                }
             }
             HStack {
                 Text(user?.user ?? "Log in").foregroundColor(user == nil ? PicsColors.blueish2 : PicsColors.almostBlack)
@@ -48,7 +50,7 @@ struct ProfilePopoverView: View {
                         dismiss()
                         try await Task.sleep(nanoseconds: 500_000_000)
                         let userInfo = try await Tokens.shared.retrieveUserInfoAsync()
-                        self.delegate.onPrivate(user: userInfo.username)
+                        await self.delegate.onPrivate(user: userInfo.username)
                     } catch let error {
                         self.log.error("Failed to retrieve user info. No network? \(error)")
                     }

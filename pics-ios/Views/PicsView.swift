@@ -69,7 +69,7 @@ struct PicsView<T>: View where T: PicsVMLike {
         GeometryReader { geometry in
             ZStack {
                 grid(geometry: geometry).task {
-                    await viewModel.loadPicsAsync(for: PicsSettings.shared.activeUser, initialOnly: true)
+                    await viewModel.prep()
                 }.overlay(alignment: .bottom) {
                     cameraButton.padding(.bottom, Devices.isIpad ? 24 : 0)
                 }
@@ -149,7 +149,7 @@ struct PicsView<T>: View where T: PicsVMLike {
             ToolbarItem(placement: .principal) {
                 Text("Pics")
                     .font(.headline)
-                    .foregroundColor(viewModel.isOnline ? titleColor : Color.red)
+                    .foregroundColor(viewModel.isOnline ? titleColor : titleColor.opacity(0.4))
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 if isCameraAvailable {
@@ -202,12 +202,12 @@ class ProfileViewDelegate <T> : ProfileDelegate where T: PicsVMLike {
         self.viewModel = viewModel
     }
     
-    func onPublic() {
-        viewModel.onPublic()
+    func onPublic() async {
+        await viewModel.onPublic()
     }
     
-    func onPrivate(user: Username) {
-        viewModel.onPrivate(user: user)
+    func onPrivate(user: Username) async {
+        await viewModel.onPrivate(user: user)
     }
     
     func onLogout() async {

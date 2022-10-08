@@ -6,11 +6,13 @@ class User {
     
     var picsSettings: PicsSettings { PicsSettings.shared }
     var activeUser: Username? { picsSettings.activeUser }
-    var isPrivate: Bool { picsSettings.activeUser != nil 		}
+    var isPrivate: Bool { activeUser != nil 		}
     var currentUsernameOrAnon: Username { activeUser ?? Username.anon }
+    /// if true, reload the view on prep()
+    var reload: Bool = false
 }
 
-protocol PicsVMLike: ObservableObject, AuthInit {
+protocol PicsVMLike: ObservableObject {
     var isOnline: Bool { get }
     var pics: [PicMeta] { get }
     var hasMore: Bool { get }
@@ -20,35 +22,19 @@ protocol PicsVMLike: ObservableObject, AuthInit {
     var loginHandler: LoginHandler { get }
     var cacheSmall: DataCache { get }
     var cacheLarge: DataCache { get }
+    func prep() async
     func loadMore() async
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async
     func display(newPics: [PicMeta]) async
     func remove(key: ClientKey) async
     func block(key: ClientKey) async
     func resetData() async
-    func onPublic()
-    func onPrivate(user: Username)
+    func onPublic() async
+    func onPrivate(user: Username) async
     func signOut() async
     
     func connect()
     func disconnect()
-}
-
-protocol AuthInit {
-    func reInit() async
-    func changeStyle(dark: Bool)
-}
-
-extension PicsVM: AuthInit {
-    func reInit() async {
-        authCancellation?.cancel()
-        authCancellation?.dispose()
-        await loadPicsAsync(for: user.activeUser, initialOnly: false)
-    }
-    
-    func changeStyle(dark: Bool) {
-        
-    }
 }
 
 extension PicsVM: PicsDelegate {
@@ -102,10 +88,11 @@ class PicsVM: PicsVMLike {
     let user = User.shared
     
     @Published private(set) var isOnline = false
-    var currentUsernameOrAnon: Username { User.shared.activeUser ?? Username.anon }
+    var currentUsernameOrAnon: Username { user.currentUsernameOrAnon }
+    var isPrivate: Bool { user.isPrivate }
     
     @Published var pics: [PicMeta] = []
-    private(set) var isPrivate = User.shared.isPrivate
+    
     @Published private(set) var hasMore = false
     private var isInitial = true
     
@@ -114,13 +101,13 @@ class PicsVM: PicsVMLike {
     
     private var library: PicsLibrary { Backend.shared.library }
     private var picsSettings: PicsSettings { PicsSettings.shared }
-    var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
+    private var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     private var authCancellation: AWSCancellationTokenSource? = nil
 
     var cognito: CognitoDelegate? = nil
     var loginHandler: LoginHandler { cognito!.handler }
     
-    var socket: PicsSocket { Backend.shared.socket }
+    private var socket: PicsSocket { Backend.shared.socket }
     
     let userChanged: (Username?) -> Void
     
@@ -143,6 +130,13 @@ class PicsVM: PicsVMLike {
         Tokens.shared.pool.delegate = cognitoDelegate
     }
     
+    func prep() async {
+        if user.reload {
+            user.reload = false
+            await connectAsync()
+        }
+    }
+    
     func connect() {
         Task {
             await connectAsync()
@@ -153,15 +147,17 @@ class PicsVM: PicsVMLike {
         do {
             if isPrivate {
                 let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: nil)
-                let authValue = PicsHttpClient.authValueFor(forToken: userInfo.token)
-                socket.updateAuthHeader(with: authValue)
+                Backend.shared.updateToken(new: userInfo.token)
+            } else {
+                Backend.shared.updateToken(new: nil)
             }
             socket.reconnect()
-            let batch = try await library.load(from: 0, limit: self.pics.count)
+            let limit = max(100, self.pics.count)
+            let batch = try await library.load(from: 0, limit: limit)
             log.info("Loaded batch of \(batch.count), syncing...")
-            await merge(onlinePics: batch)
+            await merge(onlinePics: batch, more: batch.count == limit)
         } catch let error {
-            log.error("Failed to sync. \(error)")
+            log.error("Failed to connect. \(error)")
         }
     }
     
@@ -169,7 +165,7 @@ class PicsVM: PicsVMLike {
         socket.disconnect()
     }
     
-    private func merge(onlinePics: [PicMeta]) async {
+    private func merge(onlinePics: [PicMeta], more: Bool) async {
         let added = onlinePics.filter { meta in
             !isBlocked(pic: meta) && !contains(pic: meta)
         }
@@ -180,7 +176,9 @@ class PicsVM: PicsVMLike {
         }
         if !added.isEmpty || !removed.isEmpty {
             log.info("Replacing gallery with \(onlinePics.count) pics. Added \(added.count) and removed \(removed.count) pics.")
-            await savePics(newPics: onlinePics)
+            await savePics(newPics: onlinePics, more: more)
+        } else {
+            log.info("All pics up to date.")
         }
     }
     
@@ -289,24 +287,24 @@ class PicsVM: PicsVMLike {
         isOnline = false
         await savePics(newPics: [])
         isInitial = true
-        isPrivate = false
+        picsSettings.activeUser = nil
         await self.loadPicsAsync(for: nil, initialOnly: true)
     }
     
-    func onPublic() {
-        changeUser(to: nil)
-        
+    func onPublic() async {
+        await changeUser(to: nil)
     }
     
-    func onPrivate(user: Username) {
-        changeUser(to: user)
+    func onPrivate(user: Username) async {
+        await changeUser(to: user)
     }
     
-    private func changeUser(to user: Username?) {
+    private func changeUser(to user: Username?) async {
         let changed = picsSettings.activeUser != user
         if changed {
             picsSettings.activeUser = user
-            // This triggers a change in AppDelegate, recreating the view
+            self.user.reload = true
+            // This triggers a change in AppDelegate, recreating the view, which will call loadPicsAsync, which reloads pics
             self.userChanged(user)
             log.info("Current user is \(self.user.currentUsernameOrAnon)")
         }
@@ -317,7 +315,6 @@ class PicsVM: PicsVMLike {
         log.info("Signing out...")
         pool.currentUser()?.signOut()
         pool.clearLastKnownUser()
-        picsSettings.activeUser = nil
         await resetData()
         adjustTitleTextColor(PicsColors.uiAlmostBlack)
         loginHandler.isComplete = false
@@ -338,13 +335,14 @@ class PreviewPicsVM: PicsVMLike {
     var loginHandler: LoginHandler = LoginHandler()
     var cacheSmall: DataCache = DataCache()
     var cacheLarge: DataCache = DataCache()
+    func prep() async {}
     func connect() {}
     func disconnect() {}
     func loadMore() async { }
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async { }
     func resetData() { }
-    func onPublic() { }
-    func onPrivate(user: Username) { }
+    func onPublic() async { }
+    func onPrivate(user: Username) async { }
     func signOut() { }
     func remove(key: ClientKey) { }
     func block(key: ClientKey) { }

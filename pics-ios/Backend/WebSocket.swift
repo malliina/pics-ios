@@ -22,6 +22,7 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
     private var task: URLSessionWebSocketTask?
     private var isConnected = false
     var delegate: WebSocketMessageDelegate? = nil
+    private var receiveTask: Task<(), Never>? = nil
     
     init(baseURL: URL, headers: [String: String]) {
         self.baseURL = baseURL
@@ -32,27 +33,29 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
         sessionConfiguration = URLSessionConfiguration.default
         super.init()
         sessionConfiguration.httpAdditionalHeaders = headers
-//        prepTask()
     }
     
-    private func prepTask() {
-        session = URLSession(configuration: sessionConfiguration, delegate: self, delegateQueue: OperationQueue())
-        task = session?.webSocketTask(with: request)
+    private func prepTask() -> URLSessionWebSocketTask {
+        let s = URLSession(configuration: sessionConfiguration, delegate: self, delegateQueue: OperationQueue())
+        session = s
+        let socketTask = s.webSocketTask(with: request)
+        task = socketTask
+        return socketTask
     }
     
-    func reconnect() {
-        if task != nil {
-            disconnect()
-        }
-        connect()
-    }
+//    func reconnect() {
+//        if task != nil {
+//            disconnect()
+//        }
+//        connect()
+//    }
     
     func connect() {
-        prepTask()
+        let socketTask = prepTask()
         let hasToken = request.value(forHTTPHeaderField: HttpClient.authorization) != nil
         let describe = hasToken ? "with token" : "without token"
         log.info("Connecting to \(urlString) \(describe)...")
-        task?.resume()
+        socketTask.resume()
     }
     
     /** Fucking Christ Swift sucks. "Authorization" is a "reserved header" where iOS chooses not to send its value even when set, it seems. So we set it in two ways anyway and hope that either works: both to the request and the session configuration.
@@ -64,13 +67,13 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
         } else {
             sessionConfiguration.httpAdditionalHeaders = [:]
         }
-        prepTask()
+        _ = prepTask()
     }
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         log.info("Connected to \(urlString).")
         isConnected = true
-        receive()
+        receiveTask = Task { await receive() }
     }
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
@@ -78,32 +81,31 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
         isConnected = false
     }
     
-    // TODO serialize async calls
-    private func receive() {
-      task?.receive { result in
-        switch result {
-        case .success(let message):
-          switch message {
-          case .data(let data):
-            self.log.info("Data received \(data)")
-          case .string(let text):
-            self.log.info("Text received \(text)")
-            Task {
+    private func receive() async {
+        guard let task = task else {
+            log.error("No task, cannot receive messages.")
+            return
+        }
+        do {
+            switch try await task.receive() {
+            case .data(let data):
+                self.log.info("Data received \(data)")
+            case .string(let text):
+                self.log.info("Text received \(text)")
                 await self.delegate?.on(message: text)
+                await self.receive()
+            default:
+                ()
             }
-            self.receive()
-          default:
-              ()
-          }
-        case .failure(let error):
+        } catch let error {
             self.log.error("Error when receiving \(error)")
         }
-      }
     }
     
     func disconnect() {
         self.log.info("Disconnecting from \(urlString).")
         let reason = "Closing connection".data(using: .utf8)
+        receiveTask?.cancel()
         task?.cancel(with: .goingAway, reason: reason)
     }
 }
