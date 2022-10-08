@@ -1,11 +1,3 @@
-//
-//  ProfilePopover.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 27/01/2018.
-//  Copyright © 2018 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 import SwiftUI
 
@@ -39,7 +31,7 @@ struct ProfilePopoverView: View {
                 }
             }
             HStack {
-                Text(user?.user ?? "Log in").foregroundColor(user == nil ? PicsColors.blueish2 : PicsColors.almostBlack)
+                Text(user?.user ?? "Log in").foregroundColor(PicsColors.blueish2)
                 Spacer()
                 if isPrivate {
                     Image(systemName: "checkmark").foregroundColor(PicsColors.blueish2)
@@ -67,7 +59,7 @@ struct ProfilePopoverView: View {
                     }
                 }
             }
-        }
+        }.background(Color.green)
     }
 }
 
@@ -75,6 +67,11 @@ struct ProfilePopoverView_Previews: PreviewProvider {
     static var previews: some View {
         ForEach(["iPhone 12 mini", "iPad Pro (11-inch) (3rd generation)"], id: \.self) { deviceName in
             ProfilePopoverView(user: nil, delegate: NoopProfileDelegate())
+            .previewDevice(PreviewDevice(rawValue: "\(deviceName) anon"))
+            .previewDisplayName(deviceName)
+        }
+        ForEach(["iPhone 12 mini", "iPad Pro (11-inch) (3rd generation)"], id: \.self) { deviceName in
+            ProfilePopoverView(user: Username("jack@example.com"), delegate: NoopProfileDelegate())
             .previewDevice(PreviewDevice(rawValue: deviceName))
             .previewDisplayName(deviceName)
         }

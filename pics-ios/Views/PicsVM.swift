@@ -145,6 +145,11 @@ class PicsVM: PicsVMLike {
     
     func connectAsync() async {
         do {
+            if !isOnline {
+                let offlines = picsSettings.localPictures(for: user.currentUsernameOrAnon)
+                log.info("Loaded \(offlines.count) offline pics for \(user.currentUsernameOrAnon)")
+                await loadOfflinePics(offlinePics: offlines)
+            }
             if isPrivate {
                 let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: nil)
                 Backend.shared.updateToken(new: userInfo.token)
@@ -186,6 +191,11 @@ class PicsVM: PicsVMLike {
         await saveOnlinePics(newPics: newPics, more: more)
         
         let _ = self.picsSettings.save(pics: newPics, for: self.currentUsernameOrAnon)
+    }
+    
+    @MainActor
+    private func loadOfflinePics(offlinePics: [PicMeta]) {
+        pics = offlinePics
     }
     
     @MainActor

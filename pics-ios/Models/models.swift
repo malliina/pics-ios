@@ -182,6 +182,7 @@ struct PicsResponse: Codable {
 struct PicMeta: Codable, Hashable {
     static let Pic = "pic"
     static let Pics = "pics"
+//    private static let log = LoggerFactory.shared.system(PicsVM.self)
     
     let key: ClientKey
     let url: URL
@@ -196,6 +197,7 @@ struct PicMeta: Codable, Hashable {
         let key = ClientKey(ref.filename)
         let url = local.findLocal(key: key)
         let smallUrl = local.findSmallUrl(key: key)
+//        log.info("Ref \(ref.filename) key \(key) url \(url) small \(smallUrl)")
         guard let large = url ?? smallUrl else { return nil }
         return PicMeta(key: key, url: large, small: smallUrl ?? large, medium: large, large: large, added: ref.added, clientKey: key)
     }

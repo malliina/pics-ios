@@ -1,14 +1,8 @@
-//
-//  AppDelegate.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 19/11/2017.
-//  Copyright © 2017 Michael Skogberg. All rights reserved.
-//
-
 import UIKit
 import AWSCognitoIdentityProvider
 import SwiftUI
+import AppCenterAnalytics
+import AppCenterCrashes
 
 @main
 struct PicsApp: App {
@@ -20,10 +14,10 @@ struct PicsApp: App {
     @State var username: Username? = PicsSettings.shared.activeUser
     
     init() {
-        //        AppCenter.start(withAppSecret: "cf2aa399-806a-406e-b72d-f4d6e1978e02", services: [
-        //            Analytics.self,
-        //            Crashes.self
-        //        ])
+        AppCenter.start(withAppSecret: "cf2aa399-806a-406e-b72d-f4d6e1978e02", services: [
+            Analytics.self,
+            Crashes.self
+        ])
         do {
             // Sets up folders, cleans up old pics
             let _ = LocalPics.shared

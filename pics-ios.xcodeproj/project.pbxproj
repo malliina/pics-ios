@@ -56,6 +56,8 @@
 		7D6BF6E6280F48FD007C5FD5 /* PicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E5280F48FD007C5FD5 /* PicView.swift */; };
 		7DA4A016289BEFB5005FD842 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A015289BEFB5005FD842 /* ImagePicker.swift */; };
 		7DA4A018289E6B2C005FD842 /* CachedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A017289E6B2C005FD842 /* CachedImage.swift */; };
+		B0B85EB328F209D500C4B8FF /* AppCenterAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */; };
+		B0B85EB528F209D500C4B8FF /* AppCenterCrashes in Frameworks */ = {isa = PBXBuildFile; productRef = B0B85EB428F209D500C4B8FF /* AppCenterCrashes */; };
 		B0ECFFB228C37D4900CFA757 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB128C37D4900CFA757 /* LoginView.swift */; };
 		B0ECFFB428C3BE0100CFA757 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB328C3BE0100CFA757 /* SignupView.swift */; };
 		B0FA092428C4A6C400F6356E /* ConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FA092328C4A6C400F6356E /* ConfirmView.swift */; };
@@ -145,6 +147,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0B85EB328F209D500C4B8FF /* AppCenterAnalytics in Frameworks */,
+				B0B85EB528F209D500C4B8FF /* AppCenterCrashes in Frameworks */,
 				7D175C5B27C018E50050E29B /* SnapKit in Frameworks */,
 				7D175C5627C018BC0050E29B /* AWSCognitoAuth in Frameworks */,
 				7D175C5827C018BC0050E29B /* AWSCognitoIdentityProvider in Frameworks */,
@@ -348,6 +352,8 @@
 				7D175C5527C018BC0050E29B /* AWSCognitoAuth */,
 				7D175C5727C018BC0050E29B /* AWSCognitoIdentityProvider */,
 				7D175C5A27C018E50050E29B /* SnapKit */,
+				B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */,
+				B0B85EB428F209D500C4B8FF /* AppCenterCrashes */,
 			);
 			productName = "pics-ios";
 			productReference = 614230411FC1891E00CD4173 /* pics-ios.app */;
@@ -428,7 +434,8 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */,
+				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */,
+				B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -993,12 +1000,20 @@
 				version = 2.27.1;
 			};
 		};
-		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */ = {
+		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
 			requirement = {
 				kind = exactVersion;
 				version = 5.0.1;
+			};
+		};
+		B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/microsoft/appcenter-sdk-apple.git";
+			requirement = {
+				branch = "fix/switfui-preview";
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -1016,8 +1031,18 @@
 		};
 		7D175C5A27C018E50050E29B /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */;
+			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
+			productName = AppCenterAnalytics;
+		};
+		B0B85EB428F209D500C4B8FF /* AppCenterCrashes */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
+			productName = AppCenterCrashes;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
