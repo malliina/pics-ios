@@ -58,6 +58,7 @@
 		7DA4A018289E6B2C005FD842 /* CachedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A017289E6B2C005FD842 /* CachedImage.swift */; };
 		B0B85EB328F209D500C4B8FF /* AppCenterAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */; };
 		B0B85EB528F209D500C4B8FF /* AppCenterCrashes in Frameworks */ = {isa = PBXBuildFile; productRef = B0B85EB428F209D500C4B8FF /* AppCenterCrashes */; };
+		B0B85EB728F328D100C4B8FF /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */; };
 		B0ECFFB228C37D4900CFA757 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB128C37D4900CFA757 /* LoginView.swift */; };
 		B0ECFFB428C3BE0100CFA757 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB328C3BE0100CFA757 /* SignupView.swift */; };
 		B0FA092428C4A6C400F6356E /* ConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FA092328C4A6C400F6356E /* ConfirmView.swift */; };
@@ -136,6 +137,7 @@
 		7D6BF6E5280F48FD007C5FD5 /* PicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicView.swift; sourceTree = "<group>"; };
 		7DA4A015289BEFB5005FD842 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		7DA4A017289E6B2C005FD842 /* CachedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedImage.swift; sourceTree = "<group>"; };
+		B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		B0ECFFB128C37D4900CFA757 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		B0ECFFB328C3BE0100CFA757 /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
 		B0FA092328C4A6C400F6356E /* ConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmView.swift; sourceTree = "<group>"; };
@@ -249,6 +251,7 @@
 				61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */,
 				61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */,
 				7D62E9E6266BF5C600380475 /* WebSocket.swift */,
+				B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -516,6 +519,7 @@
 				61A702DA1FCAD86300814051 /* PicsHttpClient.swift in Sources */,
 				615647F3201CA633000E3BBD /* PicsSettings.swift in Sources */,
 				618623D11FD71DFC0009345E /* CognitoConf.swift in Sources */,
+				B0B85EB728F328D100C4B8FF /* AnalyticsService.swift in Sources */,
 				61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */,
 				7D20883F2835684F005C0BBA /* PicsVM.swift in Sources */,
 				61A702D61FCAC86100814051 /* JsonError.swift in Sources */,

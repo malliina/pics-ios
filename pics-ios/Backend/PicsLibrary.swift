@@ -59,7 +59,7 @@ class PicsLibrary {
                     }
                 }
             }
-            // Moves the oldest file to the uploading dir, then attempts uploads it
+            // Moves the oldest file to the uploading dir, then attempts to upload it
             // This is an attempt to upload images in the order they are taken
             let files = LocalPics.listFiles(at: stagingDir).sorted { (file1, file2) -> Bool in
                 file1.created < file2.created

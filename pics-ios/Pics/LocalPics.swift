@@ -1,4 +1,5 @@
 import Foundation
+import AppCenterAnalytics
 
 class LocalPics {
     private static let logger = LoggerFactory.shared.pics(LocalPics.self)
@@ -84,8 +85,12 @@ class LocalPics {
     
     func maintenance(smallFiles: [URL]) -> [URL] {
         let fileManager = FileManager.default
-        let files = LocalPics.listFiles(at: dir)
-        log.info("Local original files: \(files.count): \(files.mkString(", "))")
+        let files = LocalPics.listFiles(at: dir).filter { $0.isFile }
+        if files.count > 0 {
+            log.info("Local original files: \(files.count): \(files.mkString(", "))")
+        } else {
+            log.info("No local original files.")
+        }
         let oneMonthAgo = Date(timeIntervalSinceNow: -3600 * 24 * 30)
         // Deletes over one month old original files - they should have been uploaded by now
         let locallyTaken = files.compactMap { (url) -> URL? in
@@ -93,6 +98,7 @@ class LocalPics {
                 do {
                     try fileManager.removeItem(at: url)
                     self.log.info("Deleted \(url).")
+                    AnalyticsService.shared.deleted(url: url, reason: "maintenance")
                     return url
                 } catch let err {
                     self.log.warn("Unable to delete \(url). \(err.localizedDescription)")
