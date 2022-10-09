@@ -28,7 +28,7 @@ class Tokens {
     }
     
     func retrieveUserInfoAsync(cancellationToken: AWSCancellationTokenSource? = nil) async throws -> UserInfo {
-        log.info("Retrieving token...")
+//        log.info("Retrieving token...")
         
         return try await withCheckedThrowingContinuation { cont in
             guard let user = poolOpt?.currentUser() else { return cont.resume(throwing: AppError.simple("Unknown user.")) }

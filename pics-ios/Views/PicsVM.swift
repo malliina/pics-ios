@@ -99,15 +99,15 @@ class PicsVM: PicsVMLike {
     @Published var showLogin = false
     @Published var showNewPass = false
     
-    private var library: PicsLibrary { Backend.shared.library }
-    private var picsSettings: PicsSettings { PicsSettings.shared }
+    private var backend: Backend { Backend.shared }
+    private var library: PicsLibrary { backend.library }
+    private var socket: PicsSocket { backend.socket }
+    private var settings: PicsSettings { PicsSettings.shared }
     private var pool: AWSCognitoIdentityUserPool { Tokens.shared.pool }
     private var authCancellation: AWSCancellationTokenSource? = nil
 
     var cognito: CognitoDelegate? = nil
     var loginHandler: LoginHandler { cognito!.handler }
-    
-    private var socket: PicsSocket { Backend.shared.socket }
     
     let userChanged: (Username?) -> Void
     
@@ -146,23 +146,23 @@ class PicsVM: PicsVMLike {
     func connectAsync() async {
         do {
             if !isOnline {
-                let offlines = picsSettings.localPictures(for: user.currentUsernameOrAnon)
-                log.info("Loaded \(offlines.count) offline pics for \(user.currentUsernameOrAnon)")
+                let offlines = settings.localPictures(for: user.currentUsernameOrAnon)
+                log.info("Loaded \(offlines.count) offline pics for \(user.currentUsernameOrAnon).")
                 await loadOfflinePics(offlinePics: offlines)
             }
             if isPrivate {
                 let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: nil)
-                Backend.shared.updateToken(new: userInfo.token)
+                backend.updateToken(new: userInfo.token)
             } else {
-                Backend.shared.updateToken(new: nil)
+                backend.updateToken(new: nil)
             }
             socket.reconnect()
             let limit = max(100, self.pics.count)
             let batch = try await library.load(from: 0, limit: limit)
-            log.info("Loaded batch of \(batch.count), syncing...")
             await merge(onlinePics: batch, more: batch.count == limit)
         } catch let error {
             log.error("Failed to connect. \(error)")
+            await updateOnline(online: false)
         }
     }
     
@@ -183,14 +183,15 @@ class PicsVM: PicsVMLike {
             log.info("Replacing gallery with \(onlinePics.count) pics. Added \(added.count) and removed \(removed.count) pics.")
             await savePics(newPics: onlinePics, more: more)
         } else {
-            log.info("All pics up to date.")
+            await updateOnline(online: true)
+            log.info("Batch of \(onlinePics.count) pics up to date.")
         }
     }
     
     private func savePics(newPics: [PicMeta], more: Bool? = nil) async {
         await saveOnlinePics(newPics: newPics, more: more)
         
-        let _ = self.picsSettings.save(pics: newPics, for: self.currentUsernameOrAnon)
+        let _ = self.settings.save(pics: newPics, for: self.currentUsernameOrAnon)
     }
     
     @MainActor
@@ -205,6 +206,11 @@ class PicsVM: PicsVMLike {
         if let more = more {
             hasMore = more
         }
+    }
+    
+    @MainActor
+    private func updateOnline(online: Bool) {
+        isOnline = online
     }
     
     func loadMore() async {
@@ -241,7 +247,7 @@ class PicsVM: PicsVMLike {
     }
     
     func load(with token: AWSCognitoIdentityUserSessionToken?) async throws {
-        Backend.shared.updateToken(new: token)
+        backend.updateToken(new: token)
         try await appendPics()
     }
     
@@ -262,7 +268,7 @@ class PicsVM: PicsVMLike {
     }
     
     private func isBlocked(pic: PicMeta) -> Bool {
-        return PicsSettings.shared.blockedImageKeys.contains { $0 == pic.key }
+        settings.blockedImageKeys.contains { $0 == pic.key }
     }
     
     func remove(key: ClientKey) async {
@@ -275,7 +281,7 @@ class PicsVM: PicsVMLike {
     }
     
     func block(key: ClientKey) async {
-        PicsSettings.shared.block(key: key)
+        settings.block(key: key)
         await removeLocally(keys: [key])
     }
     
@@ -297,7 +303,7 @@ class PicsVM: PicsVMLike {
         isOnline = false
         await savePics(newPics: [])
         isInitial = true
-        picsSettings.activeUser = nil
+        settings.activeUser = nil
         await self.loadPicsAsync(for: nil, initialOnly: true)
     }
     
@@ -310,9 +316,9 @@ class PicsVM: PicsVMLike {
     }
     
     private func changeUser(to user: Username?) async {
-        let changed = picsSettings.activeUser != user
+        let changed = settings.activeUser != user
         if changed {
-            picsSettings.activeUser = user
+            settings.activeUser = user
             self.user.reload = true
             // This triggers a change in AppDelegate, recreating the view, which will call loadPicsAsync, which reloads pics
             self.userChanged(user)

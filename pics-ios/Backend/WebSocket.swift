@@ -91,7 +91,7 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
             case .data(let data):
                 self.log.info("Data received \(data)")
             case .string(let text):
-                self.log.info("Text received \(text)")
+//                self.log.info("Text received \(text)")
                 await self.delegate?.on(message: text)
                 await self.receive()
             default:
