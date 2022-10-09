@@ -1,11 +1,3 @@
-//
-//  WebSocket.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 5.6.2021.
-//  Copyright © 2021 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 
 protocol WebSocketMessageDelegate {
@@ -42,13 +34,6 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
         task = socketTask
         return socketTask
     }
-    
-//    func reconnect() {
-//        if task != nil {
-//            disconnect()
-//        }
-//        connect()
-//    }
     
     func connect() {
         let socketTask = prepTask()
