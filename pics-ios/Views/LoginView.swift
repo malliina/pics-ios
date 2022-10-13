@@ -104,8 +104,10 @@ struct LoginView: View {
                     .edgesIgnoringSafeArea(.all)
                 VStack {
                     Spacer()
-                    Text("Log in to your personal gallery. Images are always public.")
+                    Text("Log in to your private gallery.")
+                        .lineLimit(nil)
                         .foregroundColor(PicsColors.almostLight)
+                        .padding(.horizontal)
                     TextField("Username", text: $username)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
@@ -120,8 +122,7 @@ struct LoginView: View {
                         .padding(.horizontal)
                     Button {
                         log.info("Logging in with current input")
-                        guard username != "" else { return }
-                        guard password != "" else { return }
+                        guard username != "", password != "" else { return }
                         handler.submit(credentials: PasswordCredentials(user: username, pass: password))
                     } label: {
                         Text("Log in")
