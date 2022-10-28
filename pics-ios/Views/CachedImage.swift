@@ -22,6 +22,12 @@ class DataCache {
         cache[key] = data
         l.unlock()
     }
+    
+    func clearAll() {
+        l.lock()
+        cache = [:]
+        l.unlock()
+    }
 }
 
 /// Thumbnail sized image view used in gallery. For full-size image view, see PicView
@@ -35,6 +41,7 @@ struct CachedImage: View {
     
     var localStorage: LocalPics { LocalPics.shared }
     
+    @State var recovered: Bool = false
     @State var data: Data? = nil
     
     @MainActor
@@ -44,6 +51,15 @@ struct CachedImage: View {
         if let data = data {
             cache.put(key: meta.key, data: data)
         }
+    }
+    
+    @MainActor
+    func handleError() async {
+        guard !recovered else { return }
+        recovered = true
+        _ = localStorage.removeSmall(key: meta.key)
+        cache.clearAll()
+        await loadImage()
     }
     
     func picData() async -> Data? {
@@ -70,12 +86,22 @@ struct CachedImage: View {
     }
     
     var body: some View {
-        if let image = data, let uiImage = UIImage(data: image) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFill()
-                .frame(width: size.width, height: size.height)
-                .clipped()
+        if let image = data {
+            if let uiImage = UIImage(data: image) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: size.width, height: size.height)
+                    .clipped()
+            } else {
+                ProgressView().frame(width: size.width, height: size.height).onAppear {
+                    if !recovered {
+                        Task {
+                            await handleError()
+                        }
+                    }
+                }
+            }
         } else {
             ProgressView().frame(width: size.width, height: size.height).onAppear {
                 // Not using .task, since it's cancelled when this view disappears

@@ -131,6 +131,12 @@ class LocalPics {
         findSmallUrl(key: key).flatMap { try? Data(contentsOf: $0) }
     }
     
+    func removeSmall(key: ClientKey) -> URL? {
+        findSmallUrl(key: key).flatMap { url in
+            remove(smallFiles: [url]).first
+        }
+    }
+    
     func saveSmall(data: Data, key: ClientKey) -> URL? {
         let dest = fileFor(key: key, dir: small)
         if !dest.exists {

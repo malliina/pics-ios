@@ -244,6 +244,7 @@
 		61A702CC1FC5E52800814051 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */,
 				61A9C4CE200693510085BA25 /* Backend.swift */,
 				61A9C4C11FF28E280085BA25 /* EnvConf.swift */,
 				61A702D91FCAD86300814051 /* PicsHttpClient.swift */,
@@ -251,7 +252,6 @@
 				61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */,
 				61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */,
 				7D62E9E6266BF5C600380475 /* WebSocket.swift */,
-				B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -437,8 +437,8 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */,
-				B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */,
+				7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */,
+				B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -1004,7 +1004,7 @@
 				version = 2.27.1;
 			};
 		};
-		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */ = {
+		7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
 			requirement = {
@@ -1012,7 +1012,7 @@
 				version = 5.0.1;
 			};
 		};
-		B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */ = {
+		B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/microsoft/appcenter-sdk-apple.git";
 			requirement = {
@@ -1035,17 +1035,17 @@
 		};
 		7D175C5A27C018E50050E29B /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */;
+			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
 		};
 		B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterAnalytics;
 		};
 		B0B85EB428F209D500C4B8FF /* AppCenterCrashes */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterCrashes;
 		};
 /* End XCSwiftPackageProductDependency section */

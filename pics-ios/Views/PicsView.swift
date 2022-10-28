@@ -125,7 +125,9 @@ struct PicsView<T>: View where T: PicsVMLike {
                         await viewModel.loadMore()
                     }
                 }
-            }.font(.largeTitle)
+            }.font(.largeTitle).refreshable {
+                log.info("Refresh")
+            }
         }
     }
     
