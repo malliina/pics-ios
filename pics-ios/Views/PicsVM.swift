@@ -29,6 +29,7 @@ protocol PicsVMLike: ObservableObject {
     func remove(key: ClientKey) async
     func block(key: ClientKey) async
     func resetData() async
+    func reload() async
     func onPublic() async
     func onPrivate(user: Username) async
     func signOut() async
@@ -179,13 +180,8 @@ class PicsVM: PicsVMLike {
                 pic.key == pic.key
             }
         }
-        if !added.isEmpty || !removed.isEmpty {
-            log.info("Replacing gallery with \(onlinePics.count) pics. Added \(added.count) and removed \(removed.count) pics.")
-            await savePics(newPics: onlinePics, more: more)
-        } else {
-            await updateOnline(online: true)
-            log.info("Batch of \(onlinePics.count) pics up to date.")
-        }
+        log.info("Replacing gallery with \(onlinePics.count) pics. Added \(added.count) and removed \(removed.count) pics.")
+        await savePics(newPics: onlinePics, more: more)
     }
     
     private func savePics(newPics: [PicMeta], more: Bool? = nil) async {
@@ -304,7 +300,14 @@ class PicsVM: PicsVMLike {
         await savePics(newPics: [])
         isInitial = true
         settings.activeUser = nil
-        await self.loadPicsAsync(for: nil, initialOnly: true)
+        await loadPicsAsync(for: nil, initialOnly: true)
+    }
+    
+    @MainActor
+    func reload() async {
+        let _ = settings.save(pics: [], for: currentUsernameOrAnon)
+        pics = []
+        await loadPicsAsync(for: user.activeUser, initialOnly: false)
     }
     
     func onPublic() async {
@@ -357,6 +360,7 @@ class PreviewPicsVM: PicsVMLike {
     func loadMore() async { }
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async { }
     func resetData() { }
+    func reload() async { }
     func onPublic() async { }
     func onPrivate(user: Username) async { }
     func signOut() { }

@@ -21,6 +21,7 @@ struct PicView: View {
             data = smalls.search(key: key)
             do {
                 if meta.large.isFileURL {
+                    log.info("Large \(meta.large) is a file URL.")
                     data = try Data(contentsOf: meta.large)
                 } else {
                     if data == nil {
@@ -29,11 +30,12 @@ struct PicView: View {
                         smalls.put(key: key, data: smallResult)
                     }
                     let result = try await downloader.download(url: meta.large)
+                    log.info("Downloaded large \(key) from \(meta.large).")
                     data = result
                     larges.put(key: key, data: result)
                 }
-            } catch let error {
-                log.error("Failed to download image \(error)")
+            } catch {
+                log.error("Failed to download \(key) \(error)")
             }
         }
     }

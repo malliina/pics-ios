@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/microsoft/appcenter-sdk-apple.git",
       "state" : {
-        "branch" : "fix/switfui-preview",
-        "revision" : "db40860ac3e75708117fd92f97faae78cebbaa1e"
+        "revision" : "b2dc99cfedead0bad4e6573d86c5228c89cff332",
+        "version" : "4.4.3"
       }
     },
     {

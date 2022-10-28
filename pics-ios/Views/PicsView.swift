@@ -125,9 +125,7 @@ struct PicsView<T>: View where T: PicsVMLike {
                         await viewModel.loadMore()
                     }
                 }
-            }.font(.largeTitle).refreshable {
-                log.info("Refresh")
-            }
+            }.font(.largeTitle)
         }
     }
     
@@ -153,7 +151,7 @@ struct PicsView<T>: View where T: PicsVMLike {
                     .font(.headline)
                     .foregroundColor(viewModel.isOnline ? titleColor : titleColor.opacity(0.4))
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
                 if isCameraAvailable {
                     Button {
                         showCamera.toggle()
@@ -161,6 +159,14 @@ struct PicsView<T>: View where T: PicsVMLike {
                         Image(systemName: "camera")
                             .renderingMode(.template)
                     }
+                }
+                Button {
+                    Task {
+                        await viewModel.reload()
+                    }
+                } label: {
+                    Image(systemName: "cloud")
+                        .renderingMode(.template)
                 }
             }
         }
