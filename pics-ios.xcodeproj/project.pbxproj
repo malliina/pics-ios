@@ -1016,8 +1016,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/microsoft/appcenter-sdk-apple.git";
 			requirement = {
-				branch = "fix/switfui-preview";
-				kind = branch;
+				kind = exactVersion;
+				version = 4.4.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
