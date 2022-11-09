@@ -28,8 +28,6 @@ class Tokens {
     }
     
     func retrieveUserInfoAsync(cancellationToken: AWSCancellationTokenSource? = nil) async throws -> UserInfo {
-//        log.info("Retrieving token...")
-        
         return try await withCheckedThrowingContinuation { cont in
             guard let user = poolOpt?.currentUser() else { return cont.resume(throwing: AppError.simple("Unknown user.")) }
             user.getSession().continueWith( block: { (task) in
@@ -39,7 +37,6 @@ class Tokens {
                     cont.resume(throwing: appError)
                 } else {
                     if let accessToken = task.result?.accessToken {
-//                        self.log.info("Got token \(accessToken.tokenString)")
                         self.delegates.forEach { $0.onAccessToken(accessToken) }
                         if let username = user.username {
                             cont.resume(returning: UserInfo(username: Username(username), token: accessToken))

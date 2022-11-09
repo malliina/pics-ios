@@ -66,6 +66,18 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
         isConnected = false
     }
     
+    private func stream() -> AsyncThrowingStream<URLSessionWebSocketTask.Message, Error> {
+        if let task = task {
+            return AsyncThrowingStream {
+                try await task.receive()
+            }
+        } else {
+            return AsyncThrowingStream {
+                throw AppError.simple("No task, cannot receive messages.")
+            }
+        }
+    }
+    
     private func receive() async {
         guard let task = task else {
             log.error("No task, cannot receive messages.")
@@ -74,16 +86,16 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
         do {
             switch try await task.receive() {
             case .data(let data):
-                self.log.info("Data received \(data)")
+                log.info("Data received \(data)")
             case .string(let text):
 //                self.log.info("Text received \(text)")
-                await self.delegate?.on(message: text)
-                await self.receive()
+                await delegate?.on(message: text)
+                await receive()
             default:
                 ()
             }
-        } catch let error {
-            self.log.error("Error when receiving \(error)")
+        } catch {
+            log.error("Error when receiving \(error)")
         }
     }
     

@@ -186,7 +186,6 @@ class PicsVM: PicsVMLike {
     
     private func savePics(newPics: [PicMeta], more: Bool? = nil) async {
         await saveOnlinePics(newPics: newPics, more: more)
-        
         let _ = self.settings.save(pics: newPics, for: self.currentUsernameOrAnon)
     }
     

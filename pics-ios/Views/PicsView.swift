@@ -117,6 +117,7 @@ struct PicsView<T>: View where T: PicsVMLike {
                         // SwiftUI comes with AsyncImage, but not sure how to cache resources (URLs)
                         // it fetches, so it's not used.
                         CachedImage(meta: pic, size: sizeInfo.sizePerItem, cache: viewModel.cacheSmall)
+                            .animation(.easeInOut)
 //                        AsyncImage(url: pic.meta.small)
                     }
                 }
