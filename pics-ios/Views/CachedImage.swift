@@ -46,7 +46,6 @@ struct CachedImage: View {
         self.cache = cache
         self.animate = animate
         self.anim = animate
-        log.info("Pic \(meta.key) animate \(animate)")
     }
     
     var localStorage: LocalPics { LocalPics.shared }
@@ -61,7 +60,6 @@ struct CachedImage: View {
         data = await picData()
         if let data = data {
             cache.put(key: meta.key, data: data)
-            log.info("De-animating")
             anim = false
         }
     }
