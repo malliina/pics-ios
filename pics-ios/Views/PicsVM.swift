@@ -22,6 +22,7 @@ protocol PicsVMLike: ObservableObject {
     var loginHandler: LoginHandler { get }
     var cacheSmall: DataCache { get }
     var cacheLarge: DataCache { get }
+    var animatePics: Bool { get }
     func prep() async
     func loadMore() async
     func loadPicsAsync(for user: Username?, initialOnly: Bool) async
@@ -49,6 +50,7 @@ extension PicsVM: PicsDelegate {
         }
         log.info("Adding \(picsToAdd.count) new pics.")
         let updated = picsToAdd.reversed() + self.pics
+        animatePics = true
         await savePics(newPics: updated)
     }
     
@@ -95,6 +97,7 @@ class PicsVM: PicsVMLike {
     @Published var pics: [PicMeta] = []
     
     @Published private(set) var hasMore = false
+    var animatePics = false
     private var isInitial = true
     
     @Published var showLogin = false
@@ -287,6 +290,7 @@ class PicsVM: PicsVMLike {
     }
     
     private func removeLocally(keys: [ClientKey]) async {
+        animatePics = true
         await savePics(newPics: self.pics.filter { pic in !keys.contains { key in
             pic.key == key
         }})
@@ -350,6 +354,7 @@ class PreviewPicsVM: PicsVMLike {
     var isPrivate: Bool = false
     var showLogin: Bool = false
     var showNewPass: Bool = false
+    var animatePics: Bool = false
     var loginHandler: LoginHandler = LoginHandler()
     var cacheSmall: DataCache = DataCache()
     var cacheLarge: DataCache = DataCache()

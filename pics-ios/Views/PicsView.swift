@@ -92,7 +92,8 @@ struct PicsView<T>: View where T: PicsVMLike {
             PicsColors.background
                 .edgesIgnoringSafeArea(.all)
             VStack(alignment: .center) {
-                Text("Take a pic when ready!").scaledToFill()
+                Text("Take a pic when ready!")
+                    .scaledToFill()
                     .foregroundColor(PicsColors.blueish2)
                 Spacer()
                 cameraButton
@@ -107,7 +108,12 @@ struct PicsView<T>: View where T: PicsVMLike {
             LazyVGrid(columns: columns) {
                 ForEach(Array(viewModel.pics.enumerated()), id: \.element.key) { index, pic in
                     NavigationLink {
-                        PicPagingView(pics: viewModel.pics, startIndex: index, isPrivate: user.isPrivate, delegate: PicViewDelegate(viewModel: viewModel), smalls: viewModel.cacheSmall, larges: viewModel.cacheLarge)
+                        PicPagingView(pics: viewModel.pics,
+                                      startIndex: index,
+                                      isPrivate: user.isPrivate,
+                                      delegate: PicViewDelegate(viewModel: viewModel),
+                                      smalls: viewModel.cacheSmall,
+                                      larges: viewModel.cacheLarge)
                             .background(backgroundColor)
                             .navigationBarHidden(picNavigationBarHidden)
                             .onTapGesture {
@@ -116,8 +122,8 @@ struct PicsView<T>: View where T: PicsVMLike {
                     } label: {
                         // SwiftUI comes with AsyncImage, but not sure how to cache resources (URLs)
                         // it fetches, so it's not used.
-                        CachedImage(meta: pic, size: sizeInfo.sizePerItem, cache: viewModel.cacheSmall)
-                            .animation(.easeInOut)
+                        CachedImage(meta: pic, size: sizeInfo.sizePerItem, cache: viewModel.cacheSmall, animate: viewModel.animatePics)
+//                            .animation(.easeInOut)
 //                        AsyncImage(url: pic.meta.small)
                     }
                 }
@@ -131,75 +137,75 @@ struct PicsView<T>: View where T: PicsVMLike {
     }
     
     func grid(geometry: GeometryProxy) -> some View {
-        return nonEmptyView(geometry: geometry)
-        .toolbar {
-            ToolbarItemGroup(placement: .navigationBarLeading) {
-                Button {
-                    showProfile.toggle()
-                } label: {
-                    Image(uiImage: #imageLiteral(resourceName: "ProfileIcon"))
-                        .renderingMode(.template)
-                }
-                Button {
-                    showHelp.toggle()
-                } label: {
-                    Image(uiImage: #imageLiteral(resourceName: "HelpIcon"))
-                        .renderingMode(.template)
-                }
-            }
-            ToolbarItem(placement: .principal) {
-                Text("Pics")
-                    .font(.headline)
-                    .foregroundColor(viewModel.isOnline ? titleColor : titleColor.opacity(0.4))
-            }
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                if isCameraAvailable {
+        nonEmptyView(geometry: geometry)
+            .toolbar {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
                     Button {
-                        showCamera.toggle()
+                        showProfile.toggle()
                     } label: {
-                        Image(systemName: "camera")
+                        Image(uiImage: #imageLiteral(resourceName: "ProfileIcon"))
+                            .renderingMode(.template)
+                    }
+                    Button {
+                        showHelp.toggle()
+                    } label: {
+                        Image(uiImage: #imageLiteral(resourceName: "HelpIcon"))
                             .renderingMode(.template)
                     }
                 }
-                Button {
-                    Task {
-                        await viewModel.reload()
+                ToolbarItem(placement: .principal) {
+                    Text("Pics")
+                        .font(.headline)
+                        .foregroundColor(viewModel.isOnline ? titleColor : titleColor.opacity(0.4))
+                }
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    if isCameraAvailable {
+                        Button {
+                            showCamera.toggle()
+                        } label: {
+                            Image(systemName: "camera")
+                                .renderingMode(.template)
+                        }
                     }
-                } label: {
-                    Image(systemName: "cloud")
-                        .renderingMode(.template)
+                    Button {
+                        Task {
+                            await viewModel.reload()
+                        }
+                    } label: {
+                        Image(systemName: "cloud")
+                            .renderingMode(.template)
+                    }
                 }
             }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showHelp) {
-            NavigationView {
-                HelpView(isPrivate: user.isPrivate)
-            }
-        }
-        .sheet(isPresented: $showProfile) {
-            ProfilePopoverView(user: user.activeUser, delegate: ProfileViewDelegate(viewModel: viewModel))
-        }
-        .sheet(isPresented: $viewModel.showLogin) {
-            NavigationView {
-                LoginView(handler: viewModel.loginHandler)
-            }
-        }
-        .sheet(isPresented: $viewModel.showNewPass) {
-            NavigationView {
-                NewPassView(handler: viewModel.loginHandler)
-            }
-        }
-        .fullScreenCover(isPresented: $showCamera) {
-            ImagePicker { meta, image in
-                Task {
-                    await viewModel.display(newPics: [meta])
+            .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showHelp) {
+                NavigationView {
+                    HelpView(isPrivate: user.isPrivate)
                 }
             }
-            .edgesIgnoringSafeArea(.all)
+            .sheet(isPresented: $showProfile) {
+                ProfilePopoverView(user: user.activeUser, delegate: ProfileViewDelegate(viewModel: viewModel))
+            }
+            .sheet(isPresented: $viewModel.showLogin) {
+                NavigationView {
+                    LoginView(handler: viewModel.loginHandler)
+                }
+            }
+            .sheet(isPresented: $viewModel.showNewPass) {
+                NavigationView {
+                    NewPassView(handler: viewModel.loginHandler)
+                }
+            }
+            .fullScreenCover(isPresented: $showCamera) {
+                ImagePicker { meta, image in
+                    Task {
+                        await viewModel.display(newPics: [meta])
+                    }
+                }
+                .edgesIgnoringSafeArea(.all)
+                .background(backgroundColor)
+            }
             .background(backgroundColor)
-        }
-        .background(backgroundColor)
     }
 }
 

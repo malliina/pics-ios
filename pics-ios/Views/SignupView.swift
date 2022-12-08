@@ -57,7 +57,7 @@ class SignupHandler: ObservableObject {
                 } else {
                     throw SignupError.unknown
                 }
-            } catch let error {
+            } catch {
                 log.info("\(error)")
                 let signupFailure = error as? SignupError ?? SignupError.unknown
                 await onFailure(signupFailure)

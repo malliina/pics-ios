@@ -38,11 +38,22 @@ struct CachedImage: View {
     let meta: PicMeta
     let size: CGSize
     let cache: DataCache
+    let animate: Bool
+    
+    init(meta: PicMeta, size: CGSize, cache: DataCache, animate: Bool) {
+        self.meta = meta
+        self.size = size
+        self.cache = cache
+        self.animate = animate
+        self.anim = animate
+        log.info("Pic \(meta.key) animate \(animate)")
+    }
     
     var localStorage: LocalPics { LocalPics.shared }
     
     @State var recovered: Bool = false
     @State var data: Data? = nil
+    @State private var anim = false
     
     @MainActor
     func loadImage() async {
@@ -50,6 +61,8 @@ struct CachedImage: View {
         data = await picData()
         if let data = data {
             cache.put(key: meta.key, data: data)
+            log.info("De-animating")
+            anim = false
         }
     }
     
@@ -79,7 +92,7 @@ struct CachedImage: View {
                 let _ = localStorage.saveSmall(data: data, key: key)
                 return data
             }
-        } catch let error {
+        } catch {
             log.error("Failed to download \(url). \(error)")
             return nil
         }
@@ -93,22 +106,27 @@ struct CachedImage: View {
                     .scaledToFill()
                     .frame(width: size.width, height: size.height)
                     .clipped()
+//                    .animation(anim ? .easeInOut : .none)
             } else {
-                ProgressView().frame(width: size.width, height: size.height).onAppear {
-                    if !recovered {
-                        Task {
-                            await handleError()
+                ProgressView()
+                    .frame(width: size.width, height: size.height)
+                    .onAppear {
+                        if !recovered {
+                            Task {
+                                await handleError()
+                            }
                         }
                     }
-                }
             }
         } else {
-            ProgressView().frame(width: size.width, height: size.height).onAppear {
-                // Not using .task, since it's cancelled when this view disappears
-                Task {
-                    await loadImage()
+            ProgressView()
+                .frame(width: size.width, height: size.height)
+                .onAppear {
+                    // Not using .task, since it's cancelled when this view disappears
+                    Task {
+                        await loadImage()
+                    }
                 }
-            }
         }
     }
 }
