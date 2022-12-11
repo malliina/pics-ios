@@ -7,9 +7,11 @@ struct PicView: View {
     
     let smalls: DataCache
     let larges: DataCache
+    @Binding var transitioning: Bool
     var backgroundColor: Color { isPrivate ? PicsColors.background : PicsColors.lightBackground }
     var downloader: Downloader { Downloader.shared }
     @State var data: Data? = nil
+    @State var isSharing = false
     
     @MainActor
     func loadImage() async {
@@ -43,7 +45,8 @@ struct PicView: View {
     var body: some View {
         ZStack {
             backgroundColor
-                .edgesIgnoringSafeArea(.all).task {
+                .edgesIgnoringSafeArea(.all)
+                .task {
                     await loadImage()
                 }
             if let data = data, let uiImage = UIImage(data: data) {

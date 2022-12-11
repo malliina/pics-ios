@@ -33,6 +33,99 @@ struct PicPagingView: UIViewControllerRepresentable {
     }
 }
 
+struct ShareRepresentable2: UIViewControllerRepresentable {
+    private let log = LoggerFactory.shared.view(ShareRepresentable2.self)
+    let meta: PicMeta
+    let larges: DataCache
+    @Binding var isPresenting: Bool
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+    
+    func makeUIViewController(context: Context) -> UIViewController {
+        UIViewController()
+    }
+    
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        if isPresenting {
+            let image = context.coordinator.shareable(pic: meta)
+            let imageUrl = meta.url
+            if image == nil {
+                log.warn("No image available, so sharing URL \(imageUrl).")
+            }
+            let activities = UIActivityViewController(activityItems: [image ?? imageUrl], applicationActivities: nil)
+            activities.popoverPresentationController?.sourceView = UIView()
+            activities.completionWithItemsHandler = { _, _, _, _ in
+                isPresenting = false
+            }
+            uiViewController.present(activities, animated: true)
+        }
+    }
+    
+    typealias UIViewControllerType = UIViewController
+    
+    class Coordinator {
+        let parent: ShareRepresentable2
+        
+        init(parent: ShareRepresentable2) {
+            self.parent = parent
+        }
+        
+        func shareable(pic: PicMeta) -> UIImage? {
+            if let cached = parent.larges.search(key: pic.key), let image = UIImage(data: cached) {
+                return image
+            } else {
+                return nil
+            }
+        }
+    }
+    
+}
+
+//struct ShareRepresentable: UIViewControllerRepresentable {
+//    private let log = LoggerFactory.shared.view(ShareRepresentable.self)
+//    let meta: PicMeta
+//    let larges: DataCache
+//    @Binding var isPresenting: Bool
+//
+//    func makeCoordinator() -> Coordinator {
+//        Coordinator(parent: self)
+//    }
+//
+//    func makeUIViewController(context: Context) -> UIActivityViewController {
+//        let image = context.coordinator.shareable(pic: meta)
+//        let imageUrl = meta.url
+//        if image == nil {
+//            log.warn("No image available, so sharing URL \(imageUrl).")
+//        }
+//        return UIActivityViewController(activityItems: [image ?? imageUrl], applicationActivities: nil)
+//    }
+//
+//    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {
+//
+//    }
+//
+//    typealias UIViewControllerType = UIActivityViewController
+//
+//    class Coordinator {
+//        let parent: ShareRepresentable
+//
+//        init(parent: ShareRepresentable) {
+//            self.parent = parent
+//        }
+//
+//        func shareable(pic: PicMeta) -> UIImage? {
+//            if let cached = parent.larges.search(key: pic.key), let image = UIImage(data: cached) {
+//                return image
+//            } else {
+//                return nil
+//            }
+//        }
+//    }
+//
+//}
+
 /// Swipe horizontally to show the next/previous image in the gallery.
 /// Uses a UIPageViewController for paging.
 class PicPagingVC: BaseVC {
@@ -68,7 +161,7 @@ class PicPagingVC: BaseVC {
     override func initUI() {
         updateNavBar(vc: self)
         navigationController?.setNavigationBarHidden(true, animated: true)
-        let vc = UIHostingController(rootView: PicView(meta: pics[index], isPrivate: isPrivate, smalls: smalls, larges: larges))
+        let vc = UIHostingController(rootView: PicView(meta: pics[index], isPrivate: isPrivate, smalls: smalls, larges: larges, transitioning: .constant(false)))
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
         pager.dataSource = self
         pager.delegate = self
@@ -235,7 +328,7 @@ extension PicPagingVC: UIPageViewControllerDataSource {
     
     private func go(to newIndex: Int) -> UIViewController? {
         if newIndex >= 0 && newIndex < pics.count {
-            return UIHostingController(rootView: PicView(meta: pics[newIndex], isPrivate: isPrivate, smalls: smalls, larges: larges))
+            return UIHostingController(rootView: PicView(meta: pics[newIndex], isPrivate: isPrivate, smalls: smalls, larges: larges, transitioning: .constant(false)))
         } else {
             return nil
         }

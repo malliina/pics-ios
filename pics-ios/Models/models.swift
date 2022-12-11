@@ -179,7 +179,9 @@ struct PicsResponse: Codable {
     let pics: [PicMeta]
 }
 
-struct PicMeta: Codable, Hashable {
+struct PicMeta: Codable, Hashable, Identifiable {
+    
+    
     static let Pic = "pic"
     static let Pics = "pics"
 //    private static let log = LoggerFactory.shared.system(PicsVM.self)
@@ -191,6 +193,8 @@ struct PicMeta: Codable, Hashable {
     let large: URL
     let added: Timestamp
     let clientKey: ClientKey?
+    
+    var id: String { key.value }
     
     static func ref(_ ref: PicRef) -> PicMeta? {
         let local = LocalPics.shared
