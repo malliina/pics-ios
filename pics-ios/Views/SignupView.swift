@@ -87,30 +87,15 @@ struct SignupView: View {
     
     var body: some View {
         ZStack {
-            PicsColors.background
+            color.background
                 .edgesIgnoringSafeArea(.all)
             VStack {
                 Spacer()
                 Text("A valid email address is required. The minimum password length is 7 characters.")
-                    .foregroundColor(PicsColors.almostLight)
-                TextField("Email", text: $username)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .padding()
-                    .background(PicsColors.inputBackground2)
-                    .padding()
-                SecureField("Password", text: $password)
-                    .autocapitalization(.none)
-                    .padding()
-                    .foregroundColor(PicsColors.almostLight)
-                    .background(PicsColors.inputBackground2)
-                    .padding(.horizontal)
-                SecureField("Repeat password", text: $passwordAgain)
-                    .autocapitalization(.none)
-                    .padding()
-                    .foregroundColor(PicsColors.almostLight)
-                    .background(PicsColors.inputBackground2)
-                    .padding(.horizontal)
+                    .foregroundColor(color.almostLight)
+                BoatTextField("Email", text: $username)
+                BoatPasswordField("Password", password: $password)
+                BoatPasswordField("Repeat password", password: $passwordAgain)
                 Button {
                     guard username != "" else { return }
                     guard password != "" else { return }
@@ -118,14 +103,7 @@ struct SignupView: View {
                     let creds = PasswordCredentials(user: username, pass: password)
                     handler.signUp(creds: creds)
                 } label: {
-                    Text("Sign up")
-                        .foregroundColor(PicsColors.blueish2)
-                        .frame(minWidth: 220)
-                        .font(.system(size: 20))
-                        .padding()
-                        .cornerRadius(40)
-                        .overlay(RoundedRectangle(cornerRadius: 40).stroke(PicsColors.blueish2, lineWidth: 2))
-                        .padding()
+                    ButtonText("Sign up")
                 }
                 Spacer()
             }
@@ -136,7 +114,7 @@ struct SignupView: View {
                         dismiss()
                     } label: {
                         Text("Cancel")
-                            .foregroundColor(PicsColors.blueish2)
+                            .foregroundColor(color.blueish2)
                     }
                 }
             }

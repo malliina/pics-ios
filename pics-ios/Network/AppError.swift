@@ -8,14 +8,14 @@ enum AppError: Error {
     case tokenError(Error)
     case noInternet(Error)
     
-    var describe: String { return AppError.stringify(self) }
+    var describe: String { AppError.stringify(self) }
     
     static func stringify(_ error: AppError) -> String {
-        return AppErrorUtil.stringify(error)
+        AppErrorUtil.stringify(error)
     }
     
     static func simple(_ message: String) -> AppError {
-        return AppError.simpleError(ErrorMessage(message))
+        AppError.simpleError(ErrorMessage(message))
     }
     
     static let noInternetMessage = "The Internet connection appears to be offline."
@@ -107,8 +107,8 @@ class HttpResponse {
     let http: HTTPURLResponse
     let data: Data
     
-    var statusCode: Int { return http.statusCode }
-    var isStatusOK: Bool { return statusCode >= 200 && statusCode < 300 }
+    var statusCode: Int { http.statusCode }
+    var isStatusOK: Bool { statusCode >= 200 && statusCode < 300 }
 
     var errors: [SingleError] {
         get {
@@ -118,7 +118,7 @@ class HttpResponse {
     }
     
     var isTokenExpired: Bool {
-        return errors.contains { $0.key == "token_expired" }
+        errors.contains { $0.key == "token_expired" }
     }
     
     init(http: HTTPURLResponse, data: Data) {

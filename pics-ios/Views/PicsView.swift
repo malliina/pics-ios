@@ -37,8 +37,8 @@ struct PicsView<T>: View where T: PicsVMLike {
     @State var activePic: PicMeta? = nil
     @State var shareablePic: PicMeta? = nil
     
-    var backgroundColor: Color { viewModel.isPrivate ? PicsColors.background : PicsColors.lightBackground }
-    var titleColor: Color { viewModel.isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    var backgroundColor: Color { viewModel.isPrivate ? color.background : color.lightBackground }
+    var titleColor: Color { viewModel.isPrivate ? color.almostLight : color.almostBlack }
     
     let user = User()
     let isCameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
@@ -63,7 +63,7 @@ struct PicsView<T>: View where T: PicsVMLike {
             }
             .padding()
             .frame(minWidth: 220)
-            .background(PicsColors.almostBlack)
+            .background(color.almostBlack)
             .cornerRadius(40)
         }
     }
@@ -97,12 +97,12 @@ struct PicsView<T>: View where T: PicsVMLike {
     
     private func emptyView() -> some View {
         ZStack {
-            PicsColors.background
+            color.background
                 .edgesIgnoringSafeArea(.all)
             VStack(alignment: .center) {
                 Text("Take a pic when ready!")
                     .scaledToFill()
-                    .foregroundColor(PicsColors.blueish2)
+                    .foregroundColor(color.blueish2)
                 Spacer()
                 cameraButton
             }

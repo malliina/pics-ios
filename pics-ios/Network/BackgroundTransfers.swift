@@ -210,9 +210,9 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
                 } else {
                     log.info("Not deleting \(file) of task \(id).")
                 }
-            } catch let err {
+            } catch {
                 if file.isFile {
-                    log.error("Failed to remove \(file) of task \(id). \(err)")
+                    log.error("Failed to remove \(file) of task \(id). \(error)")
                 } else {
                     log.error("Failed to remove \(file) of task \(id). The file does not exist.")
                     await Backend.shared.library.syncPicsForLatestUser()
@@ -230,7 +230,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         do {
             try self.fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
             dirSuccess = true
-        } catch _ {
+        } catch {
             dirSuccess = false
         }
         return dirSuccess ? destPath : nil

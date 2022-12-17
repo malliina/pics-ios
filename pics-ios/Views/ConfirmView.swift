@@ -78,39 +78,23 @@ struct ConfirmView: View {
     
     var body: some View {
         ZStack {
-            PicsColors.background
+            color.background
                 .edgesIgnoringSafeArea(.all)
             VStack {
                 Text("Enter the code sent to the provided email address.")
-                TextField("Username", text: .constant(handler.username))
+                BoatTextField("Username", text: .constant(handler.username))
                     .disabled(true)
-                    .autocapitalization(.none)
-                    .padding()
-                    .background(PicsColors.inputBackground2)
-                    .padding()
-                TextField("Code", text: $code)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .padding()
-                    .background(PicsColors.inputBackground2)
-                    .padding()
+                BoatTextField("Code", text: $code)
                 Button {
                     guard code != "" else { return }
                     handler.submit(code: code)
                 } label: {
-                    Text("Confirm")
-                        .foregroundColor(PicsColors.blueish2)
-                        .frame(minWidth: 220)
-                        .font(.system(size: 20))
-                        .padding()
-                        .cornerRadius(40)
-                        .overlay(RoundedRectangle(cornerRadius: 40).stroke(PicsColors.blueish2, lineWidth: 2))
-                        .padding()
+                    ButtonText("Confirm")
                 }
                 Button {
                     handler.resendCode()
                 } label: {
-                    Text("Resend code").foregroundColor(PicsColors.blueish2)
+                    Text("Resend code").foregroundColor(color.blueish2)
                 }
             }
             .frame(maxWidth: 400)

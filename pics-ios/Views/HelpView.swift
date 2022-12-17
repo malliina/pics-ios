@@ -5,8 +5,8 @@ struct HelpView: View {
     @Environment(\.dismiss) private var dismiss
     var uiTextColor: UIColor { isPrivate ? .lightText : .darkText }
     var textColor: Color { Color(uiTextColor) }
-    var titleColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
-    var backgroundColor: Color { isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    var titleColor: Color { isPrivate ? color.almostLight : color.almostBlack }
+    var backgroundColor: Color { isPrivate ? color.background : color.lightBackground }
     let bundleMeta = Bundle.main.infoDictionary
     
     var body: some View {

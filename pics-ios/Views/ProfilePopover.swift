@@ -22,7 +22,7 @@ struct ProfilePopoverView: View {
                 Text("Public gallery")
                 Spacer()
                 if !isPrivate {
-                    Image(systemName: "checkmark").foregroundColor(PicsColors.blueish2)
+                    Image(systemName: "checkmark").foregroundColor(color.blueish2)
                 }
             }.contentShape(Rectangle()).onTapGesture {
                 dismiss()
@@ -31,10 +31,10 @@ struct ProfilePopoverView: View {
                 }
             }
             HStack {
-                Text(user?.user ?? "Log in").foregroundColor(PicsColors.blueish2)
+                Text(user?.user ?? "Log in").foregroundColor(color.blueish2)
                 Spacer()
                 if isPrivate {
-                    Image(systemName: "checkmark").foregroundColor(PicsColors.blueish2)
+                    Image(systemName: "checkmark").foregroundColor(color.blueish2)
                 }
             }.contentShape(Rectangle()).onTapGesture {
                 Task {

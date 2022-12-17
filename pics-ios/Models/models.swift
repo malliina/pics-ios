@@ -180,8 +180,6 @@ struct PicsResponse: Codable {
 }
 
 struct PicMeta: Codable, Hashable, Identifiable {
-    
-    
     static let Pic = "pic"
     static let Pics = "pics"
 //    private static let log = LoggerFactory.shared.system(PicsVM.self)

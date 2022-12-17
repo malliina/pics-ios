@@ -8,7 +8,7 @@ struct PicView: View {
     let smalls: DataCache
     let larges: DataCache
     @Binding var transitioning: Bool
-    var backgroundColor: Color { isPrivate ? PicsColors.background : PicsColors.lightBackground }
+    var backgroundColor: Color { isPrivate ? color.background : color.lightBackground }
     var downloader: Downloader { Downloader.shared }
     @State var data: Data? = nil
     @State var isSharing = false

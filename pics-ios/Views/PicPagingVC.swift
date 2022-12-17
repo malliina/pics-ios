@@ -141,7 +141,7 @@ class PicPagingVC: BaseVC {
     let delegate: PicDelegate
     let smalls: DataCache
     let larges: DataCache
-    var titleTextColor: Color { isPrivate ? PicsColors.almostLight : PicsColors.almostBlack }
+    var titleTextColor: Color { isPrivate ? PicsColors.shared.almostLight : PicsColors.shared.almostBlack }
     
     init(pics: [PicMeta], startIndex: Int, isPrivate: Bool, delegate: PicDelegate, smalls: DataCache, larges: DataCache) {
         self.pics = pics

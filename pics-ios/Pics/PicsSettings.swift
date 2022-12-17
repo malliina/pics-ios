@@ -20,8 +20,8 @@ class PicsPrefs {
             }
             prefs.set(asString, forKey: key)
             return nil
-        } catch let err {
-            return ErrorMessage("Unable to encode to key '\(key)'. \(err)")
+        } catch {
+            return ErrorMessage("Unable to encode to key '\(key)'. \(error)")
         }
     }
     

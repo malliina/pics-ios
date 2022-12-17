@@ -100,51 +100,28 @@ struct LoginView: View {
             }
         } else {
             ZStack {
-                PicsColors.background
+                color.background
                     .edgesIgnoringSafeArea(.all)
                 VStack {
                     Spacer()
                     Text("Log in to your private gallery.")
                         .lineLimit(nil)
-                        .foregroundColor(PicsColors.almostLight)
+                        .foregroundColor(color.almostLight)
                         .padding(.horizontal)
-                    TextField("Username", text: $username)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
-                        .padding()
-                        .background(PicsColors.inputBackground2)
-                        .padding()
-                    SecureField("Password", text: $password)
-                        .autocapitalization(.none)
-                        .padding()
-                        .foregroundColor(PicsColors.almostLight)
-                        .background(PicsColors.inputBackground2)
-                        .padding(.horizontal)
+                    BoatTextField("Username", text: $username)
+                    BoatPasswordField("Password", password: $password)
                     Button {
                         log.info("Logging in with current input")
                         guard username != "", password != "" else { return }
                         handler.submit(credentials: PasswordCredentials(user: username, pass: password))
                     } label: {
-                        Text("Log in")
-                            .foregroundColor(PicsColors.blueish2)
-                            .frame(minWidth: 220)
-                            .font(.system(size: 20))
-                            .padding()
-                            .cornerRadius(40)
-                            .overlay(RoundedRectangle(cornerRadius: 40).stroke(PicsColors.blueish2, lineWidth: 2))
-                            .padding()
+                        ButtonText("Log in")
                     }
                     Spacer()
                     Button {
                         handler.showSignUp = true
                     } label: {
-                        Text("Sign up")
-                            .foregroundColor(PicsColors.blueish2)
-                            .frame(minWidth: 220)
-                            .padding()
-                            .cornerRadius(40)
-                            .overlay(RoundedRectangle(cornerRadius: 40).stroke(PicsColors.blueish2, lineWidth: 2))
-                            .padding()
+                        ButtonText("Sign up")
                     }
                 }
                 .frame(maxWidth: 400)
@@ -155,7 +132,7 @@ struct LoginView: View {
                             dismiss()
                         } label: {
                             Text("Cancel")
-                                .foregroundColor(PicsColors.blueish2)
+                                .foregroundColor(color.blueish2)
                         }
                     }
                 }.alert(isPresented: $handler.isAuthError) {

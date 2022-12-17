@@ -16,30 +16,18 @@ struct NewPassView: View {
                     dismiss()
                 }
             }
-            PicsColors.background
+            color.background
                 .edgesIgnoringSafeArea(.all)
             VStack {
                 Spacer()
                 Text("Enter a new password.")
-                    .foregroundColor(PicsColors.almostLight)
-                SecureField("Password", text: $password)
-                    .autocapitalization(.none)
-                    .padding()
-                    .foregroundColor(PicsColors.almostLight)
-                    .background(PicsColors.inputBackground2)
-                    .padding(.horizontal)
+                    .foregroundColor(color.almostLight)
+                BoatPasswordField("Password", password: $password)
                 Button {
                     guard password != "" else { return }
                     handler.save(password: password)
                 } label: {
-                    Text("Save")
-                        .foregroundColor(PicsColors.blueish2)
-                        .frame(minWidth: 220)
-                        .font(.system(size: 20))
-                        .padding()
-                        .cornerRadius(40)
-                        .overlay(RoundedRectangle(cornerRadius: 40).stroke(PicsColors.blueish2, lineWidth: 2))
-                        .padding()
+                    ButtonText("Save")
                 }
                 Spacer()
             }
