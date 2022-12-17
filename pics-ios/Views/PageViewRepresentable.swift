@@ -1,21 +1,131 @@
 import Foundation
+import MessageUI
 import SwiftUI
 
-struct PageViewRepresentable: UIViewControllerRepresentable {
+struct PicPageView<T>: View where T: PicsVMLike {
+    private let log = LoggerFactory.shared.view(PicPageView.self)
+    @Environment(\.dismiss) private var dismiss
+    
+    @ObservedObject var viewModel: T
+    let startIndex: Int
+    let isPrivate: Bool
+    @Binding var active: PicMeta?
+    
+    @State var showActions = false
+    @State var showShare = false
+    @State var showEmail = false
+    @State var showAbuseInstructions = false
+    
+    init(viewModel: T, startIndex: Int, isPrivate: Bool, active: Binding<PicMeta?>) {
+        self.viewModel = viewModel
+        self.startIndex = startIndex
+        self.isPrivate = isPrivate
+        self._active = active
+    }
+    
+    var body: some View {
+        PageViewRepresentable(viewModel: viewModel, startIndex: startIndex, isPrivate: isPrivate, active: $active)
+            .navigationTitle(title())
+            .toolbar {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        showActions.toggle()
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                            .renderingMode(.template)
+                    }
+                    .confirmationDialog("Actions for this image", isPresented: $showActions, titleVisibility: .visible, presenting: active) { meta in
+                        if isPrivate {
+                            Button("Delete image", role: .destructive) {
+                                dismiss()
+                                Task {
+                                    await viewModel.remove(key: meta.key)
+                                }
+                            }
+                        }
+                        Button("Copy link URL") {
+                            UIPasteboard.general.string = meta.url.absoluteString
+                        }
+                        Button("Open in Safari") {
+                            if !meta.url.isFileURL {
+                                UIApplication.shared.open(meta.url)
+                            } else {
+                                log.warn("Refusing to open a file URL in browser.")
+                            }
+                        }
+                        Button("Report objectionable content") {
+                            if MFMailComposeViewController.canSendMail() {
+                                showEmail.toggle()
+                            } else {
+                                showAbuseInstructions.toggle()
+                            }
+                        }
+                        Button("Hide from this device") {
+                            dismiss()
+                            Task {
+                                await viewModel.block(key: meta.key)
+                            }
+                        }
+                    }
+                    .sheet(isPresented: $showEmail) {
+                        if let active = active {
+                            MailRepresentable(meta: active, showEmail: $showEmail)
+                        }
+                    }
+                    .alert("Report Objectionable Content", isPresented: $showAbuseInstructions, presenting: active) { meta in
+                        Button("OK") {
+                            showAbuseInstructions.toggle()
+                        }
+                    } message: { meta in
+                        Text("Report objectionable content to \(MailRepresentable.abuseEmail). For reference, the image ID is: \(meta.key.key).")
+                    }
+                    Button {
+                        showShare.toggle()
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .renderingMode(.template)
+                    }
+                    .popover(isPresented: $showShare) {
+                        if let meta = active {
+                            ShareRepresentable(meta: meta, larges: viewModel.cacheLarge, isPresenting: $showShare)
+                        }
+                    }
+                }
+            }
+    }
+    
+    func title() -> String {
+        if let pic = active {
+            return title(pic: pic)
+        } else {
+            return ""
+//            return title(pic: viewModel.pics[startIndex])
+        }
+    }
+
+    func title(pic: PicMeta) -> String {
+        let d = Date(timeIntervalSince1970: Double(pic.added) / 1000)
+        let df = DateFormatter()
+        df.dateFormat = "y-MM-dd H:mm"
+        return df.string(from: d)
+    }
+}
+
+struct PageViewRepresentable<T>: UIViewControllerRepresentable where T: PicsVMLike {
     private let log = LoggerFactory.shared.view(PageViewRepresentable.self)
     @Environment(\.dismiss) private var dismiss
-    let pics: [PicMeta]
+    @ObservedObject var viewModel: T
+    var pics: [PicMeta] { viewModel.pics }
     let startIndex: Int
-    @Binding var active: PicMeta?
     let isPrivate: Bool
-//    let delegate: PicDelegate
-    let smalls: DataCache
-    let larges: DataCache
+    @Binding var active: PicMeta?
     @State var transitioning = false
+    var smalls: DataCache { viewModel.cacheSmall }
+    var larges: DataCache { viewModel.cacheLarge }
+    
     
     func makeUIViewController(context: Context) -> UIPageViewController {
         let pager = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
-        let initialPic = pics[startIndex]
         let vc = UIHostingController(rootView: PicView(meta: pics[startIndex], isPrivate: isPrivate, smalls: smalls, larges: larges, transitioning: $transitioning))
         pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
         pager.delegate = context.coordinator
@@ -23,30 +133,11 @@ struct PageViewRepresentable: UIViewControllerRepresentable {
         let swipeRecognizer = UISwipeGestureRecognizer(target: context.coordinator, action: #selector(context.coordinator.onSwipeUp(_:)))
         swipeRecognizer.direction = .up
         pager.view.addGestureRecognizer(swipeRecognizer)
-        active = initialPic
+        active = pics[startIndex]
         return pager
     }
     
     func updateUIViewController(_ uiViewController: UIPageViewController, context: Context) {
-        guard let parent = uiViewController.parent else { return }
-        context.coordinator.vc = parent
-        updateNavBar(vc: parent, context: context)
-    }
-    
-    func updateNavBar(vc: UIViewController, context: Context) {
-        if let p = active {
-            log.info("Updating \(p.key.value)")
-            let d = Date(timeIntervalSince1970: Double(p.added) / 1000)
-            let df = DateFormatter()
-            df.dateFormat = "y-MM-dd H:mm"
-            vc.navigationItem.title = df.string(from: d)
-            vc.navigationItem.rightBarButtonItems = [
-                UIBarButtonItem(barButtonSystemItem: .action, target: context.coordinator, action: #selector(context.coordinator.shareClicked(_:))),
-                UIBarButtonItem(barButtonSystemItem: .compose, target: context.coordinator, action: #selector(context.coordinator.actionsClicked(_:)))
-            ]
-        } else {
-            log.info("Nothing to update.")
-        }
     }
     
     typealias UIViewControllerType = UIPageViewController
@@ -64,7 +155,6 @@ struct PageViewRepresentable: UIViewControllerRepresentable {
             self.parent = parent
             self.index = index
         }
-        var vc: UIViewController? = nil
         
         var pics: [PicMeta] { parent.pics }
         var isPrivate: Bool { parent.isPrivate }
@@ -73,77 +163,12 @@ struct PageViewRepresentable: UIViewControllerRepresentable {
             parent.dismiss()
         }
         
-        @objc func shareClicked(_ button: UIBarButtonItem) {
-            if index < pics.count {
-                let pic = pics[index]
-                let imageUrl = pic.url
-                let image = shareable(pic: pic)
-                if image == nil {
-                    log.warn("No image available, so sharing URL \(imageUrl).")
-                }
-                let activities = UIActivityViewController(activityItems: [image ?? imageUrl], applicationActivities: nil)
-                activities.popoverPresentationController?.barButtonItem = button
-                vc?.present(activities, animated: true, completion: nil)
-            } else {
-                self.log.warn("No image to share.")
-            }
-        }
-        
-        @objc func actionsClicked(_ button: UIBarButtonItem) {
-            if index < pics.count {
-                let meta = pics[index]
-                let key = meta.key
-                let content = UIAlertController(title: "Actions for this image", message: nil, preferredStyle: .actionSheet)
-                content.popoverPresentationController?.barButtonItem = button
-                if isPrivate {
-                    content.addAction(UIAlertAction(title: "Delete image", style: .destructive) { action in
-//                        self.goToPics()
-                        Task {
-//                            await self.delegate.remove(key: key)
-                        }
-                    })
-                }
-                content.addAction(UIAlertAction(title: "Copy link URL", style: .default) { action in
-                    UIPasteboard.general.string = meta.url.absoluteString
-                })
-                content.addAction(UIAlertAction(title: "Open in Safari", style: .default) { action in
-                    if !meta.url.isFileURL {
-                        UIApplication.shared.open(meta.url)
-                    } else {
-                        self.log.warn("Refusing to open a file URL in browser.")
-                    }
-                })
-                content.addAction(UIAlertAction(title: "Report objectionable content", style: .default) { action in
-//                    self.openReportAbuse(key: key)
-                })
-                content.addAction(UIAlertAction(title: "Hide from this device", style: .default) { action in
-//                    self.goToPics()
-                    Task {
-//                        await self.delegate.block(key: key)
-                    }
-                })
-                content.addAction(UIAlertAction(title: "Cancel", style: .cancel) { action in
-                    
-                })
-                vc?.present(content, animated: true, completion: nil)
-            }
-        }
-        
-        private func shareable(pic: PicMeta) -> UIImage? {
-            if let cached = parent.larges.search(key: pic.key), let image = UIImage(data: cached) {
-                return image
-            } else {
-                return nil
-            }
-        }
-        
         // UIPageViewControllerDelegate
         func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
-            log.info("Will transition")
             parent.transitioning = true
         }
+        
         func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
-            log.info("Transition \(completed)")
             if completed {
                 parent.transitioning = false
                 guard let hosting = pageViewController.viewControllers?.first as? UIHostingController<PicView> else {
@@ -154,8 +179,6 @@ struct PageViewRepresentable: UIViewControllerRepresentable {
                 guard let newIndex = self.pics.firstIndex(where: { p in p.key == current.meta.key || (p.clientKey != nil && p.clientKey == current.meta.clientKey) }) else { return }
                 index = newIndex
                 parent.active = pics[index]
-//                guard let parent = pageViewController.parent?.parent else { return }
-//                updateNavBar(vc: parent)
             }
         }
         

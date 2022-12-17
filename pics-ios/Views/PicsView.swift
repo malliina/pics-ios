@@ -2,22 +2,6 @@ import Foundation
 import SwiftUI
 import AWSCognitoIdentityProvider
 
-class PicViewDelegate <T> : PicDelegate where T: PicsVMLike {
-    let viewModel: T
-    
-    init(viewModel: T) {
-        self.viewModel = viewModel
-    }
-    
-    func remove(key: ClientKey) async {
-        await viewModel.remove(key: key)
-    }
-    
-    func block(key: ClientKey) async {
-        await viewModel.block(key: key)
-    }
-}
-
 struct PicsView<T>: View where T: PicsVMLike {
     let log = LoggerFactory.shared.vc(PicsView.self)
     
@@ -34,8 +18,7 @@ struct PicsView<T>: View where T: PicsVMLike {
     @State var showLogin = false
     @State var showNewPass = false
     
-    @State var activePic: PicMeta? = nil
-    @State var shareablePic: PicMeta? = nil
+    @State var active: PicMeta? = nil
     
     var backgroundColor: Color { viewModel.isPrivate ? color.background : color.lightBackground }
     var titleColor: Color { viewModel.isPrivate ? color.almostLight : color.almostBlack }
@@ -78,9 +61,6 @@ struct PicsView<T>: View where T: PicsVMLike {
                     .overlay(alignment: .bottom) {
                         cameraButton.padding(.bottom, Devices.isIpad ? 24 : 0)
                     }
-//                    .sheet(item: $shareablePic) { pic in
-//                        ShareRepresentable(meta: pic, larges: viewModel.cacheLarge)
-//                    }
             }
         }
         .onChange(of: scenePhase) { phase in
@@ -116,13 +96,11 @@ struct PicsView<T>: View where T: PicsVMLike {
             LazyVGrid(columns: columns) {
                 ForEach(Array(viewModel.pics.enumerated()), id: \.element.key) { index, pic in
                     NavigationLink {
-                        PageViewRepresentable(pics: viewModel.pics,
-                                              startIndex: index,
-                                              active: $activePic,
-                                              isPrivate: user.isPrivate,
-        //                                      delegate: PicViewDelegate(viewModel: viewModel),
-                                              smalls: viewModel.cacheSmall,
-                                              larges: viewModel.cacheLarge)
+                        PicPageView(viewModel: viewModel,
+                                    startIndex: index,
+                                    isPrivate: user.isPrivate,
+                                    active: $active
+                        )
                             .background(backgroundColor)
                             .navigationBarHidden(picNavigationBarHidden)
                             .onTapGesture {
@@ -143,14 +121,6 @@ struct PicsView<T>: View where T: PicsVMLike {
                 }
             }.font(.largeTitle)
         }
-    }
-    
-    private func activeTitle() -> String? {
-        guard let p = activePic else { return nil }
-        let d = Date(timeIntervalSince1970: Double(p.added) / 1000)
-        let df = DateFormatter()
-        df.dateFormat = "y-MM-dd H:mm"
-        return df.string(from: d)
     }
     
     func grid(geometry: GeometryProxy) -> some View {
