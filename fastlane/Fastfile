@@ -22,16 +22,16 @@ platform :ios do
 
   desc "Build and upload"
   lane :upload do
-    setup_ci if ENV['CI']
+    setup_ci
     unlock_keychain(
-      path: "fastlane_tmp_keychain",
+      path: "fastlane_tmp_chain",
       password: "",
       set_default: true
     )
     import_certificate(
       certificate_path: "./certificate.p12",
       certificate_password: ENV["CERTIFICATE_PASSWORD"],
-      keychain_name: "fastlane_tmp_keychain",
+      keychain_name: "fastlane_tmp_chain",
       keychain_password: "",
       log_output: true
     )
