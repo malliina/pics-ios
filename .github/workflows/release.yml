@@ -20,6 +20,7 @@ jobs:
           echo "$CREDENTIALS_PLIST" > ~/.apple/Credentials.plist.b64
           base64 -d -i ~/.apple/Credentials.plist.b64 > pics-ios/Credentials.plist
           ls -al ~/.apple/
+          security find-identity -v -p codesigning
         env:
           APPSTORE_CONNECT_API_KEY: ${{ secrets.APPSTORE_CONNECT_API_KEY }}
           CERTIFICATE_P12: ${{ secrets.CERTIFICATE_P12 }}
