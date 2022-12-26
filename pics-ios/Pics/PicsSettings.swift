@@ -70,7 +70,7 @@ class PicsSettings {
     init() {
     }
     
-    func key(for user: Username) -> String { "v2-pics-\(user.encoded())" }
+    func key(for user: Username) -> String { "v3-pics-\(user.encoded())" }
     
     var isPrivate: Bool {
         get { prefs.bool(forKey: IsPublic) }
@@ -135,7 +135,7 @@ class PicsSettings {
     }
     
     func save(pics: [PicMeta], for user: Username) -> ErrorMessage? {
-        let refs = pics.map { pic in PicRef(filename: pic.url.lastPathComponent, added: pic.added) }
+        let refs = pics.map { pic in PicRef(filename: pic.url.lastPathComponent, access: pic.access, added: pic.added) }
         return prefs.save(PicRefs(pics: refs), key: key(for: user ))
     }
     

@@ -29,6 +29,7 @@ protocol PicsVMLike: ObservableObject {
     func display(newPics: [PicMeta]) async
     func remove(key: ClientKey) async
     func block(key: ClientKey) async
+    func modify(meta: PicMeta, access: AccessValue) async -> PicMeta?
     func resetData() async
     func reload() async
     func onPublic() async
@@ -42,16 +43,14 @@ protocol PicsVMLike: ObservableObject {
 extension PicsVM: PicsDelegate {
     func onPics(pics: [PicMeta]) async {
         let (existingPics, newPics) = pics.partition(contains)
-        existingPics.forEach { meta in
-            updateMeta(pic: meta)
-        }
+        let updated = updateMeta(updateds: existingPics)
         let picsToAdd = newPics.filter { pic in
             !isBlocked(pic: pic)
         }
         log.info("Adding \(picsToAdd.count) new pics.")
-        let updated = picsToAdd.reversed() + self.pics
+        let newList = picsToAdd.reversed() + updated
         animatePics = true
-        await savePics(newPics: updated)
+        await savePics(newPics: newList)
     }
     
     func onPicsRemoved(keys: [ClientKey]) async {
@@ -62,18 +61,19 @@ extension PicsVM: PicsDelegate {
         
     }
     
-    private func updateMeta(pic: PicMeta) {
-        log.info("Metadata update not supported currently for \(pic.key).")
-//        if let clientKey = pic.clientKey, let idx = indexFor(clientKey) {
-//          self.pics[idx] = self.pics[idx].withMeta(meta: pic)
-//        } else {
-//            log.info("Cannot update \(pic.key), pic not found in memory.")
-//        }
+    func updateMeta(updateds: [PicMeta]) -> [PicMeta] {
+        var old = self.pics
+        updateds.forEach { pic in
+            if let idx = indexFor(pic.clientKey ?? pic.key) {
+                old[idx] = pic
+            }
+        }
+        return old
     }
     
     private func indexFor(_ clientKey: ClientKey) -> Int? {
         self.pics.firstIndex(where: { (p) -> Bool in
-            p.clientKey == clientKey
+            p.key == clientKey || p.clientKey == clientKey
         })
     }
     
@@ -234,7 +234,7 @@ class PicsVM: PicsVMLike {
                     log.info("Loading anon pics...")
                     try await load(with: nil)
                 }
-            } catch let error {
+            } catch {
                 onLoadError(error: error)
             }
         }
@@ -273,14 +273,28 @@ class PicsVM: PicsVMLike {
         await removeLocally(keys: [key])
         do {
             let _ = try await library.delete(key: key)
-        } catch let err {
-            self.log.error("Failed to delete \(key). \(err)")
+        } catch {
+            self.log.error("Failed to delete \(key). \(error)")
         }
     }
     
     func block(key: ClientKey) async {
         settings.block(key: key)
         await removeLocally(keys: [key])
+    }
+    
+    func modify(meta: PicMeta, access: AccessValue) async -> PicMeta? {
+        let key = meta.key
+        do {
+            let _ = try await library.http.modify(key: meta.key, access: access)
+            log.info("Modified access of \(key) to \(access.value).")
+            let updated = meta.with(newAccess: access)
+            await savePics(newPics: updateMeta(updateds: [updated]))
+            return updated
+        } catch {
+            log.error("Failed to modify access of \(key) to \(access.value). \(error)")
+            return nil
+        }
     }
     
     func display(newPics: [PicMeta]) async {
@@ -370,6 +384,7 @@ class PreviewPicsVM: PicsVMLike {
     func signOut() { }
     func remove(key: ClientKey) { }
     func block(key: ClientKey) { }
+    func modify(meta: PicMeta, access: AccessValue) async -> PicMeta? { return nil }
     func display(newPics: [PicMeta]) { }
     func reInit() { }
     func changeStyle(dark: Bool) { }

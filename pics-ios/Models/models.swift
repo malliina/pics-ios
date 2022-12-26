@@ -155,15 +155,38 @@ struct ClientKey: Equatable, Hashable, CustomStringConvertible, ValueCodable {
     }
 }
 
-struct AccessToken: Equatable, Hashable, CustomStringConvertible {
+struct AccessToken: Hashable, CustomStringConvertible {
     let token: String
     var description: String { token }
     
     static func == (lhs: AccessToken, rhs: AccessToken) -> Bool { lhs.token == rhs.token }
 }
 
+struct AccessValue: Hashable, CustomStringConvertible, ValueCodable {
+    static let priv = AccessValue("private")
+    static let pub = AccessValue("public")
+    let access: String
+    var value: String { access }
+    var picAccess: PicAccess {
+        switch value {
+        case AccessValue.priv.value: return .privateAccess
+        case AccessValue.pub.value: return .publicAccess
+        default: return .other
+        }
+    }
+    init(_ value: String) {
+        self.access = value
+    }
+    static func == (lhs: AccessValue, rhs: AccessValue) -> Bool { lhs.value == rhs.value }
+}
+
+enum PicAccess: String {
+    case privateAccess, publicAccess, other
+}
+
 struct PicRef: Codable {
     let filename: String
+    let access: AccessValue
     let added: Timestamp
 }
 
@@ -191,7 +214,8 @@ struct PicMeta: Codable, Hashable, Identifiable {
     let large: URL
     let added: Timestamp
     let clientKey: ClientKey?
-    
+    let access: AccessValue
+    var visibility: PicAccess { access.picAccess }
     var id: String { key.value }
     
     static func ref(_ ref: PicRef) -> PicMeta? {
@@ -201,19 +225,23 @@ struct PicMeta: Codable, Hashable, Identifiable {
         let smallUrl = local.findSmallUrl(key: key)
 //        log.info("Ref \(ref.filename) key \(key) url \(url) small \(smallUrl)")
         guard let large = url ?? smallUrl else { return nil }
-        return PicMeta(key: key, url: large, small: smallUrl ?? large, medium: large, large: large, added: ref.added, clientKey: key)
+        return PicMeta(key: key, url: large, small: smallUrl ?? large, medium: large, large: large, added: ref.added, clientKey: key, access: ref.access)
     }
     
-    static func oneUrl(key: ClientKey, url: URL, added: Timestamp, clientKey: ClientKey?) -> PicMeta {
-        PicMeta(key: key, url: url, small: url, medium: url, large: url, added: added, clientKey: clientKey)
+    static func oneUrl(key: ClientKey, url: URL, added: Timestamp, clientKey: ClientKey?, access: AccessValue) -> PicMeta {
+        PicMeta(key: key, url: url, small: url, medium: url, large: url, added: added, clientKey: clientKey, access: access)
     }
     
-    static func local(url: URL, key: ClientKey) -> PicMeta {
-        PicMeta.oneUrl(key: key, url: url, added: nowMillis(), clientKey: key)
+    static func local(url: URL, key: ClientKey, access: AccessValue) -> PicMeta {
+        PicMeta.oneUrl(key: key, url: url, added: nowMillis(), clientKey: key, access: access)
     }
     
     func withUrl(url: URL) -> PicMeta {
-        PicMeta.oneUrl(key: key, url: url, added: added, clientKey: clientKey)
+        PicMeta.oneUrl(key: key, url: url, added: added, clientKey: clientKey, access: access)
+    }
+    
+    func with(newAccess: AccessValue) -> PicMeta {
+        PicMeta(key: key, url: url, small: small, medium: medium, large: large, added: added, clientKey: clientKey, access: newAccess)
     }
     
     static func nowMillis() -> Timestamp {

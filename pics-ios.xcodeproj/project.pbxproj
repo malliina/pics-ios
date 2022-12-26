@@ -58,6 +58,7 @@
 		B03F58A929463010006B5DC1 /* PageViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03F58A829463010006B5DC1 /* PageViewRepresentable.swift */; };
 		B050BCCE294DE4890092A45D /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = B050BCCD294DE4890092A45D /* Components.swift */; };
 		B050BCD0294E124C0092A45D /* MailRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B050BCCF294E124C0092A45D /* MailRepresentable.swift */; };
+		B059052A2959D0AF003546A7 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B05905292959D0AF003546A7 /* Models.swift */; };
 		B0B85EB328F209D500C4B8FF /* AppCenterAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */; };
 		B0B85EB528F209D500C4B8FF /* AppCenterCrashes in Frameworks */ = {isa = PBXBuildFile; productRef = B0B85EB428F209D500C4B8FF /* AppCenterCrashes */; };
 		B0B85EB728F328D100C4B8FF /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */; };
@@ -142,6 +143,7 @@
 		B03F58A829463010006B5DC1 /* PageViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageViewRepresentable.swift; sourceTree = "<group>"; };
 		B050BCCD294DE4890092A45D /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		B050BCCF294E124C0092A45D /* MailRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailRepresentable.swift; sourceTree = "<group>"; };
+		B05905292959D0AF003546A7 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		B0ECFFB128C37D4900CFA757 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		B0ECFFB328C3BE0100CFA757 /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
@@ -256,6 +258,7 @@
 				61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */,
 				61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */,
 				7D62E9E6266BF5C600380475 /* WebSocket.swift */,
+				B05905292959D0AF003546A7 /* Models.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -308,17 +311,17 @@
 				7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */,
 				7DA4A015289BEFB5005FD842 /* ImagePicker.swift */,
 				B0ECFFB128C37D4900CFA757 /* LoginView.swift */,
+				B050BCCF294E124C0092A45D /* MailRepresentable.swift */,
 				B0FA092528C66A1200F6356E /* NewPassView.swift */,
 				61D214C11FD4570500781DC7 /* OneLinerView.swift */,
 				B03F58A829463010006B5DC1 /* PageViewRepresentable.swift */,
-				61A9C4BF1FF271D30085BA25 /* ShareRepresentable.swift */,
 				7D20883C28318FC9005C0BBA /* PicsView.swift */,
 				7D20883E2835684F005C0BBA /* PicsVM.swift */,
 				7D6BF6E5280F48FD007C5FD5 /* PicView.swift */,
 				615647F0201C9EEA000E3BBD /* ProfilePopover.swift */,
 				61D214B51FD2ABB300781DC7 /* RememberMe.swift */,
+				61A9C4BF1FF271D30085BA25 /* ShareRepresentable.swift */,
 				B0ECFFB328C3BE0100CFA757 /* SignupView.swift */,
-				B050BCCF294E124C0092A45D /* MailRepresentable.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -537,6 +540,7 @@
 				61EB2D8B1FEEDAB200A27F1A /* Tokens.swift in Sources */,
 				7D6BF6E4280DE3C5007C5FD5 /* HelpView.swift in Sources */,
 				B0FA092428C4A6C400F6356E /* ConfirmView.swift in Sources */,
+				B059052A2959D0AF003546A7 /* Models.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1033,19 +1037,14 @@
 			package = 7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
 			productName = AWSCognitoIdentityProvider;
 		};
-		7D175C5A27C018E50050E29B /* SnapKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 7D175C5927C018E50050E29B /* XCRemoteSwiftPackageReference "SnapKit.git" */;
-			productName = SnapKit;
-		};
 		B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterAnalytics;
 		};
 		B0B85EB428F209D500C4B8FF /* AppCenterCrashes */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterCrashes;
 		};
 /* End XCSwiftPackageProductDependency section */

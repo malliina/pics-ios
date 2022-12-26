@@ -30,6 +30,7 @@ struct ImagePicker: UIViewControllerRepresentable {
         let log = LoggerFactory.shared.vc(Coordinator.self)
         
         var library: PicsLibrary { Backend.shared.library }
+        var local: LocalPics { LocalPics.shared }
         let user = User()
         
         let parent: ImagePicker
@@ -80,9 +81,9 @@ struct ImagePicker: UIViewControllerRepresentable {
             if let user = user.activeUser {
                 log.info("Staging then uploading image taken by \(user)...")
                 // Copies the picture to a staging folder
-                let _ = try LocalPics.shared.saveUserPicToStaging(data: data, owner: user, key: clientKey)
-                let originalUrl = try LocalPics.shared.saveOriginal(data: data, owner: user, key: clientKey)
-                let meta = PicMeta.local(url: originalUrl, key: clientKey)
+                let _ = try local.saveUserPicToStaging(data: data, owner: user, key: clientKey)
+                let originalUrl = try local.saveOriginal(data: data, owner: user, key: clientKey)
+                let meta = PicMeta.local(url: originalUrl, key: clientKey, access: AccessValue.priv)
                 parent.onImage(meta, originalImage)
                 // Attempts to obtain a token and upload the pic
                 Task {
@@ -90,8 +91,8 @@ struct ImagePicker: UIViewControllerRepresentable {
                 }
             } else {
                 // Anonymous upload
-                let url = try LocalPics.shared.saveAsJpg(data: data, key: clientKey)
-                let meta = PicMeta.local(url: url, key: clientKey)
+                let url = try local.saveAsJpg(data: data, key: clientKey)
+                let meta = PicMeta.local(url: url, key: clientKey, access: AccessValue.pub)
                 parent.onImage(meta, originalImage)
                 library.uploadPic(picture: url, clientKey: clientKey)
             }

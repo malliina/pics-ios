@@ -36,10 +36,12 @@ struct PicPageView<T>: View where T: PicsVMLike {
                     }
                     .confirmationDialog("Actions for this image", isPresented: $showActions, titleVisibility: .visible, presenting: active) { meta in
                         if isPrivate {
-                            Button("Delete image", role: .destructive) {
-                                dismiss()
+                            let access = meta.visibility == .publicAccess ? AccessValue.priv : AccessValue.pub
+                            Button("Make \(access.value)") {
                                 Task {
-                                    await viewModel.remove(key: meta.key)
+                                    if let updated = await viewModel.modify(meta: meta, access: access) {
+                                        active = updated
+                                    }
                                 }
                             }
                         }
@@ -64,6 +66,14 @@ struct PicPageView<T>: View where T: PicsVMLike {
                             dismiss()
                             Task {
                                 await viewModel.block(key: meta.key)
+                            }
+                        }
+                        if isPrivate {
+                            Button("Delete image", role: .destructive) {
+                                dismiss()
+                                Task {
+                                    await viewModel.remove(key: meta.key)
+                                }
                             }
                         }
                     }
@@ -122,7 +132,6 @@ struct PageViewRepresentable<T>: UIViewControllerRepresentable where T: PicsVMLi
     @State var transitioning = false
     var smalls: DataCache { viewModel.cacheSmall }
     var larges: DataCache { viewModel.cacheLarge }
-    
     
     func makeUIViewController(context: Context) -> UIPageViewController {
         let pager = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)

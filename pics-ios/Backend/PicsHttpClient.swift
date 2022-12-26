@@ -1,11 +1,3 @@
-//
-//  PicsHttpClient.swift
-//  pics-ios
-//
-//  Created by Michael Skogberg on 26/11/2017.
-//  Copyright © 2017 Michael Skogberg. All rights reserved.
-//
-
 import Foundation
 import AWSCognitoIdentityProvider
 
@@ -70,17 +62,22 @@ class PicsHttpClient: HttpClient {
     
     func picsGet(_ resource: String) async throws -> HttpResponse {
         let url = urlFor(resource: resource)
-        return try await statusChecked(resource, response: self.get(url, headers: defaultHeaders))
+        return try await statusChecked(response: self.get(url, headers: defaultHeaders))
     }
     
     func picsPost(_ resource: String, payload: Data, clientKey: ClientKey) async throws -> HttpResponse {
         let url = urlFor(resource: resource)
-        return try await statusChecked(resource, response: self.postData(url, headers: headersFor(clientKey: clientKey), payload: payload))
+        return try await statusChecked(response: self.postData(url, headers: headersFor(clientKey: clientKey), payload: payload))
     }
     
     func picsDelete(_ resource: String) async throws -> HttpResponse {
         let url = URL(string: resource, relativeTo: baseURL)!
-        return try await statusChecked(resource, response: self.delete(url, headers: defaultHeaders))
+        return try await statusChecked(response: self.delete(url, headers: defaultHeaders))
+    }
+    
+    func modify(key: ClientKey, access: AccessValue) async throws -> HttpResponse {
+        let req = try build(path: "/pics/\(key)", method: HttpClient.post, body: ModifyBody(access: access))
+        return try await make(request: req)
     }
     
     func urlFor(resource: String) -> URL {
@@ -91,12 +88,30 @@ class PicsHttpClient: HttpClient {
         postHeaders.merging([PicsHttpClient.ClientPicHeader: clientKey.key]) { (current, _) in current }
     }
     
-    func statusChecked(_ resource: String, response: HttpResponse) throws -> HttpResponse {
+    func build<T: Encodable>(path: String, method: String, body: T? = nil) throws -> URLRequest {
+        let headers = method == HttpClient.get ? defaultHeaders : postHeaders
+        let url = urlFor(resource: path)
+        if let body = body {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(body)
+            return buildRequestWithBody(url: url, httpMethod: method, headers: postHeaders, body: data)
+        } else {
+            return buildRequest(url: url, httpMethod: method, headers: defaultHeaders)
+        }
+    }
+    
+    func make(request: URLRequest) async throws -> HttpResponse {
+        let response = try await executeHttp(request, retryCount: 1)
+        return try statusChecked(response: response)
+    }
+    
+    func statusChecked(response: HttpResponse) throws -> HttpResponse {
         if response.isStatusOK {
             return response
         } else {
-            self.log.error("Request to '\(resource)' failed with status '\(response.statusCode)'.")
-            let details = ResponseDetails(resource: resource, code: response.statusCode, message: response.errors.first?.message)
+            let url = response.http.url?.absoluteString ?? "no url"
+            self.log.error("Request to '\(url)' failed with status '\(response.statusCode)'.")
+            let details = ResponseDetails(resource: url, code: response.statusCode, message: response.errors.first?.message)
             throw AppError.responseFailure(details)
         }
     }

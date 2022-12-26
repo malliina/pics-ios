@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PicView: View {
-    private let log = LoggerFactory.shared.vc(PicView.self)
+    private let log = LoggerFactory.shared.view(PicView.self)
     let meta: PicMeta
     let isPrivate: Bool
     
