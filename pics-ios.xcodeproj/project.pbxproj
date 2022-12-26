@@ -706,18 +706,16 @@
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_UNCHECKEDRETURN = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 42;
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D2T2QC36Z9;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 43;
+				DEVELOPMENT_TEAM = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.38;
+				MARKETING_VERSION = 1.12.39;
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -735,7 +733,7 @@
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 42;
+				CURRENT_PROJECT_VERSION = 43;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
@@ -744,7 +742,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.38;
+				MARKETING_VERSION = 1.12.39;
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = PicsProfile2023;
@@ -767,7 +765,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.38;
+				MARKETING_VERSION = 1.12.39;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -789,7 +787,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.38;
+				MARKETING_VERSION = 1.12.39;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -810,7 +808,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.38;
+				MARKETING_VERSION = 1.12.39;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -831,7 +829,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.38;
+				MARKETING_VERSION = 1.12.39;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -906,18 +904,16 @@
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_UNCHECKEDRETURN = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 42;
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D2T2QC36Z9;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 43;
+				DEVELOPMENT_TEAM = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.38;
+				MARKETING_VERSION = 1.12.39;
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -940,7 +936,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.38;
+				MARKETING_VERSION = 1.12.39;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -961,7 +957,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.38;
+				MARKETING_VERSION = 1.12.39;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.malliina.pics-iosUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
