@@ -55,7 +55,6 @@ struct PicsApp: App {
     }
 }
 
-//@UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     let log = LoggerFactory.shared.system(AppDelegate.self)
     
