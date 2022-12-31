@@ -27,6 +27,7 @@ jobs:
       - name: Release
         run: |
           ls -al ~/.apple/
+          sudo xcode-select -s "/Applications/Xcode_14.2.app"
           fastlane release
         env:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
