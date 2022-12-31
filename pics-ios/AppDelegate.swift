@@ -61,7 +61,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var transferCompletionHandlers: [String: () -> Void] = [:]
     
     func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
-        log.info("Complete: \(identifier)")
+        log.info("Task complete: \(identifier)")
         transferCompletionHandlers[identifier] = completionHandler
         BackgroundTransfers.uploader.setup()
     }
