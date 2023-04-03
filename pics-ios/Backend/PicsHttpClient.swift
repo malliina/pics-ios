@@ -7,7 +7,7 @@ class PicsHttpClient: HttpClient {
     private var defaultHeaders: [String: String]
     private let postSpecificHeaders: [String: String]
     
-    var postHeaders: [String: String] { return defaultHeaders.merging(postSpecificHeaders)  { (current, _) in current } }
+    var postHeaders: [String: String] { defaultHeaders.merging(postSpecificHeaders)  { (current, _) in current } }
     
     static let PicsVersion10 = "application/vnd.pics.v10+json"
     static let ClientPicHeader = "X-Client-Pic"
@@ -89,7 +89,6 @@ class PicsHttpClient: HttpClient {
     }
     
     func build<T: Encodable>(path: String, method: String, body: T? = nil) throws -> URLRequest {
-        let headers = method == HttpClient.get ? defaultHeaders : postHeaders
         let url = urlFor(resource: path)
         if let body = body {
             let encoder = JSONEncoder()
