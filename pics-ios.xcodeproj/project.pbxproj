@@ -253,12 +253,12 @@
 				B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */,
 				61A9C4CE200693510085BA25 /* Backend.swift */,
 				61A9C4C11FF28E280085BA25 /* EnvConf.swift */,
+				B05905292959D0AF003546A7 /* Models.swift */,
 				61A702D91FCAD86300814051 /* PicsHttpClient.swift */,
 				61A702CD1FC5E54300814051 /* PicsLibrary.swift */,
 				61EB2D8E1FF1855500A27F1A /* PicsSocket.swift */,
 				61EB2D8A1FEEDAB200A27F1A /* Tokens.swift */,
 				7D62E9E6266BF5C600380475 /* WebSocket.swift */,
-				B05905292959D0AF003546A7 /* Models.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
