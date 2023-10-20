@@ -33,7 +33,7 @@ class Tokens {
             user.getSession().continueWith( block: { (task) in
                 if let error = task.error as NSError? {
                     let appError = error.localizedDescription == AppError.noInternetMessage ? AppError.noInternet(error) : AppError.tokenError(error)
-                    self.log.warn("Failed to get session with \(error)")
+                    self.log.warn("Failed to get session with \(error).")
                     cont.resume(throwing: appError)
                 } else {
                     if let accessToken = task.result?.accessToken {
