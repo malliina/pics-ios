@@ -23,7 +23,8 @@ struct PicsApp: App {
             let _ = LocalPics.shared
             try CognitoDelegate.configure()
         } catch {
-            isError = true
+          log.info("Failed to setup app.")
+          isError = true
         }
         updateNav(user: username)
         log.info("App initialized.")

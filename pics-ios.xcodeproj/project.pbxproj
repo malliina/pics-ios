@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -140,6 +140,7 @@
 		7D6BF6E5280F48FD007C5FD5 /* PicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicView.swift; sourceTree = "<group>"; };
 		7DA4A015289BEFB5005FD842 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		7DA4A017289E6B2C005FD842 /* CachedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedImage.swift; sourceTree = "<group>"; };
+		B010416C2B5D6D3200C72E49 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B03F58A829463010006B5DC1 /* PageViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageViewRepresentable.swift; sourceTree = "<group>"; };
 		B050BCCD294DE4890092A45D /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		B050BCCF294E124C0092A45D /* MailRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailRepresentable.swift; sourceTree = "<group>"; };
@@ -339,6 +340,7 @@
 		C077EB4D4C9FA66D03D63B5D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B010416C2B5D6D3200C72E49 /* README.md */,
 				61E9FBE62016677F00FA4F42 /* AWSCore.framework */,
 				61E9FBE2201666BD00FA4F42 /* AWSCore.framework */,
 			);
@@ -446,7 +448,7 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */,
+				B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -889,7 +891,7 @@
 				version = 2.27.1;
 			};
 		};
-		B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */ = {
+		B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/microsoft/appcenter-sdk-apple.git";
 			requirement = {
@@ -912,12 +914,12 @@
 		};
 		B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterAnalytics;
 		};
 		B0B85EB428F209D500C4B8FF /* AppCenterCrashes */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterCrashes;
 		};
 /* End XCSwiftPackageProductDependency section */
