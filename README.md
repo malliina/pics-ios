@@ -8,6 +8,8 @@ A picture gallery for iOS.
 1. View it in the gallery
 1. Share a link
 
+Not released to the App Store.
+
 ## Releases
 
 To release a new version to TestFlight, push to the master branch.
