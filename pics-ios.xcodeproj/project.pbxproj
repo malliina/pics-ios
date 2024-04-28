@@ -55,6 +55,7 @@
 		7D6BF6E6280F48FD007C5FD5 /* PicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E5280F48FD007C5FD5 /* PicView.swift */; };
 		7DA4A016289BEFB5005FD842 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A015289BEFB5005FD842 /* ImagePicker.swift */; };
 		7DA4A018289E6B2C005FD842 /* CachedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A017289E6B2C005FD842 /* CachedImage.swift */; };
+		7DEF1A8A2BDEA1E5009280F4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 7DEF1A892BDEA1E5009280F4 /* LICENSE */; };
 		B010416E2B5D722C00C72E49 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = B010416D2B5D722C00C72E49 /* README.md */; };
 		B03F58A929463010006B5DC1 /* PageViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03F58A829463010006B5DC1 /* PageViewRepresentable.swift */; };
 		B050BCCE294DE4890092A45D /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = B050BCCD294DE4890092A45D /* Components.swift */; };
@@ -141,6 +142,7 @@
 		7D6BF6E5280F48FD007C5FD5 /* PicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicView.swift; sourceTree = "<group>"; };
 		7DA4A015289BEFB5005FD842 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		7DA4A017289E6B2C005FD842 /* CachedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedImage.swift; sourceTree = "<group>"; };
+		7DEF1A892BDEA1E5009280F4 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		B010416C2B5D6D3200C72E49 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B010416D2B5D722C00C72E49 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B03F58A829463010006B5DC1 /* PageViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageViewRepresentable.swift; sourceTree = "<group>"; };
@@ -186,6 +188,7 @@
 		614230381FC1891E00CD4173 = {
 			isa = PBXGroup;
 			children = (
+				7DEF1A892BDEA1E5009280F4 /* LICENSE */,
 				B010416D2B5D722C00C72E49 /* README.md */,
 				614230431FC1891E00CD4173 /* pics-ios */,
 				614230581FC1891E00CD4173 /* pics-iosTests */,
@@ -451,7 +454,7 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */,
+				B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -473,6 +476,7 @@
 				6142304F1FC1891E00CD4173 /* LaunchScreen.storyboard in Resources */,
 				B010416E2B5D722C00C72E49 /* README.md in Resources */,
 				6142304C1FC1891E00CD4173 /* Assets.xcassets in Resources */,
+				7DEF1A8A2BDEA1E5009280F4 /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -893,7 +897,7 @@
 				version = 2.33.8;
 			};
 		};
-		B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */ = {
+		B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/microsoft/appcenter-sdk-apple.git";
 			requirement = {
@@ -916,12 +920,12 @@
 		};
 		B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterAnalytics;
 		};
 		B0B85EB428F209D500C4B8FF /* AppCenterCrashes */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple.git" */;
+			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
 			productName = AppCenterCrashes;
 		};
 /* End XCSwiftPackageProductDependency section */
