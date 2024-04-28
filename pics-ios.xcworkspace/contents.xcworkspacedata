@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Workspace
    version = "1.0">
+   <Group
+      location = "group:fastlane"
+      name = "fastlane">
+      <FileRef
+         location = "group:Pluginfile">
+      </FileRef>
+      <FileRef
+         location = "group:Appfile">
+      </FileRef>
+      <FileRef
+         location = "group:Fastfile">
+      </FileRef>
+      <FileRef
+         location = "group:README.md">
+      </FileRef>
+      <FileRef
+         location = "group:report.xml">
+      </FileRef>
+   </Group>
    <FileRef
       location = "group:pics-ios.xcodeproj">
    </FileRef>
