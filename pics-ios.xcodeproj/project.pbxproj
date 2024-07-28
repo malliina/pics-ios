@@ -918,7 +918,7 @@
 			repositoryURL = "https://github.com/aws-amplify/aws-sdk-ios-spm";
 			requirement = {
 				kind = exactVersion;
-				version = 2.33.8;
+				version = 2.36.6;
 			};
 		};
 		B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */ = {
@@ -926,7 +926,7 @@
 			repositoryURL = "https://github.com/microsoft/appcenter-sdk-apple.git";
 			requirement = {
 				kind = exactVersion;
-				version = 5.0.4;
+				version = 5.0.5;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
