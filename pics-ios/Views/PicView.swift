@@ -32,6 +32,7 @@ struct PicView: View {
           let magnifyGesture = MagnifyGesture()
             .updating($magnifyBy) { value, gestureState, transaction in
               gestureState = value.magnification
+              magnifyAnchor = value.startAnchor
             }
           Image(uiImage: uiImage)
             .resizable()
