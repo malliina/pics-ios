@@ -53,6 +53,7 @@
 		7D62E9E7266BF5C600380475 /* WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D62E9E6266BF5C600380475 /* WebSocket.swift */; };
 		7D6BF6E4280DE3C5007C5FD5 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */; };
 		7D6BF6E6280F48FD007C5FD5 /* PicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E5280F48FD007C5FD5 /* PicView.swift */; };
+		7D7227AA2D047FDD00235677 /* PicVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D7227A92D047FDA00235677 /* PicVM.swift */; };
 		7DA4A016289BEFB5005FD842 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A015289BEFB5005FD842 /* ImagePicker.swift */; };
 		7DA4A018289E6B2C005FD842 /* CachedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A017289E6B2C005FD842 /* CachedImage.swift */; };
 		7DEF1A8A2BDEA1E5009280F4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 7DEF1A892BDEA1E5009280F4 /* LICENSE */; };
@@ -142,6 +143,7 @@
 		7D62E9E6266BF5C600380475 /* WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocket.swift; sourceTree = "<group>"; };
 		7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		7D6BF6E5280F48FD007C5FD5 /* PicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicView.swift; sourceTree = "<group>"; };
+		7D7227A92D047FDA00235677 /* PicVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicVM.swift; sourceTree = "<group>"; };
 		7DA4A015289BEFB5005FD842 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		7DA4A017289E6B2C005FD842 /* CachedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedImage.swift; sourceTree = "<group>"; };
 		7DEF1A892BDEA1E5009280F4 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -331,6 +333,7 @@
 				7D20883C28318FC9005C0BBA /* PicsView.swift */,
 				7D20883E2835684F005C0BBA /* PicsVM.swift */,
 				7D6BF6E5280F48FD007C5FD5 /* PicView.swift */,
+				7D7227A92D047FDA00235677 /* PicVM.swift */,
 				615647F0201C9EEA000E3BBD /* ProfilePopover.swift */,
 				61D214B51FD2ABB300781DC7 /* RememberMe.swift */,
 				61A9C4BF1FF271D30085BA25 /* ShareRepresentable.swift */,
@@ -559,6 +562,7 @@
 				61A9C4C21FF28E280085BA25 /* EnvConf.swift in Sources */,
 				61A702D81FCAD7DE00814051 /* HttpClient.swift in Sources */,
 				7D6BF6E6280F48FD007C5FD5 /* PicView.swift in Sources */,
+				7D7227AA2D047FDD00235677 /* PicVM.swift in Sources */,
 				61A9C4C92003ECC20085BA25 /* Strings.swift in Sources */,
 				61A702DA1FCAD86300814051 /* PicsHttpClient.swift in Sources */,
 				615647F3201CA633000E3BBD /* PicsSettings.swift in Sources */,
@@ -740,6 +744,7 @@
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_UNCHECKEDRETURN = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 70;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
@@ -754,6 +759,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "com.malliina.pics AppStore";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = Pics2024Christmas;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

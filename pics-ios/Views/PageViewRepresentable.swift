@@ -147,8 +147,7 @@ struct PageViewRepresentable<T>: UIViewControllerRepresentable where T: PicsVMLi
       transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
     let vc = UIHostingController(
       rootView: PicView(
-        meta: pics[startIndex], isPrivate: isPrivate, smalls: smalls, larges: larges,
-        transitioning: $transitioning))
+        meta: pics[startIndex], isPrivate: isPrivate, smalls: smalls, larges: larges))
     pager.setViewControllers([vc], direction: .forward, animated: false, completion: nil)
     pager.delegate = context.coordinator
     pager.dataSource = context.coordinator
@@ -210,7 +209,7 @@ struct PageViewRepresentable<T>: UIViewControllerRepresentable where T: PicsVMLi
         guard
           let newIndex = self.pics.firstIndex(where: { p in
             p.key == current.meta.key
-              || (p.clientKey != nil && p.clientKey == current.meta.clientKey)
+            || (p.clientKey != nil && p.clientKey == current.meta.clientKey)
           })
         else { return }
         index = newIndex
@@ -238,7 +237,7 @@ struct PageViewRepresentable<T>: UIViewControllerRepresentable where T: PicsVMLi
         return UIHostingController(
           rootView: PicView(
             meta: pics[newIndex], isPrivate: parent.isPrivate, smalls: parent.smalls,
-            larges: parent.larges, transitioning: parent.$transitioning))
+            larges: parent.larges))
       } else {
         return nil
       }
