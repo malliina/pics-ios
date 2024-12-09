@@ -171,12 +171,8 @@ struct LoginView: View {
   }
 }
 
-struct LoginView_Previews: PreviewProvider {
-  static var previews: some View {
-    ForEach(["iPhone 12 mini", "iPad Pro (11-inch) (3rd generation)"], id: \.self) { deviceName in
-      LoginView(handler: LoginHandler())
-        .previewDevice(PreviewDevice(rawValue: deviceName))
-        .previewDisplayName(deviceName)
-    }
+struct LoginPreviews: PicsPreviewProvider, PreviewProvider {
+  static var preview: some View {
+    LoginView(handler: LoginHandler())
   }
 }

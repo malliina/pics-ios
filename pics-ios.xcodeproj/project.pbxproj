@@ -50,6 +50,7 @@
 		7D175C5827C018BC0050E29B /* AWSCognitoIdentityProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 7D175C5727C018BC0050E29B /* AWSCognitoIdentityProvider */; };
 		7D20883D28318FC9005C0BBA /* PicsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D20883C28318FC9005C0BBA /* PicsView.swift */; };
 		7D20883F2835684F005C0BBA /* PicsVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D20883E2835684F005C0BBA /* PicsVM.swift */; };
+		7D499FCC2D076CB000FA861C /* Previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D499FCB2D076CAE00FA861C /* Previews.swift */; };
 		7D62E9E7266BF5C600380475 /* WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D62E9E6266BF5C600380475 /* WebSocket.swift */; };
 		7D6BF6E4280DE3C5007C5FD5 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */; };
 		7D6BF6E6280F48FD007C5FD5 /* PicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E5280F48FD007C5FD5 /* PicView.swift */; };
@@ -140,6 +141,7 @@
 		61FD20B4223AE69400BAF31B /* codables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = codables.swift; sourceTree = "<group>"; };
 		7D20883C28318FC9005C0BBA /* PicsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsView.swift; sourceTree = "<group>"; };
 		7D20883E2835684F005C0BBA /* PicsVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsVM.swift; sourceTree = "<group>"; };
+		7D499FCB2D076CAE00FA861C /* Previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Previews.swift; sourceTree = "<group>"; };
 		7D62E9E6266BF5C600380475 /* WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocket.swift; sourceTree = "<group>"; };
 		7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		7D6BF6E5280F48FD007C5FD5 /* PicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicView.swift; sourceTree = "<group>"; };
@@ -334,6 +336,7 @@
 				7D20883E2835684F005C0BBA /* PicsVM.swift */,
 				7D6BF6E5280F48FD007C5FD5 /* PicView.swift */,
 				7D7227A92D047FDA00235677 /* PicVM.swift */,
+				7D499FCB2D076CAE00FA861C /* Previews.swift */,
 				615647F0201C9EEA000E3BBD /* ProfilePopover.swift */,
 				61D214B51FD2ABB300781DC7 /* RememberMe.swift */,
 				61A9C4BF1FF271D30085BA25 /* ShareRepresentable.swift */,
@@ -546,6 +549,7 @@
 				61A702DD1FCAD8D000814051 /* models.swift in Sources */,
 				7D20883D28318FC9005C0BBA /* PicsView.swift in Sources */,
 				61A9C4C42003EADA0085BA25 /* StorageSize.swift in Sources */,
+				7D499FCC2D076CB000FA861C /* Previews.swift in Sources */,
 				615647F1201C9EEA000E3BBD /* ProfilePopover.swift in Sources */,
 				61FD20B5223AE69400BAF31B /* codables.swift in Sources */,
 				61A9C4C01FF271D30085BA25 /* ShareRepresentable.swift in Sources */,

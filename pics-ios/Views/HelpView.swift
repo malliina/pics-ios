@@ -61,19 +61,16 @@ extension View {
   }
 }
 
-struct HelpView_Previews: PreviewProvider {
-  static var previews: some View {
-    ForEach(["iPhone 12 mini", "iPad Pro (11-inch) (3rd generation)"], id: \.self) { deviceName in
-      NavigationView {
-        HelpView(isPrivate: true)
-          .previewDevice(PreviewDevice(rawValue: deviceName))
-          .previewDisplayName(deviceName)
-      }
-      NavigationView {
-        HelpView(isPrivate: false)
-          .previewDevice(PreviewDevice(rawValue: deviceName))
-          .previewDisplayName(deviceName)
-      }
+struct HelpPreviews: PicsPreviewProvider, PreviewProvider {
+  static var preview: some View {
+    NavigationView {
+      HelpView(isPrivate: true)
     }
+//      NavigationView {
+//        HelpView(isPrivate: false)
+//          .previewDevice(PreviewDevice(rawValue: deviceName))
+//          .previewDisplayName(deviceName)
+//      }
+//    }
   }
 }
