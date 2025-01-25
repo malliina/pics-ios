@@ -8,6 +8,10 @@ A picture gallery for iOS.
 
 Not released to the App Store.
 
+## Development
+
+Create and populate file pics-ios/Credentials.plist. See [Credentials-template.plist](pics-ios/Credentials-template.plist) for the template.
+
 ## Releases
 
 To release a new version to TestFlight, push to the master branch.
