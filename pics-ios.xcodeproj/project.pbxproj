@@ -744,7 +744,7 @@
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_UNCHECKEDRETURN = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 76;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
@@ -759,7 +759,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "com.malliina.pics AppStore";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = Pics2024Christmas;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "com.malliina.pics AppStore";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -786,6 +786,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "com.malliina.pics AppStore";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "com.malliina.pics AppStore";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
