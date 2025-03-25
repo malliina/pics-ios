@@ -18,8 +18,6 @@ struct PicsView<T>: View where T: PicsVMLike {
   @State var showLogin = false
   @State var showNewPass = false
 
-  @State var active: PicMeta? = nil
-
   var backgroundColor: Color { viewModel.isPrivate ? color.background : color.lightBackground }
   var titleColor: Color { viewModel.isPrivate ? color.almostLight : color.almostBlack }
 
@@ -100,13 +98,12 @@ struct PicsView<T>: View where T: PicsVMLike {
       repeating: .init(.fixed(sizeInfo.sizePerItem.width)), count: sizeInfo.itemsPerRow)
     return ScrollView {
       LazyVGrid(columns: columns) {
-        ForEach(Array(viewModel.pics.enumerated()), id: \.element.key) { index, pic in
+        ForEach(viewModel.pics) { pic in
           NavigationLink {
             PicPageView(
               viewModel: viewModel,
-              startIndex: index,
-              isPrivate: user.isPrivate,
-              active: $active
+              startPic: pic,
+              isPrivate: user.isPrivate
             )
             .background(backgroundColor)
             .navigationBarHidden(picNavigationBarHidden)

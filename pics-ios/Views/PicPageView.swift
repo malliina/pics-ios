@@ -7,20 +7,18 @@ struct PicPageView<T>: View where T: PicsVMLike {
   @Environment(\.dismiss) private var dismiss
 
   @ObservedObject var viewModel: T
-  let startIndex: Int
   let isPrivate: Bool
-  @Binding var active: PicMeta?
+  @State private var active: PicMeta
   
   @State var showActions = false
   @State var showShare = false
   @State var showEmail = false
   @State var showAbuseInstructions = false
 
-  init(viewModel: T, startIndex: Int, isPrivate: Bool, active: Binding<PicMeta?>) {
+  init(viewModel: T, startPic: PicMeta, isPrivate: Bool) {
     self.viewModel = viewModel
-    self.startIndex = startIndex
     self.isPrivate = isPrivate
-    self._active = active
+    _active = .init(initialValue: startPic)
   }
   
   var drag: some Gesture {
@@ -46,9 +44,6 @@ struct PicPageView<T>: View where T: PicsVMLike {
           .tag(pic)
           .gesture(drag)
       }
-    }
-    .onAppear {
-      active = viewModel.pics[startIndex]
     }
     .tabViewStyle(.page)
     .navigationTitle(title())
@@ -107,9 +102,7 @@ struct PicPageView<T>: View where T: PicsVMLike {
           }
         }
         .sheet(isPresented: $showEmail) {
-          if let active = active {
-            MailRepresentable(meta: active, showEmail: $showEmail)
-          }
+          MailRepresentable(meta: active, showEmail: $showEmail)
         }
         .alert(
           "Report Objectionable Content", isPresented: $showAbuseInstructions, presenting: active
@@ -129,21 +122,14 @@ struct PicPageView<T>: View where T: PicsVMLike {
             .renderingMode(.template)
         }
         .popover(isPresented: $showShare) {
-          if let meta = active {
-            ShareRepresentable(meta: meta, larges: viewModel.cacheLarge, isPresenting: $showShare)
-          }
+          ShareRepresentable(meta: active, larges: viewModel.cacheLarge, isPresenting: $showShare)
         }
       }
     }
   }
 
   func title() -> String {
-    if let pic = active {
-      return title(pic: pic)
-    } else {
-      return ""
-      //            return title(pic: viewModel.pics[startIndex])
-    }
+    title(pic: active)
   }
 
   func title(pic: PicMeta) -> String {
