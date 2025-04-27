@@ -65,9 +65,6 @@
 		B050BCCE294DE4890092A45D /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = B050BCCD294DE4890092A45D /* Components.swift */; };
 		B050BCD0294E124C0092A45D /* MailRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B050BCCF294E124C0092A45D /* MailRepresentable.swift */; };
 		B059052A2959D0AF003546A7 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B05905292959D0AF003546A7 /* Models.swift */; };
-		B0B85EB328F209D500C4B8FF /* AppCenterAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */; };
-		B0B85EB528F209D500C4B8FF /* AppCenterCrashes in Frameworks */ = {isa = PBXBuildFile; productRef = B0B85EB428F209D500C4B8FF /* AppCenterCrashes */; };
-		B0B85EB728F328D100C4B8FF /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */; };
 		B0ECFFB228C37D4900CFA757 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB128C37D4900CFA757 /* LoginView.swift */; };
 		B0ECFFB428C3BE0100CFA757 /* SignupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ECFFB328C3BE0100CFA757 /* SignupView.swift */; };
 		B0FA092428C4A6C400F6356E /* ConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0FA092328C4A6C400F6356E /* ConfirmView.swift */; };
@@ -157,7 +154,6 @@
 		B050BCCD294DE4890092A45D /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		B050BCCF294E124C0092A45D /* MailRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailRepresentable.swift; sourceTree = "<group>"; };
 		B05905292959D0AF003546A7 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		B0ECFFB128C37D4900CFA757 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		B0ECFFB328C3BE0100CFA757 /* SignupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupView.swift; sourceTree = "<group>"; };
 		B0FA092328C4A6C400F6356E /* ConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmView.swift; sourceTree = "<group>"; };
@@ -169,8 +165,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B0B85EB328F209D500C4B8FF /* AppCenterAnalytics in Frameworks */,
-				B0B85EB528F209D500C4B8FF /* AppCenterCrashes in Frameworks */,
 				7D175C5627C018BC0050E29B /* AWSCognitoAuth in Frameworks */,
 				7D175C5827C018BC0050E29B /* AWSCognitoIdentityProvider in Frameworks */,
 			);
@@ -267,7 +261,6 @@
 		61A702CC1FC5E52800814051 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
-				B0B85EB628F328D100C4B8FF /* AnalyticsService.swift */,
 				61A9C4CE200693510085BA25 /* Backend.swift */,
 				61A9C4C11FF28E280085BA25 /* EnvConf.swift */,
 				B05905292959D0AF003546A7 /* Models.swift */,
@@ -400,8 +393,6 @@
 			packageProductDependencies = (
 				7D175C5527C018BC0050E29B /* AWSCognitoAuth */,
 				7D175C5727C018BC0050E29B /* AWSCognitoIdentityProvider */,
-				B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */,
-				B0B85EB428F209D500C4B8FF /* AppCenterCrashes */,
 			);
 			productName = "pics-ios";
 			productReference = 614230411FC1891E00CD4173 /* pics-ios.app */;
@@ -482,7 +473,6 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
-				B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -571,7 +561,6 @@
 				61A702DA1FCAD86300814051 /* PicsHttpClient.swift in Sources */,
 				615647F3201CA633000E3BBD /* PicsSettings.swift in Sources */,
 				618623D11FD71DFC0009345E /* CognitoConf.swift in Sources */,
-				B0B85EB728F328D100C4B8FF /* AnalyticsService.swift in Sources */,
 				61EB2D891FE5AE7C00A27F1A /* LocalPics.swift in Sources */,
 				7D20883F2835684F005C0BBA /* PicsVM.swift in Sources */,
 				61A702D61FCAC86100814051 /* JsonError.swift in Sources */,
@@ -930,14 +919,6 @@
 				version = 2.36.6;
 			};
 		};
-		B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/microsoft/appcenter-sdk-apple.git";
-			requirement = {
-				kind = exactVersion;
-				version = 5.0.5;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -950,16 +931,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
 			productName = AWSCognitoIdentityProvider;
-		};
-		B0B85EB228F209D500C4B8FF /* AppCenterAnalytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
-			productName = AppCenterAnalytics;
-		};
-		B0B85EB428F209D500C4B8FF /* AppCenterCrashes */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B0B85EB128F209D500C4B8FF /* XCRemoteSwiftPackageReference "appcenter-sdk-apple" */;
-			productName = AppCenterCrashes;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
