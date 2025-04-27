@@ -14,6 +14,7 @@ struct PicsApp: App {
   @State var username: Username? = PicsSettings.shared.activeUser
 
   init() {
+    // TODO remove
     AppCenter.start(
       withAppSecret: "cf2aa399-806a-406e-b72d-f4d6e1978e02",
       services: [
