@@ -224,12 +224,8 @@ class ProfileViewDelegate<T>: ProfileDelegate where T: PicsVMLike {
   }
 }
 
-struct PicsView_Previews: PreviewProvider {
-  static var previews: some View {
-    ForEach(["iPhone 13 mini", "iPad Pro 11-inch (M4)"], id: \.self) { deviceName in
-      PicsView(viewModel: PreviewPicsVM())
-        .previewDevice(PreviewDevice(rawValue: deviceName))
-        .previewDisplayName(deviceName)
-    }
+struct PicsViewPreviews: PicsPreviewProvider, PreviewProvider {
+  static var preview: some View {
+    PicsView(viewModel: PreviewPicsVM())
   }
 }

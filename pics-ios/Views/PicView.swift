@@ -51,10 +51,8 @@ struct PicView: View {
   }
 }
 
-struct PicView_Previews: PreviewProvider {
-  //    let pic = UIImage(named: "AppIcon")
-  static var previews: some View {
-    //        PicView()
+struct PicPreviews: PicsPreviewProvider, PreviewProvider {
+  static var preview: some View {
     Text("Todo")
   }
 }

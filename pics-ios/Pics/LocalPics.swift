@@ -1,4 +1,3 @@
-import AppCenterAnalytics
 import Foundation
 
 class LocalPics {
@@ -104,7 +103,6 @@ class LocalPics {
         do {
           try fileManager.removeItem(at: url)
           self.log.info("Deleted \(url).")
-          AnalyticsService.shared.deleted(url: url, reason: "maintenance")
           return url
         } catch let err {
           self.log.warn("Unable to delete \(url). \(err.localizedDescription)")

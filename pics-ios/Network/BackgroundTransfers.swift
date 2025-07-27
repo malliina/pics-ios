@@ -93,7 +93,6 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
       do {
         try fileManager.removeItem(at: destURL)
         log.info("Removed previous version of \(destURL).")
-        AnalyticsService.shared.deleted(url: destURL.absoluteURL, reason: "duplicate")
       } catch {
       }
       let relPath = downloadInfo.relativePath
@@ -227,7 +226,6 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
         if deleteFile {
           try fileManager.removeItem(at: file)
           log.info("Removed \(file) of task \(id).")
-          AnalyticsService.shared.deleted(url: file, reason: "upload")
           await Backend.shared.library.syncPicsForLatestUser()
         } else {
           log.info("Not deleting \(file) of task \(id).")
