@@ -53,6 +53,14 @@ struct PicsView<T>: View where T: PicsVMLike {
     GeometryReader { geometry in
       ZStack {
         grid(geometry: geometry)
+          .onChange(of: showCamera) { newValue in
+            if newValue {
+              viewModel.onTakingImage()
+            } else {
+              viewModel.onImageTaken()
+            }
+//            log.info("Show camera is now \(newValue)")
+          }
           .task {
             await viewModel.prep()
           }

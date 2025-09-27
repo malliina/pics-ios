@@ -32,7 +32,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Takes photos.</string>
 	<key>NSLocationUsageDescription</key>
-	<string>Hmmh</string>
+	<string>Location data for photos.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Includes location data in photos.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

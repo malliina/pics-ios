@@ -64,7 +64,6 @@ struct ImagePicker: UIViewControllerRepresentable {
         log.error("Original image is not an UIImage")
         return
       }
-      // let what = info[.phAsset]
       if let pha = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
         let loc = pha.location
         if let coordinate = loc?.coordinate {
@@ -75,7 +74,6 @@ struct ImagePicker: UIViewControllerRepresentable {
       } else {
         log.info("No PHAsset")
       }
-
       let clientKey = ClientKey.random()
       guard let data = originalImage.jpegData(compressionQuality: 1) else {
         log.error("Taken image is not in JPEG format")

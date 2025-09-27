@@ -38,6 +38,9 @@ protocol PicsVMLike: ObservableObject {
 
   func connect()
   func disconnect()
+  
+  func onTakingImage()
+  func onImageTaken()
 }
 
 extension PicsVM: PicsDelegate {
@@ -119,6 +122,8 @@ class PicsVM: PicsVMLike {
 
   let cacheSmall = DataCache.small()
   let cacheLarge = DataCache.large()
+  
+  private let locations: Locations = Locations()
 
   init(userChanged: @escaping (Username?) -> Void) {
     self.userChanged = userChanged
@@ -344,6 +349,14 @@ class PicsVM: PicsVMLike {
   func onPrivate(user: Username) async {
     await changeUser(to: user)
   }
+  
+  func onTakingImage() {
+    locations.start()
+  }
+  
+  func onImageTaken() {
+    locations.stop()
+  }
 
   private func changeUser(to user: Username?) async {
     let changed = settings.activeUser != user
@@ -398,4 +411,6 @@ class PreviewPicsVM: PicsVMLike {
   func display(newPics: [PicMeta]) {}
   func reInit() {}
   func changeStyle(dark: Bool) {}
+  func onTakingImage() {}
+  func onImageTaken() {}
 }

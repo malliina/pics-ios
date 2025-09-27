@@ -50,6 +50,7 @@
 		7D175C5827C018BC0050E29B /* AWSCognitoIdentityProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 7D175C5727C018BC0050E29B /* AWSCognitoIdentityProvider */; };
 		7D20883D28318FC9005C0BBA /* PicsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D20883C28318FC9005C0BBA /* PicsView.swift */; };
 		7D20883F2835684F005C0BBA /* PicsVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D20883E2835684F005C0BBA /* PicsVM.swift */; };
+		7D3252162E487EFA00AE569F /* Locations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3252152E487EF700AE569F /* Locations.swift */; };
 		7D499FCC2D076CB000FA861C /* Previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D499FCB2D076CAE00FA861C /* Previews.swift */; };
 		7D62E9E7266BF5C600380475 /* WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D62E9E6266BF5C600380475 /* WebSocket.swift */; };
 		7D6BF6E4280DE3C5007C5FD5 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */; };
@@ -138,6 +139,7 @@
 		61FD20B4223AE69400BAF31B /* codables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = codables.swift; sourceTree = "<group>"; };
 		7D20883C28318FC9005C0BBA /* PicsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsView.swift; sourceTree = "<group>"; };
 		7D20883E2835684F005C0BBA /* PicsVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsVM.swift; sourceTree = "<group>"; };
+		7D3252152E487EF700AE569F /* Locations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Locations.swift; sourceTree = "<group>"; };
 		7D499FCB2D076CAE00FA861C /* Previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Previews.swift; sourceTree = "<group>"; };
 		7D62E9E6266BF5C600380475 /* WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocket.swift; sourceTree = "<group>"; };
 		7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
@@ -341,6 +343,7 @@
 		61EB2D871FE5AE6E00A27F1A /* Pics */ = {
 			isa = PBXGroup;
 			children = (
+				7D3252152E487EF700AE569F /* Locations.swift */,
 				61EB2D881FE5AE7C00A27F1A /* LocalPics.swift */,
 				615339C82061B5AF00106B48 /* Outcome.swift */,
 				615647F2201CA633000E3BBD /* PicsSettings.swift */,
@@ -551,6 +554,7 @@
 				61D214B61FD2ABB300781DC7 /* RememberMe.swift in Sources */,
 				61A702D21FCAC6C200814051 /* Log.swift in Sources */,
 				B050BCCE294DE4890092A45D /* Components.swift in Sources */,
+				7D3252162E487EFA00AE569F /* Locations.swift in Sources */,
 				61A702E21FCB21A600814051 /* SizeInfo.swift in Sources */,
 				B0ECFFB428C3BE0100CFA757 /* SignupView.swift in Sources */,
 				61A9C4C21FF28E280085BA25 /* EnvConf.swift in Sources */,
@@ -737,7 +741,7 @@
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_UNCHECKEDRETURN = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 81;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
@@ -752,6 +756,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = Pics2025;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = Pics2024Christmas;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -778,6 +783,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = Pics2025;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "com.malliina.pics AppStore";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
