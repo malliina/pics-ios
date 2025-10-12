@@ -83,11 +83,22 @@ struct PicsView<T>: View where T: PicsVMLike {
 
   @ViewBuilder
   private func contentView(geometry: GeometryProxy) -> some View {
-    if viewModel.pics.isEmpty {
+    if viewModel.isLoadingInitial() {
+      progressView()
+    } else if viewModel.pics.isEmpty {
       emptyView()
     } else {
       nonEmptyView(geometry: geometry)
     }
+  }
+  
+  private func progressView() -> some View {
+    VStack(alignment: .center) {
+      Spacer()
+      ProgressView()
+        .tint(titleColor)
+      Spacer()
+    }.frame(maxWidth: .infinity)
   }
 
   private func emptyView() -> some View {
@@ -234,6 +245,6 @@ class ProfileViewDelegate<T>: ProfileDelegate where T: PicsVMLike {
 
 struct PicsViewPreviews: PicsPreviewProvider, PreviewProvider {
   static var preview: some View {
-    PicsView(viewModel: PreviewPicsVM())
+    PicsView(viewModel: PreviewPicsVM(isLoading: false))
   }
 }

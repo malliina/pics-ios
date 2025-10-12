@@ -1,6 +1,10 @@
 import AWSCognitoIdentityProvider
 import Foundation
 
+enum LoadState {
+  case idle, loading, error
+}
+
 class User {
   static let shared = User()
 
@@ -23,6 +27,7 @@ protocol PicsVMLike: ObservableObject {
   var cacheSmall: DataCache { get }
   var cacheLarge: DataCache { get }
   var animatePics: Bool { get }
+  func isLoadingInitial() -> Bool
   func prep() async
   func loadMore() async
   func loadPicsAsync(for user: Username?, initialOnly: Bool) async
@@ -107,6 +112,9 @@ class PicsVM: PicsVMLike {
 
   @Published var showLogin = false
   @Published var showNewPass = false
+  @Published var state: LoadState = .idle
+  
+  func isLoadingInitial() -> Bool { isInitial && state == .loading && pics.isEmpty }
 
   private var backend: Backend { Backend.shared }
   private var library: PicsLibrary { backend.library }
@@ -145,23 +153,27 @@ class PicsVM: PicsVMLike {
 
   func prep() async {
     if user.reload {
+      log.info("Prepping...")
       user.reload = false
       await connectAsync()
     }
   }
 
   func connect() {
+    log.info("Connecting...")
     Task {
       await connectAsync()
     }
   }
 
   func connectAsync() async {
+    await update(state: .loading)
     do {
       if !isOnline {
         let offlines = settings.localPictures(for: user.currentUsernameOrAnon)
         log.info("Loaded \(offlines.count) offline pics for \(user.currentUsernameOrAnon).")
         await loadOfflinePics(offlinePics: offlines)
+        await update(state: .idle)
       }
       if isPrivate {
         let userInfo = try await Tokens.shared.retrieveUserInfoAsync(cancellationToken: nil)
@@ -177,6 +189,7 @@ class PicsVM: PicsVMLike {
       log.error("Failed to connect. \(error)")
       await updateOnline(online: false)
     }
+    await update(state: .idle)
   }
 
   func disconnect() {
@@ -230,6 +243,7 @@ class PicsVM: PicsVMLike {
   @MainActor
   func loadPicsAsync(for user: Username?, initialOnly: Bool) async {
     if !initialOnly || isInitial {
+      state = .loading
       isInitial = false
       if initialOnly {
         pics = []
@@ -246,6 +260,7 @@ class PicsVM: PicsVMLike {
           log.info("Loading anon pics...")
           try await load(with: nil)
         }
+        state = .idle
       } catch {
         onLoadError(error: error)
       }
@@ -254,6 +269,7 @@ class PicsVM: PicsVMLike {
 
   private func onLoadError(error: Error) {
     log.error("Load error \(error)")
+    state = .error
   }
 
   func load(with token: AWSCognitoIdentityUserSessionToken?) async throws {
@@ -379,12 +395,21 @@ class PicsVM: PicsVMLike {
     loginHandler.isComplete = false
   }
 
+  @MainActor
+  func update(state: LoadState) {
+    self.state = state
+  }
+  
   private func adjustTitleTextColor(_ color: UIColor) {
     log.info("Adjusting title color")
   }
 }
 
 class PreviewPicsVM: PicsVMLike {
+  let isLoading: Bool
+  init(isLoading: Bool) {
+    self.isLoading = isLoading
+  }
   var isOnline: Bool = false
   var pics: [PicMeta] = []
   var hasMore: Bool = false
@@ -395,6 +420,7 @@ class PreviewPicsVM: PicsVMLike {
   var loginHandler: LoginHandler = LoginHandler()
   var cacheSmall: DataCache = DataCache()
   var cacheLarge: DataCache = DataCache()
+  func isLoadingInitial() -> Bool { isLoading }
   func prep() async {}
   func connect() {}
   func disconnect() {}
