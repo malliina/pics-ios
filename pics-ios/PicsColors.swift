@@ -5,7 +5,6 @@ import UIKit
 class PicsColors {
   static let shared = PicsColors()
   private static let divisor: CGFloat = 255.0
-  static let blue = colorFor(red: 0, green: 122, blue: 255)
   static let tealBlue = colorFor(red: 90, green: 200, blue: 250)
   static let uiLight = colorFor(red: 239, green: 239, blue: 244)
   static let light = Color(uiLight)
