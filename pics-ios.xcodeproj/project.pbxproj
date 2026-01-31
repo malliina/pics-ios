@@ -51,6 +51,7 @@
 		7D20883D28318FC9005C0BBA /* PicsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D20883C28318FC9005C0BBA /* PicsView.swift */; };
 		7D20883F2835684F005C0BBA /* PicsVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D20883E2835684F005C0BBA /* PicsVM.swift */; };
 		7D3252162E487EFA00AE569F /* Locations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3252152E487EF700AE569F /* Locations.swift */; };
+		7D4321522ECA045B0086D5EB /* LogSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4321512ECA04580086D5EB /* LogSocket.swift */; };
 		7D499FCC2D076CB000FA861C /* Previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D499FCB2D076CAE00FA861C /* Previews.swift */; };
 		7D62E9E7266BF5C600380475 /* WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D62E9E6266BF5C600380475 /* WebSocket.swift */; };
 		7D6BF6E4280DE3C5007C5FD5 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */; };
@@ -140,6 +141,7 @@
 		7D20883C28318FC9005C0BBA /* PicsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsView.swift; sourceTree = "<group>"; };
 		7D20883E2835684F005C0BBA /* PicsVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsVM.swift; sourceTree = "<group>"; };
 		7D3252152E487EF700AE569F /* Locations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Locations.swift; sourceTree = "<group>"; };
+		7D4321512ECA04580086D5EB /* LogSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSocket.swift; sourceTree = "<group>"; };
 		7D499FCB2D076CAE00FA861C /* Previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Previews.swift; sourceTree = "<group>"; };
 		7D62E9E6266BF5C600380475 /* WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocket.swift; sourceTree = "<group>"; };
 		7D6BF6E3280DE3C5007C5FD5 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
@@ -265,6 +267,7 @@
 			children = (
 				61A9C4CE200693510085BA25 /* Backend.swift */,
 				61A9C4C11FF28E280085BA25 /* EnvConf.swift */,
+				7D4321512ECA04580086D5EB /* LogSocket.swift */,
 				B05905292959D0AF003546A7 /* Models.swift */,
 				61A702D91FCAD86300814051 /* PicsHttpClient.swift */,
 				61A702CD1FC5E54300814051 /* PicsLibrary.swift */,
@@ -551,6 +554,7 @@
 				B0FA092628C66A1200F6356E /* NewPassView.swift in Sources */,
 				7D7227AC2D0491F000235677 /* PicPageView.swift in Sources */,
 				7DA4A016289BEFB5005FD842 /* ImagePicker.swift in Sources */,
+				7D4321522ECA045B0086D5EB /* LogSocket.swift in Sources */,
 				61D214B61FD2ABB300781DC7 /* RememberMe.swift in Sources */,
 				61A702D21FCAC6C200814051 /* Log.swift in Sources */,
 				B050BCCE294DE4890092A45D /* Components.swift in Sources */,
@@ -740,12 +744,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_UNCHECKEDRETURN = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 84;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -755,8 +757,7 @@
 				MARKETING_VERSION = 1.12.80;
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = Pics2025;
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = Pics2024Christmas;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -768,11 +769,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_UNCHECKEDRETURN = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 84;
 				DEVELOPMENT_TEAM = D2T2QC36Z9;
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -782,8 +782,7 @@
 				MARKETING_VERSION = 1.12.80;
 				PRODUCT_BUNDLE_IDENTIFIER = com.malliina.pics;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = Pics2025;
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "com.malliina.pics AppStore";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

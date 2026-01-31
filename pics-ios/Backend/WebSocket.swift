@@ -73,6 +73,14 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
     isConnected = false
   }
 
+  func send(message: String) async throws {
+    if let task = task {
+      try await task.send(.string(message))
+    } else {
+      // TODO Only log locally
+    }
+  }
+  
   private func stream() -> AsyncThrowingStream<URLSessionWebSocketTask.Message, Error> {
     if let task = task {
       return AsyncThrowingStream {

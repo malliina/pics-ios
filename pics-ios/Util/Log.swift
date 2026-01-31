@@ -1,13 +1,11 @@
 import Foundation
 import os.log
 
-class Logger {
-  private let osLog: OSLog
+protocol Logging {
+  func write(_ message: String, _ level: OSLogType)
+}
 
-  init(_ subsystem: String, category: String) {
-    osLog = OSLog(subsystem: subsystem, category: category)
-  }
-
+extension Logging {
   func debug(_ message: String) {
     write(message, .debug)
   }
@@ -22,6 +20,18 @@ class Logger {
 
   func error(_ message: String) {
     write(message, .error)
+  }
+}
+
+class SocketLogger {
+  
+}
+
+class Logger: Logging {
+  private let osLog: OSLog
+
+  init(_ subsystem: String, category: String) {
+    osLog = OSLog(subsystem: subsystem, category: category)
   }
 
   func write(_ message: String, _ level: OSLogType) {
