@@ -24,7 +24,7 @@ extension Logging {
 }
 
 class SocketLogger {
-  
+
 }
 
 class Logger: Logging {

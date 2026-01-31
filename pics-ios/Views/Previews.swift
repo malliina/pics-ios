@@ -2,7 +2,7 @@ import SwiftUI
 
 class PicsPreviews {
   static let shared = PicsPreviews()
-  
+
   let devices = ["iPhone 13 mini", "iPad Pro (11-inch) (4th generation)"]
 }
 

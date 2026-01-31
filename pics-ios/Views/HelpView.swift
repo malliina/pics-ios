@@ -66,11 +66,11 @@ struct HelpPreviews: PicsPreviewProvider, PreviewProvider {
     NavigationView {
       HelpView(isPrivate: true)
     }
-//      NavigationView {
-//        HelpView(isPrivate: false)
-//          .previewDevice(PreviewDevice(rawValue: deviceName))
-//          .previewDisplayName(deviceName)
-//      }
-//    }
+    //      NavigationView {
+    //        HelpView(isPrivate: false)
+    //          .previewDevice(PreviewDevice(rawValue: deviceName))
+    //          .previewDisplayName(deviceName)
+    //      }
+    //    }
   }
 }

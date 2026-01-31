@@ -80,7 +80,7 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
       // TODO Only log locally
     }
   }
-  
+
   private func stream() -> AsyncThrowingStream<URLSessionWebSocketTask.Message, Error> {
     if let task = task {
       return AsyncThrowingStream {

@@ -2,9 +2,9 @@ import SwiftUI
 
 struct PicView: View {
   private let log = LoggerFactory.shared.view(PicView.self)
-  
+
   @StateObject var vm: PicVM
-  
+
   let meta: PicMeta
   let isPrivate: Bool
 
@@ -13,13 +13,13 @@ struct PicView: View {
 
   @GestureState private var magnifyBy = 1.0
   @State private var magnifyAnchor: UnitPoint = .center
-  
+
   init(meta: PicMeta, isPrivate: Bool, smalls: DataCache, larges: DataCache) {
     _vm = StateObject(wrappedValue: PicVM(meta: meta, smalls: smalls, larges: larges))
     self.meta = meta
     self.isPrivate = isPrivate
   }
-  
+
   var body: some View {
     ZStack {
       backgroundColor

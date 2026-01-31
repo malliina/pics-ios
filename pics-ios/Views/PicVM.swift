@@ -4,20 +4,20 @@ import Foundation
 class PicVM: ObservableObject {
   private let log = LoggerFactory.shared.vc(PicVM.self)
   let meta: PicMeta
-  
+
   let smalls: DataCache
   let larges: DataCache
-  
+
   var downloader: Downloader { Downloader.shared }
-  
+
   @Published var data: Data?
-  
+
   init(meta: PicMeta, smalls: DataCache, larges: DataCache) {
     self.meta = meta
     self.smalls = smalls
     self.larges = larges
   }
-  
+
   func loadImage() async {
     guard data == nil else { return }
     let key = meta.key
@@ -48,7 +48,7 @@ class PicVM: ObservableObject {
       }
     }
   }
-  
+
   @MainActor
   private func update(data: Data) {
     self.data = data

@@ -9,7 +9,7 @@ struct PicPageView<T>: View where T: PicsVMLike {
   @ObservedObject var viewModel: T
   let isPrivate: Bool
   @State private var active: PicMeta
-  
+
   @State var showActions = false
   @State var showShare = false
   @State var showEmail = false
@@ -20,12 +20,12 @@ struct PicPageView<T>: View where T: PicsVMLike {
     self.isPrivate = isPrivate
     _active = .init(initialValue: startPic)
   }
-  
+
   var drag: some Gesture {
     DragGesture(minimumDistance: 20, coordinateSpace: .global).onEnded { value in
       let horizontalAmount = value.translation.width
       let verticalAmount = value.translation.height
-      
+
       if abs(horizontalAmount) > abs(verticalAmount) {
         // horizontal swipe
       } else {
@@ -36,13 +36,16 @@ struct PicPageView<T>: View where T: PicsVMLike {
       }
     }
   }
-  
+
   var body: some View {
     TabView(selection: $active) {
       ForEach(viewModel.pics) { pic in
-        PicView(meta: pic, isPrivate: isPrivate, smalls: viewModel.cacheSmall, larges: viewModel.cacheLarge)
-          .tag(pic)
-          .gesture(drag)
+        PicView(
+          meta: pic, isPrivate: isPrivate, smalls: viewModel.cacheSmall,
+          larges: viewModel.cacheLarge
+        )
+        .tag(pic)
+        .gesture(drag)
       }
     }
     .tabViewStyle(.page)

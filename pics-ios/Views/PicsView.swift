@@ -59,7 +59,7 @@ struct PicsView<T>: View where T: PicsVMLike {
             } else {
               viewModel.onImageTaken()
             }
-//            log.info("Show camera is now \(newValue)")
+            //            log.info("Show camera is now \(newValue)")
           }
           .task {
             await viewModel.prep()
@@ -91,7 +91,7 @@ struct PicsView<T>: View where T: PicsVMLike {
       nonEmptyView(geometry: geometry)
     }
   }
-  
+
   private func progressView() -> some View {
     VStack(alignment: .center) {
       Spacer()

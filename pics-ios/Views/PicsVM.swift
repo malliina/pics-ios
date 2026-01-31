@@ -43,7 +43,7 @@ protocol PicsVMLike: ObservableObject {
 
   func connect()
   func disconnect()
-  
+
   func onTakingImage()
   func onImageTaken()
 }
@@ -113,7 +113,7 @@ class PicsVM: PicsVMLike {
   @Published var showLogin = false
   @Published var showNewPass = false
   @Published var state: LoadState = .idle
-  
+
   func isLoadingInitial() -> Bool { isInitial && state == .loading && pics.isEmpty }
 
   private var backend: Backend { Backend.shared }
@@ -130,7 +130,7 @@ class PicsVM: PicsVMLike {
 
   let cacheSmall = DataCache.small()
   let cacheLarge = DataCache.large()
-  
+
   private let locations: Locations = Locations()
 
   init(userChanged: @escaping (Username?) -> Void) {
@@ -365,11 +365,11 @@ class PicsVM: PicsVMLike {
   func onPrivate(user: Username) async {
     await changeUser(to: user)
   }
-  
+
   func onTakingImage() {
     locations.start()
   }
-  
+
   func onImageTaken() {
     locations.stop()
   }
@@ -399,7 +399,7 @@ class PicsVM: PicsVMLike {
   func update(state: LoadState) {
     self.state = state
   }
-  
+
   private func adjustTitleTextColor(_ color: UIColor) {
     log.info("Adjusting title color")
   }
