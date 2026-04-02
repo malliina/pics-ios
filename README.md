@@ -16,6 +16,8 @@ Create and populate file pics-ios/Credentials.plist. See [Credentials-template.p
 
 To release a new version to TestFlight, push to the master branch.
 
+Use a Distribution profile when pushing to TestFlight.
+
 ### Setup
 
 1. In Xcode, create a new Apple Distribution signing certificate.
