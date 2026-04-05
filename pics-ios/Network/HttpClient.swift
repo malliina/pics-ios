@@ -1,9 +1,13 @@
 import Foundation
 
+struct Headers {
+  static let accept = "Accept", acceptLanguage = "Accept-Language", authorization = "Authorization",
+    contentType = "Content-Type"
+}
+
 class HttpClient {
   private let log = LoggerFactory.shared.network(HttpClient.self)
-  static let json = "application/json", contentType = "Content-Type", accept = "Accept",
-    delete = "DELETE", get = "GET", post = "POST", authorization = "Authorization", basic = "Basic"
+  static let json = "application/json", delete = "DELETE", get = "GET", post = "POST", basic = "Basic"
 
   static func basicAuthValue(_ username: String, password: String) -> String {
     let encodable = "\(username):\(password)"
@@ -36,6 +40,7 @@ class HttpClient {
     -> HttpResponse
   {
     let encoder = JSONEncoder()
+    encoder.dateEncodingStrategy = .iso8601
     let data = try encoder.encode(payload)
     return try await postData(url, headers: headers, payload: data)
   }

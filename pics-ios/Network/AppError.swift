@@ -125,3 +125,32 @@ class HttpResponse {
     self.data = data
   }
 }
+
+class HttpParser {
+  static let shared = HttpParser()
+
+  let log = LoggerFactory.shared.network(HttpParser.self)
+
+  func parseAs<T: Decodable>(_ t: T.Type, response: HttpResponse) throws -> T {
+    do {
+      let decoder = JSONDecoder()
+      return try decoder.decode(t, from: response.data)
+    } catch let error as JsonError {
+      log.error(error.describe)
+      throw AppError.parseError(error)
+    } catch DecodingError.dataCorrupted(let ctx) {
+      log.error("Corrupted: \(ctx)")
+      throw AppError.simple("Unknown parse error.")
+    } catch DecodingError.typeMismatch(let t, let context) {
+      let str = String(data: response.data, encoding: .utf8)
+      log.error("Type mismatch: \(t) ctx \(context) str \(str)")
+      throw AppError.simple("Unknown parse error.")
+    } catch DecodingError.keyNotFound(let key, let context) {
+      log.error("Key not found: \(key) ctx \(context)")
+      throw AppError.simple("Unknown parse error.")
+    } catch let error {
+      log.error(error.localizedDescription)
+      throw AppError.simple("Unknown parse error.")
+    }
+  }
+}

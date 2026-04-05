@@ -10,14 +10,14 @@ class Downloader {
   static let shared = Downloader()
   private let log = LoggerFactory.shared.network(Downloader.self)
 
-  private var requestHeaders: [String: String] = [HttpClient.accept: PicsHttpClient.PicsVersion10]
+  private var requestHeaders: [String: String] = [Headers.accept: PicsHttpClient.PicsVersion10]
 
   func updateToken(token: AWSCognitoIdentityUserSessionToken?) {
     if let token = token {
       self.requestHeaders.updateValue(
-        PicsHttpClient.authValueFor(forToken: token), forKey: HttpClient.authorization)
+        PicsHttpClient.authValueFor(forToken: token), forKey: Headers.authorization)
     } else {
-      self.requestHeaders.removeValue(forKey: HttpClient.authorization)
+      self.requestHeaders.removeValue(forKey: Headers.authorization)
     }
   }
 

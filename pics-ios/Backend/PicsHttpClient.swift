@@ -28,16 +28,16 @@ class PicsHttpClient: HttpClient {
     self.baseURL = baseURL
     if let authValue = authValue {
       self.defaultHeaders = [
-        HttpClient.authorization: authValue,
-        HttpClient.accept: PicsHttpClient.PicsVersion10,
+        Headers.authorization: authValue,
+        Headers.accept: PicsHttpClient.PicsVersion10,
       ]
     } else {
       self.defaultHeaders = [
-        HttpClient.accept: PicsHttpClient.PicsVersion10
+        Headers.accept: PicsHttpClient.PicsVersion10
       ]
     }
     self.postSpecificHeaders = [
-      HttpClient.contentType: HttpClient.json
+      Headers.contentType: HttpClient.json
     ]
   }
 
@@ -68,7 +68,9 @@ class PicsHttpClient: HttpClient {
 
   func picsGet(_ resource: String) async throws -> HttpResponse {
     let url = urlFor(resource: resource)
-    return try await statusChecked(response: self.get(url, headers: defaultHeaders))
+    log.info("Loading pics from \(url)...")
+    let response = try await get(url, headers: defaultHeaders)
+    return try statusChecked(response: response)
   }
 
   func picsPost(_ resource: String, payload: Data, clientKey: ClientKey) async throws
@@ -115,10 +117,11 @@ class PicsHttpClient: HttpClient {
   }
 
   func statusChecked(response: HttpResponse) throws -> HttpResponse {
+    let url = response.http.url?.absoluteString ?? "no url"
     if response.isStatusOK {
+      log.info("Got status \(response.statusCode) from \(url).")
       return response
     } else {
-      let url = response.http.url?.absoluteString ?? "no url"
       self.log.error("Request to '\(url)' failed with status '\(response.statusCode)'.")
       let details = ResponseDetails(
         resource: url, code: response.statusCode, message: response.errors.first?.message)
@@ -135,7 +138,7 @@ class PicsHttpClient: HttpClient {
       self.updateToken(token: userInfo.token)
       r.setValue(
         PicsHttpClient.authValueFor(forToken: userInfo.token),
-        forHTTPHeaderField: HttpClient.authorization)
+        forHTTPHeaderField: Headers.authorization)
       return try await self.executeHttp(r, retryCount: retryCount + 1)
     } else {
       return response
@@ -149,13 +152,19 @@ class PicsHttpClient: HttpClient {
   func updateToken(token: AWSCognitoIdentityUserSessionToken?) {
     if let token = token {
       self.defaultHeaders.updateValue(
-        PicsHttpClient.authValueFor(forToken: token), forKey: HttpClient.authorization)
+        PicsHttpClient.authValueFor(forToken: token), forKey: Headers.authorization)
     } else {
-      self.defaultHeaders.removeValue(forKey: HttpClient.authorization)
+      self.defaultHeaders.removeValue(forKey: Headers.authorization)
     }
   }
 
   func onRequestError(_ data: Data, error: NSError) {
     log.error("Error: \(data)")
+  }
+}
+
+extension HttpResponse {
+  func to<T: Decodable>(_ t: T.Type) throws -> T {
+    try HttpParser.shared.parseAs(t, response: self)
   }
 }

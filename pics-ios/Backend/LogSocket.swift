@@ -7,8 +7,8 @@ class LogSocket {
 
   init(baseURL: URL, authValue: String) {
     let headers = [
-      HttpClient.authorization: authValue,
-      HttpClient.accept: HttpClient.json,
+      Headers.authorization: authValue,
+      Headers.accept: HttpClient.json,
     ]
     socket = WebSocket(baseURL: baseURL, headers: headers)
   }

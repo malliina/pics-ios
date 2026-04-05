@@ -38,7 +38,7 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
 
   func connect() {
     let socketTask = prepTask()
-    let hasToken = request.value(forHTTPHeaderField: HttpClient.authorization) != nil
+    let hasToken = request.value(forHTTPHeaderField: Headers.authorization) != nil
     let describe = hasToken ? "with token" : "without token"
     log.info("Connecting to \(urlString) \(describe)...")
     socketTask.resume()
@@ -47,9 +47,9 @@ class WebSocket: NSObject, URLSessionWebSocketDelegate {
   /** Fucking Christ Swift sucks. "Authorization" is a "reserved header" where iOS chooses not to send its value even when set, it seems. So we set it in two ways anyway and hope that either works: both to the request and the session configuration.
      */
   func updateAuthHeader(newValue: String?) {
-    request.setValue(newValue, forHTTPHeaderField: HttpClient.authorization)
+    request.setValue(newValue, forHTTPHeaderField: Headers.authorization)
     if let value = newValue {
-      sessionConfiguration.httpAdditionalHeaders = [HttpClient.authorization: value]
+      sessionConfiguration.httpAdditionalHeaders = [Headers.authorization: value]
     } else {
       sessionConfiguration.httpAdditionalHeaders = [:]
     }

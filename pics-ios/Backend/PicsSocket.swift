@@ -14,7 +14,7 @@ class PicsSocket: TokenDelegate, WebSocketMessageDelegate {
 
   convenience init(authValue: String?) {
     self.init(
-      baseURL: URL(string: "/sockets", relativeTo: EnvConf.shared.baseSocketUrl)!,
+      baseURL: URL(string: "/sockets", relativeTo: EnvConf.shared.socketUrl)!,
       authValue: authValue)
   }
 
@@ -22,12 +22,12 @@ class PicsSocket: TokenDelegate, WebSocketMessageDelegate {
     var headers: [String: String] = [:]
     if let authValue = authValue {
       headers = [
-        HttpClient.authorization: authValue,
-        HttpClient.accept: PicsHttpClient.PicsVersion10,
+        Headers.authorization: authValue,
+        Headers.accept: PicsHttpClient.PicsVersion10,
       ]
     } else {
       headers = [
-        HttpClient.accept: PicsHttpClient.PicsVersion10
+        Headers.accept: PicsHttpClient.PicsVersion10
       ]
     }
     socket = WebSocket(baseURL: baseURL, headers: headers)

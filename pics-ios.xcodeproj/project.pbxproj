@@ -58,6 +58,10 @@
 		7D6BF6E6280F48FD007C5FD5 /* PicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BF6E5280F48FD007C5FD5 /* PicView.swift */; };
 		7D7227AA2D047FDD00235677 /* PicVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D7227A92D047FDA00235677 /* PicVM.swift */; };
 		7D7227AC2D0491F000235677 /* PicPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D7227AB2D0491EE00235677 /* PicPageView.swift */; };
+		7D873A3B2F82682600A5585F /* logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D873A3A2F82682400A5585F /* logging.swift */; };
+		7D873A402F826D0300A5585F /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 7D873A3F2F826D0300A5585F /* Algorithms */; };
+		7D873A432F826D1300A5585F /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 7D873A422F826D1300A5585F /* AsyncAlgorithms */; };
+		7D873A452F82720500A5585F /* PicsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D873A442F82720400A5585F /* PicsApp.swift */; };
 		7DA4A016289BEFB5005FD842 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A015289BEFB5005FD842 /* ImagePicker.swift */; };
 		7DA4A018289E6B2C005FD842 /* CachedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA4A017289E6B2C005FD842 /* CachedImage.swift */; };
 		7DEF1A8A2BDEA1E5009280F4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 7DEF1A892BDEA1E5009280F4 /* LICENSE */; };
@@ -148,6 +152,8 @@
 		7D6BF6E5280F48FD007C5FD5 /* PicView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicView.swift; sourceTree = "<group>"; };
 		7D7227A92D047FDA00235677 /* PicVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicVM.swift; sourceTree = "<group>"; };
 		7D7227AB2D0491EE00235677 /* PicPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicPageView.swift; sourceTree = "<group>"; };
+		7D873A3A2F82682400A5585F /* logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = logging.swift; sourceTree = "<group>"; };
+		7D873A442F82720400A5585F /* PicsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicsApp.swift; sourceTree = "<group>"; };
 		7DA4A015289BEFB5005FD842 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		7DA4A017289E6B2C005FD842 /* CachedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedImage.swift; sourceTree = "<group>"; };
 		7DEF1A892BDEA1E5009280F4 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -169,8 +175,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7D873A402F826D0300A5585F /* Algorithms in Frameworks */,
 				7D175C5627C018BC0050E29B /* AWSCognitoAuth in Frameworks */,
 				7D175C5827C018BC0050E29B /* AWSCognitoIdentityProvider in Frameworks */,
+				7D873A432F826D1300A5585F /* AsyncAlgorithms in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -219,6 +227,7 @@
 		614230431FC1891E00CD4173 /* pics-ios */ = {
 			isa = PBXGroup;
 			children = (
+				7D873A442F82720400A5585F /* PicsApp.swift */,
 				614230441FC1891E00CD4173 /* AppDelegate.swift */,
 				6142304B1FC1891E00CD4173 /* Assets.xcassets */,
 				618623CF1FD71DF00009345E /* Auth */,
@@ -265,6 +274,7 @@
 		61A702CC1FC5E52800814051 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
+				7D873A3A2F82682400A5585F /* logging.swift */,
 				61A9C4CE200693510085BA25 /* Backend.swift */,
 				61A9C4C11FF28E280085BA25 /* EnvConf.swift */,
 				7D4321512ECA04580086D5EB /* LogSocket.swift */,
@@ -399,6 +409,8 @@
 			packageProductDependencies = (
 				7D175C5527C018BC0050E29B /* AWSCognitoAuth */,
 				7D175C5727C018BC0050E29B /* AWSCognitoIdentityProvider */,
+				7D873A3F2F826D0300A5585F /* Algorithms */,
+				7D873A422F826D1300A5585F /* AsyncAlgorithms */,
 			);
 			productName = "pics-ios";
 			productReference = 614230411FC1891E00CD4173 /* pics-ios.app */;
@@ -479,6 +491,8 @@
 			mainGroup = 614230381FC1891E00CD4173;
 			packageReferences = (
 				7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
+				7D873A3E2F826D0300A5585F /* XCRemoteSwiftPackageReference "swift-algorithms" */,
+				7D873A412F826D1300A5585F /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 			);
 			productRefGroup = 614230421FC1891E00CD4173 /* Products */;
 			projectDirPath = "";
@@ -555,7 +569,9 @@
 				7D7227AC2D0491F000235677 /* PicPageView.swift in Sources */,
 				7DA4A016289BEFB5005FD842 /* ImagePicker.swift in Sources */,
 				7D4321522ECA045B0086D5EB /* LogSocket.swift in Sources */,
+				7D873A452F82720500A5585F /* PicsApp.swift in Sources */,
 				61D214B61FD2ABB300781DC7 /* RememberMe.swift in Sources */,
+				7D873A3B2F82682600A5585F /* logging.swift in Sources */,
 				61A702D21FCAC6C200814051 /* Log.swift in Sources */,
 				B050BCCE294DE4890092A45D /* Components.swift in Sources */,
 				7D3252162E487EFA00AE569F /* Locations.swift in Sources */,
@@ -676,7 +692,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -729,7 +745,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -751,7 +767,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -779,7 +795,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D2T2QC36Z9;
 				INFOPLIST_FILE = "pics-ios/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -930,6 +946,22 @@
 				version = 2.41.0;
 			};
 		};
+		7D873A3E2F826D0300A5585F /* XCRemoteSwiftPackageReference "swift-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-algorithms.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.2.1;
+			};
+		};
+		7D873A412F826D1300A5585F /* XCRemoteSwiftPackageReference "swift-async-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-async-algorithms.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.1.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -942,6 +974,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 7D175C5427C018BC0050E29B /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
 			productName = AWSCognitoIdentityProvider;
+		};
+		7D873A3F2F826D0300A5585F /* Algorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7D873A3E2F826D0300A5585F /* XCRemoteSwiftPackageReference "swift-algorithms" */;
+			productName = Algorithms;
+		};
+		7D873A422F826D1300A5585F /* AsyncAlgorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7D873A412F826D1300A5585F /* XCRemoteSwiftPackageReference "swift-async-algorithms" */;
+			productName = AsyncAlgorithms;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -17,11 +17,15 @@ class PasswordCredentials {
   }
 }
 
+class Signup {
+  static let log = LoggerFactory.shared.system(Signup.self)
+}
+
 enum SignupError: Error {
   case userNotFound(String)
   case invalidCredentials(String)
   case userAlreadyExists(String)
-  case weakPassword(String)
+  case invalidInput(String)
   case passwordMismatch(String)
   case userNotConfirmed(String)
   case codeExpired(String)
@@ -34,7 +38,7 @@ enum SignupError: Error {
     case .userNotFound(_): return "User not found."
     case .invalidCredentials(_): return "Invalid credentials."
     case .userAlreadyExists(_): return "User already exists."
-    case .weakPassword(_): return "Weak password. Minimum 7 characters."
+    case .invalidInput(_): return "Invalid input. Check your username and password."
     case .userNotConfirmed(_): return "User not confirmed."
     case .codeExpired(_): return "Code expired."
     case .invalidCode(_): return "Invalid code."
@@ -43,13 +47,14 @@ enum SignupError: Error {
     default: return "Unknown error."
     }
   }
-
+  
   static func check(user: String, error: Error?) -> SignupError? {
     guard let error = error as NSError? else { return nil }
     return parse(user: user, error: error)
   }
 
   static func parse(user: String, error: Error) -> SignupError {
+    Signup.log.warn("Signup error for user input '\(user)': \(error)")
     let err: NSError = error as NSError
     if let message = err.userInfo["message"] as? String,
       let type = err.userInfo["__type"] as? String
@@ -58,7 +63,7 @@ enum SignupError: Error {
       case "UserNotFoundException": return .userNotFound(user)
       case "NotAuthorizedException": return .invalidCredentials(user)
       case "UsernameExistsException": return .userAlreadyExists(user)
-      case "InvalidParameterException": return .weakPassword(message)
+      case "InvalidParameterException": return .invalidInput(message)
       case "UserNotConfirmedException": return .userNotConfirmed(user)
       case "ExpiredCodeException": return .codeExpired(user)
       case "CodeMismatchException": return .invalidCode(user)
@@ -158,11 +163,46 @@ struct ClientKey: Equatable, Hashable, CustomStringConvertible, ValueCodable {
   }
 }
 
-struct AccessToken: Hashable, CustomStringConvertible {
+protocol StringCodable: Codable, CustomStringConvertible {
+  init(_ value: String)
+}
+
+extension StringCodable {
+  init(from decoder: Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    let raw = try container.decode(String.self).trim()
+    if raw.isEmpty {
+      throw DecodingError.dataCorruptedError(
+        in: container,
+        debugDescription: "Cannot initialize value from an empty string"
+      )
+    }
+    self.init(raw)
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+    try container.encode(description)
+  }
+}
+
+extension String {
+  func trim() -> String {
+    return self.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+  }
+}
+
+struct AccessToken: Equatable, Hashable, CustomStringConvertible, StringCodable {
   let token: String
   var description: String { token }
 
-  static func == (lhs: AccessToken, rhs: AccessToken) -> Bool { lhs.token == rhs.token }
+  init(_ value: String) {
+    self.token = value
+  }
+
+  static func == (lhs: AccessToken, rhs: AccessToken) -> Bool {
+    lhs.token == rhs.token
+  }
 }
 
 struct AccessValue: Hashable, CustomStringConvertible, ValueCodable {
