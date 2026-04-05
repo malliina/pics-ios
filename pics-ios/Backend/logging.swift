@@ -1,5 +1,7 @@
 import Foundation
 
+// Consider creating a package for this
+
 enum LogLevel: String, Codable {
   case debug = "debug", info = "info", warn = "warn", error = "error"
 }
