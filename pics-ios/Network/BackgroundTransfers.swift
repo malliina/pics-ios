@@ -25,7 +25,7 @@ class BackgroundTransfers: NSObject, URLSessionDownloadDelegate, URLSessionTaskD
   static let uploader = BackgroundTransfers(
     basePath: "pics-transfers", sessionID: "com.malliina.pics.transfers", oldTasks: [:])
 
-  private let fileManager = FileManager.default
+  private var fileManager: FileManager { FileManager.default }
   let basePath: String
 
   private let sessionID: SessionID
