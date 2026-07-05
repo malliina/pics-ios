@@ -13,7 +13,7 @@ struct PicsApp: App {
 
   init() {
     do {
-      // Sets up folders, cleans up old pics
+      // Sets up folders, cleans up old pics.
       let _ = LocalPics.shared
       try CognitoDelegate.configure()
     } catch {
