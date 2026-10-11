@@ -46,7 +46,7 @@ class Logger: Logging {
   }
   
   static var logs: AsyncChunksOfCountOrSignalSequence<AsyncStream<LogEvent>, [LogEvent], AsyncTimerSequence<SuspendingClock>> {
-    events.chunked(by: .repeating(every: .seconds(1)))
+    events.chunked(by: .repeating(every: .seconds(5)))
   }
 
   init(_ subsystem: String, category: String, isLocalOnly: Bool) {
