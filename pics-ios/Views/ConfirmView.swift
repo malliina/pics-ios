@@ -49,12 +49,15 @@ class ConfirmHandler: ObservableObject {
         }
       } catch let error {
         let signupError = error as? SignupError ?? SignupError.unknown
-        DispatchQueue.main.async {
-          self.confirmError = signupError
-          self.isConfirmError = true
-        }
+        await update(err: signupError)
       }
     }
+  }
+  
+  @MainActor
+  func update(err: SignupError) {
+    self.confirmError = err
+    self.isConfirmError = true
   }
 
   func resendCode() {
